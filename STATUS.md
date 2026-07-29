@@ -27,4 +27,6 @@
 
 ## Current verdict
 
-**SOURCE CORRECTED — AUTOMATED RETEST REQUIRED ON GITHUB — HOSTINGER STAGING REQUIRED — DO NOT MERGE OR DEPLOY**
+**SOURCE CORRECTED — GITHUB CORRECTIVE CI GREEN — HOSTINGER STAGING REQUIRED — DO NOT MERGE OR DEPLOY**
+
+GitHub Actions run `30485906440` passed every corrective step on commit `9ea9e1b45b2f8b505ba11b893977c936e4bdb22d`, including PHP 7.4 compatibility, deterministic behavior tests, security invariants, reproducible packaging, and corrected checksums.

@@ -16,6 +16,20 @@
 - Corrected plugin source bytes: `27,183`.
 - Corrected source-tree SHA-256: `5e48eb5a295c53185ca45d7fabd3f36af7ff347a7ec1f1833828714c45a3bb42`.
 
+## GitHub corrective CI result
+
+- Workflow: `Corrective Integrity`
+- Run: `30485906440`
+- Commit: `9ea9e1b45b2f8b505ba11b893977c936e4bdb22d`
+- Conclusion: `SUCCESS`
+- JavaScript syntax: PASS
+- Deterministic JavaScript behavior and contract tests: PASS
+- PHP runner lint and load/activation smoke: PASS
+- Declared PHP 7.4 compatibility: PASS
+- Static security invariants: PASS
+- Reproducible package and ZIP integrity: PASS
+- Corrected source checksums: PASS
+
 ## What automated QA now proves
 
 - deterministic source identity;
