@@ -2,14 +2,13 @@
 
 ## Current state
 
-**Baseline imported on a dedicated branch; draft review required.**
+**Baseline source imported on a dedicated branch; draft review required.**
 
 ## Completed
 
-- Original ZIP preserved in `source-archive/`.
 - Original plugin source extracted without modification.
-- Archive SHA-256 recorded.
-- Per-file checksums recorded.
+- Original archive SHA-256 recorded for provenance.
+- Per-file source checksums recorded.
 - PHP syntax checks passed for all six PHP files.
 - JavaScript syntax checks passed for both JavaScript files.
 - Repository manifest and provenance records added.

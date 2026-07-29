@@ -11,10 +11,6 @@
 - `CHECKSUMS.sha256`
 - `MANIFEST.md`
 
-## Original archive
-
-- `source-archive/13-sabri-welcome-intro-animation-0.1.1.zip`
-
 ## Original extracted plugin source
 
 - `sabri-welcome-intro/sabri-welcome-intro.php`

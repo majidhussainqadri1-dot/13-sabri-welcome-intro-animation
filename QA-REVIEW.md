@@ -2,7 +2,7 @@
 
 ## Automated checks executed before upload
 
-- `unzip -t`: archive structure readable.
+- `unzip -t`: the supplied archive structure was readable before import.
 - `php -l`: 6/6 PHP files passed.
 - `node --check`: 2/2 JavaScript files passed.
 - Path inspection: no absolute paths or parent-directory traversal entries were found.

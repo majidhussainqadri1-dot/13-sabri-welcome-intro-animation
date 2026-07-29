@@ -26,7 +26,7 @@ The plugin provides an accessible eight-second public welcome sequence featuring
 
 ## Repository status
 
-This branch is a **controlled baseline import of the original supplied ZIP**. Source provenance, checksums, manifest, and preliminary syntax results are included. Baseline import does not by itself mean production acceptance.
+This branch is a **controlled baseline import of the source extracted from the original supplied ZIP**. Source provenance, checksums, manifest, and preliminary syntax results are included. Baseline import does not by itself mean production acceptance.
 
 See:
 
