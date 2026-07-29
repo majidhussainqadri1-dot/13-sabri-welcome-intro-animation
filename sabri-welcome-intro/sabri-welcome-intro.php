@@ -2,18 +2,18 @@
 /**
  * Plugin Name: Sabri Welcome Intro Animation
  * Plugin URI: https://www.sabrihomeopathy.com/
- * Description: An accessible eight-second welcome animation for Sabri Homeopathy, shown once per browser session.
- * Version: 0.1.1
+ * Description: An accessible, fail-safe eight-second welcome animation for Sabri Homeopathy, shown once per browser session.
+ * Version: 0.2.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
- * Author: Dr. Allama Majid Hussain Sabri
+ * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * License: GPL-2.0-or-later
  * Text Domain: sabri-welcome-intro
  */
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SWI_VERSION', '0.1.1' );
+define( 'SWI_VERSION', '0.2.0' );
 define( 'SWI_FILE', __FILE__ );
 define( 'SWI_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SWI_URL', plugin_dir_url( __FILE__ ) );

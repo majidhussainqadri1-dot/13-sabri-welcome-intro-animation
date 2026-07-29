@@ -1,9 +1,4 @@
+__pycache__/
+*.py[cod]
 .DS_Store
 Thumbs.db
-*.log
-*.tmp
-*.swp
-.idea/
-.vscode/
-node_modules/
-vendor/

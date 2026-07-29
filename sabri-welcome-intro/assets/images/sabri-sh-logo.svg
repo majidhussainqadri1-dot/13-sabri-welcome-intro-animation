@@ -1,8 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-  <title id="title">Sabri Homeopathy SH logo</title>
-  <desc id="desc">White S and navy H on a bright orange rounded square.</desc>
-  <rect width="512" height="512" rx="122" fill="#F26B1C"/>
-  <text x="256" y="327" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="224" font-weight="800" letter-spacing="-19">
-    <tspan fill="#FFFFFF">S</tspan><tspan fill="#102A43">H</tspan>
-  </text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="swi-logo-title swi-logo-desc">
+  <title id="swi-logo-title">Sabri Homeopathy SH logo</title>
+  <desc id="swi-logo-desc">Circular bright-orange SH roundel with a strong navy boundary, a white S, a thin white separator, and a navy H.</desc>
+  <circle cx="256" cy="256" r="229" fill="#FF8A1F" stroke="#102A43" stroke-width="18"/>
+  <circle cx="256" cy="256" r="211" fill="none" stroke="#FFFFFF" stroke-opacity="0.92" stroke-width="6"/>
+  <path d="M211 166c-19-30-73-35-94-3-24 38 19 61 58 72 48 14 70 41 59 80-12 43-66 63-109 43-17-8-30-21-39-37" fill="none" stroke="#FFFFFF" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M256 126v260" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round" opacity="0.95"/>
+  <path d="M300 151v210M408 151v210M300 256h108" fill="none" stroke="#102A43" stroke-width="38" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>

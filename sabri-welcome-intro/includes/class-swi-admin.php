@@ -37,7 +37,10 @@ final class SWI_Admin {
 			return;
 		}
 
-		$preview_url = add_query_arg( 'swi_preview', '1', home_url( '/' ) );
+		$preview_url = wp_nonce_url(
+			add_query_arg( 'swi_preview', '1', home_url( '/' ) ),
+			'swi_preview'
+		);
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Sabri Welcome Intro', 'sabri-welcome-intro' ); ?></h1>
@@ -61,9 +64,12 @@ final class SWI_Admin {
 			</form>
 
 			<p>
-				<a class="button button-secondary" href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener">
+				<a class="button button-secondary" href="<?php echo esc_url( $preview_url ); ?>" target="_blank" rel="noopener noreferrer">
 					<?php esc_html_e( 'Preview Intro', 'sabri-welcome-intro' ); ?>
 				</a>
+			</p>
+			<p class="description">
+				<?php esc_html_e( 'Preview links are signed, administrator-only, excluded from public caches, and expire automatically.', 'sabri-welcome-intro' ); ?>
 			</p>
 		</div>
 		<?php

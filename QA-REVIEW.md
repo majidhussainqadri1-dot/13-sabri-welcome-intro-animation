@@ -1,29 +1,44 @@
-# Preliminary QA Review — File 13
+# File 13 Corrective QA Review
 
-## Automated checks executed before upload
+## Local deterministic result
 
-- `unzip -t`: the supplied archive structure was readable before import.
-- `php -l`: 6/6 PHP files passed.
-- `node --check`: 2/2 JavaScript files passed.
-- Path inspection: no absolute paths or parent-directory traversal entries were found.
+- PHP syntax: `6/6 PASS` on available PHP 8.4 CLI.
+- JavaScript source syntax: `2/2 PASS`.
+- JavaScript test syntax: `PASS`.
+- Executable Node tests: `16/16 PASS` before final documentation/checksum generation.
+- PHP plugin load and activation smoke test: `PASS`.
+- Static security/accessibility invariants: `PASS`.
+- Reproducible package: two independent builds byte-identical.
+- ZIP integrity: `PASS`.
+- Corrected package SHA-256: `a59aaab80d89a41cfa57c9bdff64a392ae8874e2c3b03161bd62020f845c07b1`.
+- Corrected package size: `11,932 bytes`.
+- Corrected plugin source files: `11`.
+- Corrected plugin source bytes: `27,183`.
+- Corrected source-tree SHA-256: `5e48eb5a295c53185ca45d7fabd3f36af7ff347a7ec1f1833828714c45a3bb42`.
 
-## Confirmed baseline behaviors from source
+## What automated QA now proves
 
-- Eight-second standard duration (`8000` ms).
-- Reduced-motion duration of `1200` ms.
-- Public enable/disable setting.
-- Preview query parameter: `swi_preview=1`.
-- Session-cookie suppression after first display.
-- Skip button and Escape-key dismissal.
-- Rendering through `wp_body_open` with `wp_footer` fallback.
-- WordPress escaping and capability checks in the settings surface.
+- deterministic source identity;
+- JavaScript syntax;
+- PHP syntax/load contract;
+- immediate session claim and suppression decisions;
+- preview-independent JavaScript state;
+- blocked-cookie/storage fail-open behavior;
+- focus containment and background restoration logic;
+- listener/timer cleanup;
+- animation-end completion and late-runtime guard;
+- nonce/capability/cache/robots source contract;
+- circular vector logo and 44px target contract;
+- deterministic installable package.
 
-## Review items requiring correction or explicit acceptance
+## What automated QA does not prove
 
-1. The modal declares `aria-modal="true"`, but the baseline JavaScript does not implement a focus trap, initial focus placement, or focus restoration after dismissal.
-2. The Escape listener remains attached after the intro is removed. It is harmless in ordinary use but should be cleaned up during lifecycle hardening.
-3. The session cookie is intentionally a browser-session cookie, but its behavior must be tested with LiteSpeed/Hostinger caching and privacy modes.
-4. The overlay exit CSS begins at 7.3 seconds while JavaScript removes the element at 8 seconds; visual timing must be accepted manually.
-5. The SVG uses embedded text and system fonts; cross-platform rendering and brand fidelity require screenshot acceptance.
+- Hostinger WordPress runtime;
+- actual LiteSpeed configuration;
+- real browser rendering and assistive technology;
+- active-theme/File 20 conflicts;
+- backup restore and rollback restore;
+- Founder visual acceptance;
+- repository visibility change.
 
-Under the project QA rule, any confirmed defect must be corrected and re-tested before this file is promoted beyond baseline status.
+**Verdict:** source correction candidate is suitable for GitHub CI and controlled staging, but not for merge or live deployment.
