@@ -1,0 +1,27 @@
+name: Baseline Integrity
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Verify recorded checksums
+        run: sha256sum --check CHECKSUMS.sha256
+
+      - name: Lint PHP files
+        run: find sabri-welcome-intro -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
+
+      - name: Check JavaScript syntax
+        run: find sabri-welcome-intro -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+
+      - name: Test plugin archive
+        run: unzip -t source-archive/13-sabri-welcome-intro-animation-0.1.1.zip

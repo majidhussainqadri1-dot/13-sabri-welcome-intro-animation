@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Sabri Homeopathy SH logo</title>
+  <desc id="desc">White S and navy H on a bright orange rounded square.</desc>
+  <rect width="512" height="512" rx="122" fill="#F26B1C"/>
+  <text x="256" y="327" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="224" font-weight="800" letter-spacing="-19">
+    <tspan fill="#FFFFFF">S</tspan><tspan fill="#102A43">H</tspan>
+  </text>
+</svg>
