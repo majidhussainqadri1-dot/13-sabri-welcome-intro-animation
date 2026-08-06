@@ -30,7 +30,24 @@ jobs:
           (cd release && sha256sum --check SHA256SUMS)
           unzip -t release/13-sabri-welcome-intro-animation-1.0.0.zip
       - name: Source and evidence integrity
-        run: sha256sum --check CHECKSUMS-1.0.0.sha256
+        shell: bash
+        run: |
+          set +e
+          failed=0
+          while read -r expected file; do
+            [ -n "$file" ] || continue
+            if [ ! -f "$file" ]; then
+              echo "::error file=$file::Checksum ledger file is missing"
+              failed=1
+              continue
+            fi
+            actual="$(sha256sum "$file" | awk '{print $1}')"
+            if [ "$actual" != "$expected" ]; then
+              echo "::error file=$file::Checksum mismatch: expected $expected, got $actual"
+              failed=1
+            fi
+          done < CHECKSUMS-1.0.0.sha256
+          exit "$failed"
       - name: Publish installable release artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
