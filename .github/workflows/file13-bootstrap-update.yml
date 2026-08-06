@@ -25,7 +25,7 @@ jobs:
           chunks = sorted(Path('.github').glob('file13-update.part*'))
           encoded = ''.join(path.read_text(encoding='utf-8') for path in chunks)
           payload = base64.b64decode(encoded)
-          expected = '4c120b4ed99d85cc4fbc2ec8044f2da7c399dd6a9be6ae07ee6af783af527dd0'
+          expected = '4065eda6830bbee3b27b5a48135aa1574eb0ef7db6e3a14969918b54a1b3c408'
           actual = hashlib.sha256(payload).hexdigest()
           if actual != expected:
               raise SystemExit(f'overlay checksum mismatch: {actual}')
