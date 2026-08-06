@@ -25,6 +25,7 @@ jobs:
         run: bash tests/static-contracts.sh
       - name: Reproducible package and archive safety
         run: |
+          python3 tools/generate-pot.py
           python3 tests/reproducible-package.test.py
           python3 tools/build-release.py
           (cd release && sha256sum --check SHA256SUMS)
