@@ -24,8 +24,8 @@ Completed after final source/documentation assembly: 16 PHP syntax PASS; 3 JavaS
 - Archive: deterministically built by CI as `release/13-sabri-welcome-intro-animation-1.0.0.zip` and published in the `file-13-welcome-intro-1.0.0` artifact
 - ZIP root: `sabri-welcome-intro-13/`
 - Entries: 21
-- Bytes: 28,906
-- SHA-256: `590e7e2208e6efdeb7fc6ef37494339c8a608887605d0b450dee634c89bb3e8b`
+- Bytes: 84,044
+- SHA-256: `7c76061501b243c76c37f7ce3ed213f1cf3a9f7fef6c312c3b8de7fd6bd87088`
 
 ## Evidence boundary
 

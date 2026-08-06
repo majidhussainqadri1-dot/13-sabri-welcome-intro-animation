@@ -13,5 +13,6 @@ Corrections/confirmations:
 - Static checks assert no audio, remote runtime dependency, secret material or destructive default uninstall.
 - Deterministic ZIP uses the plan’s canonical `sabri-welcome-intro-13/` root and rejects unsafe paths.
 - Two independent package builds are byte-identical.
+- GitHub CI exposed a cross-zlib digest variance in deflated ZIP output; the deterministic builder now uses fixed-timestamp stored entries, eliminating runtime-compressor variance while preserving ZIP integrity.
 
 Round result: zero known unresolved source/package defects under the reviewed scope. New staging/browser/provider evidence reopens review if it exposes a defect.

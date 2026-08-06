@@ -11,6 +11,6 @@ Current local result:
 - Static contracts: 16 PASS, 0 FAIL.
 - Reproducible ZIP: PASS.
 - ZIP integrity/unsafe path review: PASS.
-- Final release SHA-256: `590e7e2208e6efdeb7fc6ef37494339c8a608887605d0b450dee634c89bb3e8b`.
+- Final release SHA-256: `7c76061501b243c76c37f7ce3ed213f1cf3a9f7fef6c312c3b8de7fd6bd87088`.
 
 GitHub Actions and staging are separate post-commit evidence gates.

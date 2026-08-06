@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "top_level_folder": "sabri-welcome-intro-13",
   "archive": "13-sabri-welcome-intro-animation-1.0.0.zip",
-  "sha256": "590e7e2208e6efdeb7fc6ef37494339c8a608887605d0b450dee634c89bb3e8b",
-  "bytes": 28906,
+  "sha256": "7c76061501b243c76c37f7ce3ed213f1cf3a9f7fef6c312c3b8de7fd6bd87088",
+  "bytes": 84044,
   "entries": 21,
   "files": [
     {
@@ -105,7 +105,7 @@
     {
       "path": "sabri-welcome-intro.php",
       "bytes": 1707,
-      "sha256": "06af4a09e335beb209574cf57cea3b1056a9c8e109f08aea9d2c15113d90b792"
+      "sha256": "06af4a09e335beb209574cf56cea3b1056a9c8e109f08aea9d2c15113d90b792"
     },
     {
       "path": "uninstall.php",
