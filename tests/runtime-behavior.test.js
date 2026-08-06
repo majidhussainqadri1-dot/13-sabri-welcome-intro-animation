@@ -1,176 +1,72 @@
 'use strict';
-
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const test = require('node:test');
 const vm = require('node:vm');
-
-const source = fs.readFileSync(
-  path.join(__dirname, '..', 'sabri-welcome-intro', 'assets', 'js', 'welcome-intro.js'),
-  'utf8'
-);
+const source = fs.readFileSync(path.join(__dirname, '..', 'sabri-welcome-intro', 'assets', 'js', 'welcome-intro.js'), 'utf8');
 
 function classList(initial = []) {
   const values = new Set(initial);
+  return { add(...v) { v.forEach((x) => values.add(x)); }, remove(...v) { v.forEach((x) => values.delete(x)); }, contains(v) { return values.has(v); }, values };
+}
+function storage(initial = {}, throws = false) {
+  const values = new Map(Object.entries(initial));
+  return { getItem(k) { if (throws) throw new Error('blocked'); return values.has(k) ? values.get(k) : null; }, setItem(k, v) { if (throws) throw new Error('blocked'); values.set(k, String(v)); }, values };
+}
+function element(tag, document) {
+  const attrs = new Map(); const listeners = new Map();
   return {
-    add(...names) { names.forEach((name) => values.add(name)); },
-    remove(...names) { names.forEach((name) => values.delete(name)); },
-    contains(name) { return values.has(name); },
-    values
+    tagName: tag, nodeType: 1, parentElement: null, children: [], isConnected: true, classList: classList(), listeners,
+    setAttribute(k, v) { attrs.set(k, String(v)); }, getAttribute(k) { return attrs.has(k) ? attrs.get(k) : null; }, hasAttribute(k) { return attrs.has(k); }, removeAttribute(k) { attrs.delete(k); },
+    addEventListener(k, fn) { listeners.set(k, fn); }, removeEventListener(k, fn) { if (listeners.get(k) === fn) listeners.delete(k); },
+    focus() { document.activeElement = this; this.focused = true; },
+    remove() { this.isConnected = false; if (this.parentElement) this.parentElement.children = this.parentElement.children.filter((c) => c !== this); }
   };
 }
-
-function element(tagName, documentRef) {
-  const attributes = new Map();
-  const listeners = new Map();
-  return {
-    tagName,
-    nodeType: 1,
-    classList: classList(),
-    children: [],
-    parentElement: null,
-    isConnected: true,
-    attributes,
-    listeners,
-    setAttribute(name, value) { attributes.set(name, String(value)); },
-    getAttribute(name) { return attributes.has(name) ? attributes.get(name) : null; },
-    hasAttribute(name) { return attributes.has(name); },
-    removeAttribute(name) { attributes.delete(name); },
-    addEventListener(name, callback) { listeners.set(name, callback); },
-    removeEventListener(name, callback) {
-      if (listeners.get(name) === callback) listeners.delete(name);
-    },
-    focus() { documentRef.activeElement = this; this.focused = true; },
-    remove() {
-      this.isConnected = false;
-      if (this.parentElement) {
-        this.parentElement.children = this.parentElement.children.filter((child) => child !== this);
-      }
-    }
-  };
-}
-
 function createRuntime(options = {}) {
-  const documentListeners = new Map();
-  const timers = new Map();
-  let nextTimer = 1;
-  let cookieValue = '';
-
+  const docListeners = new Map(); const events = []; const timers = new Map(); const fetches = [];
+  let timerId = 1; let cookie = options.cookie || '';
   const document = {
-    activeElement: null,
-    addEventListener(name, callback) { documentListeners.set(name, callback); },
-    removeEventListener(name, callback) {
-      if (documentListeners.get(name) === callback) documentListeners.delete(name);
-    }
+    activeElement: null, hidden: false,
+    addEventListener(k, fn) { docListeners.set(k, fn); }, removeEventListener(k, fn) { if (docListeners.get(k) === fn) docListeners.delete(k); },
+    dispatchEvent(e) { events.push(e); return true; }
   };
-
-  const root = element('HTML', document);
-  root.classList = classList(options.pending === false ? [] : ['swi-intro-pending']);
-  document.documentElement = root;
-
-  const body = element('BODY', document);
-  body.classList = classList();
-  body.parentElement = root;
-  root.children = [body];
-  document.body = body;
-
-  const previous = element('A', document);
-  previous.parentElement = body;
-  const intro = element('ASIDE', document);
-  intro.parentElement = body;
-  const skip = element('BUTTON', document);
-  skip.parentElement = intro;
-  intro.children = [skip];
-  body.children = [previous, intro];
-  document.activeElement = previous;
-
-  intro.setAttribute('data-cookie-name', 'sabri_welcome_seen');
-  intro.setAttribute('data-duration', '8000');
-  intro.setAttribute('data-reduced-duration', '1200');
-  intro.setAttribute('data-preview', options.preview ? '1' : '0');
-  intro.querySelector = (selector) => selector === '[data-swi-skip]' ? skip : null;
-
+  const root = element('HTML', document); const body = element('BODY', document); root.children = [body]; body.parentElement = root; document.documentElement = root; document.body = body;
+  const previous = element('A', document); const intro = element('ASIDE', document); const close = element('BUTTON', document); const cont = element('BUTTON', document); const skip = element('BUTTON', document);
+  previous.parentElement = body; intro.parentElement = body; close.parentElement = cont.parentElement = skip.parentElement = intro; intro.children = [close, cont, skip]; body.children = [previous, intro]; document.activeElement = previous;
+  intro.setAttribute('hidden', ''); intro.setAttribute('data-preview', options.preview ? '1' : '0'); intro.setAttribute('data-preview-state', options.previewState || 'default'); intro.setAttribute('data-frequency-days', String(options.frequency || 30)); intro.setAttribute('data-duration', '8000'); intro.setAttribute('data-reduced-duration', '900'); intro.setAttribute('data-config-version', '3'); intro.setAttribute('data-cookie-name', 'swi_seen_at_v1'); intro.setAttribute('data-session-key', 'swi_seen_session_v1'); intro.setAttribute('data-local-key', 'swi_seen_at_v1'); intro.setAttribute('data-claim-key', 'swi_claim_v1'); intro.setAttribute('data-rest-url', options.restUrl || ''); intro.setAttribute('data-rest-nonce', options.restNonce || ''); intro.setAttribute('data-event-nonce', options.eventNonce || ''); intro.setAttribute('data-analytics', options.analytics ? '1' : '0');
+  intro.querySelector = (q) => q === '[data-swi-close]' ? close : q === '[data-swi-continue]' ? cont : q === '[data-swi-skip]' ? skip : null;
   document.getElementById = (id) => id === 'swi-intro' ? intro : null;
-  Object.defineProperty(document, 'cookie', {
-    get() { return cookieValue; },
-    set(value) { cookieValue = value; }
-  });
-
+  Object.defineProperty(document, 'cookie', { get() { return cookie; }, set(v) { cookie = v; } });
+  const localStorage = storage(options.local || {}, options.storageThrows); const sessionStorage = storage(options.session || {}, options.storageThrows);
   const window = {
-    location: { protocol: 'https:' },
-    sessionStorage: { setItem() {} },
-    matchMedia: () => ({ matches: Boolean(options.reducedMotion) }),
-    getComputedStyle: () => options.cssCompleted
-      ? ({ visibility: 'hidden', pointerEvents: 'none', opacity: '0' })
-      : ({ visibility: 'visible', pointerEvents: 'auto', opacity: '1' }),
-    requestAnimationFrame(callback) { callback(); },
-    setTimeout(callback, delay) {
-      const id = nextTimer++;
-      timers.set(id, { callback, delay });
-      return id;
-    },
-    clearTimeout(id) { timers.delete(id); }
+    location: { protocol: 'https:' }, localStorage, sessionStorage,
+    matchMedia: () => ({ matches: Boolean(options.reduced) }),
+    getComputedStyle: () => ({ getPropertyValue: () => options.cssMissing ? '' : '1' }),
+    requestAnimationFrame(fn) { fn(); },
+    setTimeout(fn, delay) { const id = timerId++; timers.set(id, { fn, delay }); return id; }, clearTimeout(id) { timers.delete(id); },
+    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },
+    crypto: { getRandomValues(arr) { for (let i = 0; i < arr.length; i++) arr[i] = i + 1; return arr; } }
   };
-
-  vm.runInNewContext(source, { Boolean, document, window }, { filename: 'welcome-intro.js' });
-
-  return { document, documentListeners, timers, root, body, previous, intro, skip, cookie: () => cookieValue };
+  function CustomEvent(name, init) { this.type = name; this.detail = init.detail; }
+  vm.runInNewContext(source, { Array, Boolean, CustomEvent, Date, JSON, Math, Number, String, Uint32Array, decodeURIComponent, document, encodeURIComponent, parseInt, window }, { filename: 'welcome-intro.js' });
+  return { document, root, body, previous, intro, close, cont, skip, docListeners, events, timers, fetches, localStorage, sessionStorage, cookie: () => cookie };
 }
 
-test('runtime applies modal focus and background isolation', () => {
-  const runtime = createRuntime();
-  assert.equal(runtime.body.classList.contains('swi-intro-active'), true);
-  assert.equal(runtime.previous.getAttribute('inert'), '');
-  assert.equal(runtime.previous.getAttribute('aria-hidden'), 'true');
-  assert.equal(runtime.document.activeElement, runtime.skip);
-  assert.equal(runtime.documentListeners.has('keydown'), true);
-  assert.equal(runtime.intro.listeners.has('animationend'), true);
-  assert.match(runtime.cookie(), /^sabri_welcome_seen=1;/);
+test('first eligible visit reveals only after CSS readiness and claims the session', () => {
+  const r = createRuntime();
+  assert.equal(r.intro.hasAttribute('hidden'), false); assert.equal(r.body.classList.contains('swi-intro-active'), true); assert.equal(r.previous.getAttribute('inert'), ''); assert.equal(r.document.activeElement, r.cont); assert.equal(r.sessionStorage.values.get('swi_seen_session_v1'), '1'); assert.equal(r.events[0].type, 'swi:shown');
 });
-
-test('Tab is contained and Escape performs complete cleanup and focus restoration', () => {
-  const runtime = createRuntime();
-  let prevented = false;
-  const keydown = runtime.documentListeners.get('keydown');
-
-  keydown({ key: 'Tab', preventDefault() { prevented = true; } });
-  assert.equal(prevented, true);
-  assert.equal(runtime.document.activeElement, runtime.skip);
-
-  keydown({ key: 'Escape', preventDefault() { prevented = true; } });
-  const skipTimer = [...runtime.timers.values()].find((timer) => timer.delay === 260);
-  assert.ok(skipTimer, 'skip cleanup timer was not scheduled');
-  skipTimer.callback();
-
-  assert.equal(runtime.intro.isConnected, false);
-  assert.equal(runtime.body.classList.contains('swi-intro-active'), false);
-  assert.equal(runtime.root.classList.contains('swi-intro-pending'), false);
-  assert.equal(runtime.root.classList.contains('swi-intro-seen'), true);
-  assert.equal(runtime.previous.hasAttribute('inert'), false);
-  assert.equal(runtime.previous.hasAttribute('aria-hidden'), false);
-  assert.equal(runtime.document.activeElement, runtime.previous);
-  assert.equal(runtime.documentListeners.has('keydown'), false);
-});
-
-test('animationend is the authoritative normal completion signal', () => {
-  const runtime = createRuntime();
-  const animationEnd = runtime.intro.listeners.get('animationend');
-  animationEnd({ target: runtime.intro, animationName: 'unrelated' });
-  assert.equal(runtime.intro.isConnected, true);
-  animationEnd({ target: runtime.intro, animationName: 'swi-overlay-exit' });
-  assert.equal(runtime.intro.isConnected, false);
-});
-
-test('late runtime does not re-block the page after the CSS fail-safe completed', () => {
-  const runtime = createRuntime({ cssCompleted: true });
-  assert.equal(runtime.intro.isConnected, false);
-  assert.equal(runtime.body.classList.contains('swi-intro-active'), false);
-  assert.equal(runtime.previous.hasAttribute('inert'), false);
-});
-
-test('runtime fails open when bootstrap did not authorize display', () => {
-  const runtime = createRuntime({ pending: false });
-  assert.equal(runtime.intro.isConnected, false);
-  assert.equal(runtime.body.classList.contains('swi-intro-active'), false);
-});
+test('same session never renders again', () => { const r = createRuntime({ session: { swi_seen_session_v1: '1' } }); assert.equal(r.intro.isConnected, false); assert.equal(r.body.classList.contains('swi-intro-active'), false); });
+test('timestamp suppresses for at least 30 days', () => { const r = createRuntime({ local: { swi_seen_at_v1: String(Date.now() - 29 * 86400000) } }); assert.equal(r.intro.isConnected, false); });
+test('expired timestamp permits a new eligible visit', () => { const r = createRuntime({ local: { swi_seen_at_v1: String(Date.now() - 31 * 86400000) } }); assert.equal(r.intro.isConnected, true); assert.equal(r.intro.hasAttribute('hidden'), false); });
+test('CSS or storage failure cannot leave a blocking overlay', () => { const r = createRuntime({ cssMissing: true, storageThrows: true }); assert.equal(r.intro.isConnected, false); assert.equal(r.body.classList.contains('swi-intro-active'), false); assert.equal(r.events[0].type, 'swi:error'); });
+test('Continue persists timestamp, restores background and focus', () => { const r = createRuntime(); r.cont.listeners.get('click')(); const closeTimer = [...r.timers.values()].find((x) => x.delay === 220); assert.ok(closeTimer); closeTimer.fn(); assert.equal(r.intro.isConnected, false); assert.match(r.cookie(), /^swi_seen_at_v1=/); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1')) > 0); assert.equal(r.previous.hasAttribute('inert'), false); assert.equal(r.document.activeElement, r.previous); assert.equal(r.events.at(-1).type, 'swi:completed'); });
+test('Escape performs the skip journey', () => { const r = createRuntime(); let prevented = false; r.docListeners.get('keydown')({ key: 'Escape', preventDefault() { prevented = true; } }); assert.equal(prevented, true); const closeTimer = [...r.timers.values()].find((x) => x.delay === 220); closeTimer.fn(); assert.equal(r.events.at(-1).type, 'swi:skipped'); });
+test('focus trap wraps in both directions', () => { const r = createRuntime(); const key = r.docListeners.get('keydown'); r.skip.focus(); key({ key: 'Tab', shiftKey: false, preventDefault() {} }); assert.equal(r.document.activeElement, r.close); r.close.focus(); key({ key: 'Tab', shiftKey: true, preventDefault() {} }); assert.equal(r.document.activeElement, r.skip); });
+test('reduced motion uses short static path', () => { const r = createRuntime({ reduced: true }); assert.equal(r.intro.classList.contains('swi-reduced-motion'), true); const fallback = [...r.timers.values()].find((x) => x.delay === 900); assert.ok(fallback); });
+test('preview never changes public persistence', () => { const r = createRuntime({ preview: true }); r.cont.listeners.get('click')(); const t = [...r.timers.values()].find((x) => x.delay === 220); t.fn(); assert.equal(r.cookie(), ''); assert.equal(r.localStorage.values.has('swi_seen_at_v1'), false); });
+test('authenticated dismissal uses nonce and idempotent request body', () => { const r = createRuntime({ restUrl: '/wp-json/sabri-welcome-intro/v1', restNonce: 'nonce' }); r.skip.listeners.get('click')(); assert.equal(r.fetches.length, 1); assert.equal(r.fetches[0].url.endsWith('/dismiss'), true); assert.equal(r.fetches[0].init.headers['X-WP-Nonce'], 'nonce'); const body = JSON.parse(r.fetches[0].init.body); assert.equal(body.event, 'skipped'); assert.equal(body.config_version, 3); assert.ok(body.idempotency_key); });
+test('public analytics is opt-in and uses separate event nonce', () => { const r = createRuntime({ restUrl: '/wp-json/sabri-welcome-intro/v1', analytics: true, eventNonce: 'event' }); assert.equal(r.fetches[0].url.endsWith('/event'), true); assert.equal(r.fetches[0].init.headers['X-SWI-Nonce'], 'event'); });
+test('disabled/error preview is a visible fail-open test and does not mutate storage', () => { const r = createRuntime({ preview: true, previewState: 'error' }); assert.equal(r.intro.isConnected, false); assert.equal(r.events[0].type, 'swi:error'); assert.equal(r.localStorage.values.size, 0); });

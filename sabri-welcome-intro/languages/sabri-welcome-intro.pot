@@ -1,0 +1,227 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Sabri Welcome Intro Animation 1.0.0\n"
+"POT-Creation-Date: 2026-08-06 13:14+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/class-swi-admin.php:125
+msgid "Aggregate analytics"
+msgstr ""
+
+#: includes/class-swi-admin.php:119
+msgid "Brand claim"
+msgstr ""
+
+#: includes/class-swi-admin.php:118
+msgid "Brand name"
+msgstr ""
+
+#: includes/class-swi-admin.php:153
+msgid "Changed keys"
+msgstr ""
+
+#: includes/class-swi-renderer.php:118
+msgid "Close welcome intro"
+msgstr ""
+
+#: includes/class-swi-admin.php:108
+msgid "Configuration"
+msgstr ""
+
+#: includes/class-swi-privacy.php:44
+msgid "Configuration version"
+msgstr ""
+
+#: includes/class-swi-renderer.php:131
+msgid "Continue to Platform"
+msgstr ""
+
+#: includes/class-swi-admin.php:120
+msgid "Copy language"
+msgstr ""
+
+#: includes/class-swi-admin.php:125
+msgid "Count only shown/skipped/completed/error totals; no IP address, user agent or fingerprint."
+msgstr ""
+
+#: includes/class-swi-admin.php:139
+msgid "Default"
+msgstr ""
+
+#: includes/class-swi-admin.php:139
+msgid "Disabled"
+msgstr ""
+
+#: includes/class-swi-admin.php:121
+msgid "Eligible routes"
+msgstr ""
+
+#: includes/class-swi-admin.php:114
+msgid "Enable on eligible routes"
+msgstr ""
+
+#: includes/class-swi-admin.php:114
+msgid "Enabled"
+msgstr ""
+
+#: includes/class-swi-admin.php:124
+msgid "End (optional)"
+msgstr ""
+
+#: includes/class-swi-admin.php:153
+msgid "Event"
+msgstr ""
+
+#: includes/class-swi-admin.php:139
+msgid "Failure / fail-open"
+msgstr ""
+
+#: includes/class-swi-admin.php:103
+msgid "File 13 controls the accessible welcome experience. It is hidden by default, never blocks the underlying page on failure, and is suppressed for at least 30 days after dismissal."
+msgstr ""
+
+#: includes/class-swi-admin.php:115
+msgid "Frequency"
+msgstr ""
+
+#: includes/class-swi-rest.php:122
+msgid "Invalid event token."
+msgstr ""
+
+#: includes/class-swi-privacy.php:43
+msgid "Last dismissed at"
+msgstr ""
+
+#: includes/class-swi-privacy.php:78
+msgid "Last dismissed: %s UTC"
+msgstr ""
+
+#: includes/class-swi-admin.php:116
+msgid "Maximum duration"
+msgstr ""
+
+#: includes/class-swi-rest.php:127
+msgid "Missing event identifier."
+msgstr ""
+
+#: includes/class-swi-admin.php:154
+msgid "No audit records yet."
+msgstr ""
+
+#: includes/class-swi-admin.php:121
+msgid "One same-origin path per line. Safe default is only /. Use * only after explicit review."
+msgstr ""
+
+#: includes/class-swi-admin.php:137
+msgid "Preview is administrator-only, signed, noindex and does not alter public frequency state."
+msgstr ""
+
+#: includes/class-swi-admin.php:136
+msgid "Preview states"
+msgstr ""
+
+#: includes/class-swi-admin.php:152
+msgid "Recent configuration audit"
+msgstr ""
+
+#: includes/class-swi-admin.php:139
+msgid "Reduced motion"
+msgstr ""
+
+#: includes/class-swi-admin.php:117
+msgid "Reduced-motion duration"
+msgstr ""
+
+#: includes/class-swi-admin.php:131
+msgid "Restore Safe Defaults"
+msgstr ""
+
+#: includes/class-swi-admin.php:37
+msgid "Restore the safe default Welcome Intro settings?"
+msgstr ""
+
+#: includes/class-swi-admin.php:23 includes/class-swi-admin.php:24 includes/class-swi-admin.php:102 includes/class-swi-privacy.php:17 includes/class-swi-privacy.php:25 includes/class-swi-privacy.php:40 includes/class-swi-privacy.php:73
+msgid "Sabri Welcome Intro"
+msgstr ""
+
+#: includes/class-swi-renderer.php:123
+msgid "Sabri circular SH logo"
+msgstr ""
+
+#: includes/class-swi-admin.php:41
+msgid "Settings"
+msgstr ""
+
+#: includes/class-swi-admin.php:104
+msgid "Settings saved."
+msgstr ""
+
+#: includes/class-swi-admin.php:104
+msgid "Settings were not saved: %s"
+msgstr ""
+
+#: includes/class-swi-privacy.php:77
+msgid "Show the intro again on the next eligible visit"
+msgstr ""
+
+#: includes/class-swi-renderer.php:135
+msgid "Skip Intro"
+msgstr ""
+
+#: includes/class-swi-admin.php:139
+msgid "Skipped"
+msgstr ""
+
+#: includes/class-swi-admin.php:123
+msgid "Start (optional)"
+msgstr ""
+
+#: includes/class-swi-admin.php:122
+msgid "Suppressed route prefixes"
+msgstr ""
+
+#: includes/class-swi-admin.php:144
+msgid "System check"
+msgstr ""
+
+#: includes/class-swi-config.php:131
+msgid "The settings changed in another session. Reload and try again."
+msgstr ""
+
+#: includes/class-swi-config.php:137
+msgid "The settings could not be saved."
+msgstr ""
+
+#: includes/class-swi-rest.php:91
+msgid "This event cannot change the welcome preference."
+msgstr ""
+
+#: includes/class-swi-admin.php:153
+msgid "Time (UTC)"
+msgstr ""
+
+#: includes/class-swi-rest.php:86
+msgid "Too many requests. Try again shortly."
+msgstr ""
+
+#: includes/class-swi-admin.php:153
+msgid "Version"
+msgstr ""
+
+#: includes/class-swi-privacy.php:75
+msgid "Welcome intro preference"
+msgstr ""
+
+#: includes/class-swi-renderer.php:127
+msgid "Welcome. Continue to enter the platform or skip this introduction. Press Escape to close."
+msgstr ""
+
+#: includes/class-swi-admin.php:47 includes/class-swi-admin.php:74
+msgid "You are not allowed to manage these settings."
+msgstr ""
+
+#: includes/class-swi-admin.php:115
+msgid "days minimum"
+msgstr ""

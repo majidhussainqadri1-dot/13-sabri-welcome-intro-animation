@@ -1,32 +1,40 @@
-# File 13 Status
-
-## Controlled branches
-
-| Branch | Purpose | Status |
-|---|---|---|
-| `main` | Repository initialization only | Not a release |
-| `baseline/file-13-original-import` | Immutable Version 0.1.1 source baseline | Draft PR #1; unmerged |
-| `audit/file-13-source-review` | Corrective Version 0.2.0 | Draft PR #2; source corrected; staging pending |
-
-## Corrective findings disposition
-
-| Finding | Source disposition |
-|---|---|
-| F13-01 indefinite blocking overlay | Corrected: hidden-by-default bootstrap and CSS-only bounded exit |
-| F13-02 incomplete modal lifecycle | Corrected: initial focus, Tab containment, inert background, exact restoration, focus restoration |
-| F13-03 wrong logo geometry/palette | Corrected: circular path-based SH roundel, separator, strong boundary, `#FF8A1F` |
-| F13-04 public preview bypass | Corrected: administrator capability + nonce + redirect cleanup + no-cache/noindex |
-| F13-05 late session claim/multi-tab weakness | Corrected in source: immediate cookie/session claim and short-lived cross-tab claim |
-| F13-06 cache/delayed-script flash/block risk | Corrected architecturally: inline no-optimize bootstrap, hidden default, CSS fail-safe, late-runtime guard; real LiteSpeed staging test remains |
-| F13-07 persistent keydown listener | Corrected: named listener and complete teardown |
-| F13-08 fade/removal race | Corrected: `animationend` authority plus bounded cleanup fallback |
-| F13-09 40px touch target | Corrected: minimum 44 × 44 CSS pixels |
-| F13-10 stale Founder identity | Corrected: approved full spelling in metadata/documentation |
-| F13-11 syntax-only CI | Corrected: executable behavior, contract, smoke, security, compatibility, and reproducible-package tests |
-| F13-12 public repository governance | **Manual repository-setting action remains required unless the Founder formally authorizes public release** |
+# File 13 Status — 1.0.0
 
 ## Current verdict
 
-**SOURCE CORRECTED — GITHUB CORRECTIVE CI GREEN — HOSTINGER STAGING REQUIRED — DO NOT MERGE OR DEPLOY**
+**SOURCE IMPLEMENTATION COMPLETE — LOCAL AUTOMATED QA GREEN — DETERMINISTIC PACKAGE COMPLETE — HOSTINGER STAGING AND FOUNDER ACCEPTANCE REQUIRED BEFORE MERGE/DEPLOYMENT**
 
-GitHub Actions run `30485906440` passed every corrective step on commit `9ea9e1b45b2f8b505ba11b893977c936e4bdb22d`, including PHP 7.4 compatibility, deterministic behavior tests, security invariants, reproducible packaging, and corrected checksums.
+## Completed in this corrective release
+
+- All 15 File 13 functional requirements have concrete implementation and test/document evidence.
+- All 10 non-functional requirements have source controls, automated evidence, or an explicit staging acceptance gate where a real environment is indispensable.
+- The superseding 30-day frequency directive replaced the obsolete session-only behavior.
+- Green became the primary brand color; orange remains a contextual motion cue.
+- File 00, 20, 24 and 25 integration points are versioned and fail safely.
+- Admin configuration, signed preview route, optimistic concurrency, audit, privacy export/erasure, health status, kill switches, migration and non-destructive uninstall are present.
+- Installable ZIP is deterministically generated and published by GitHub Actions; its SHA-256, source ledger, manifest, SBOM, test suites and runbooks are committed.
+
+## Automated evidence
+
+- PHP syntax: all plugin and test PHP files pass.
+- PHP contract assertions: `61/61` pass.
+- JavaScript syntax: all JavaScript files pass.
+- JavaScript runtime tests: `13/13` pass.
+- Static security/privacy/architecture contracts: `16/16` pass.
+- Deterministic package rebuild: byte-identical.
+- ZIP traversal/integrity: pass.
+- Source checksum ledger: pass after final generation.
+
+## External acceptance gates
+
+- real WordPress 7.0.1 / PHP 8.3 activation and upgrade on Hostinger-equivalent staging;
+- active theme `wp_body_open`/footer behavior and exact File 20 slot integration;
+- LiteSpeed cache variants and cache purge behavior;
+- real File 00 account preference and File 24 safe-mode adapters;
+- File 25 visual-token and responsive/RTL regression acceptance;
+- Chrome, Firefox, Safari and Edge; mobile and desktop; keyboard, screen reader, zoom and reduced motion;
+- backup restoration and rollback rehearsal;
+- Founder copy/logo/visual acceptance;
+- controlled live deployment and monitoring window.
+
+No production-complete claim is made until those gates are evidenced.

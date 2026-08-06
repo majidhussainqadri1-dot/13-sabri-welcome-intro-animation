@@ -1,61 +1,63 @@
-# 13 — Sabri Welcome Intro Animation
+# File 13 — Sabri Welcome Intro Animation
 
-Corrective source repository for **File 13** of the **Sabri Social Homeopathy Platform**.
+Production-oriented WordPress source for the Sabri Social Homeopathy Platform welcome experience.
 
-## Current corrective candidate
+## Release candidate
 
-- Plugin: `Sabri Welcome Intro Animation`
-- Corrective version: `0.2.0`
-- Historical baseline: `0.1.1`
-- Baseline branch: `baseline/file-13-original-import`
-- Corrective branch: `audit/file-13-source-review`
-- Status: **source defects corrected; staging acceptance still mandatory**
+- Plugin version: `1.0.0`
+- Schema version: `1.0.0`
+- Canonical installable ZIP is deterministically built by CI as `release/13-sabri-welcome-intro-animation-1.0.0.zip` and published as the `file-13-welcome-intro-1.0.0` workflow artifact
+- ZIP root: `sabri-welcome-intro-13/`
+- WordPress text domain: `sabri-welcome-intro`
+- PHP: `7.4+`
+- Target project baseline: WordPress `7.0.1`, PHP `8.3`
 
-The plugin presents the approved eight-second Sabri Homeopathy welcome sequence once per browser session. It includes the circular SH roundel, the `Sabri Homeopathy` name, the approved Tridimensional Healing claim, the bright-orange line, Skip/Escape controls, a short reduced-motion experience, and fail-open behavior when JavaScript is delayed or unavailable.
+## Governing behavior
 
-## Corrective security and accessibility architecture
+- Appears only on the first eligible visit.
+- Never appears again in the same browser session.
+- Continue, Skip, Close, Escape, or normal completion suppress the experience for at least 30 days.
+- Logged-in account timestamp is preferred; first-party timestamp cookie and local storage provide a guest/failure fallback.
+- Login, registration, account, support, appointment-task, clinical, emergency, checkout, cart, admin, REST, feed and embed requests are suppressed by default.
+- Overlay markup is hidden by default. Missing JavaScript, CSS, storage or network support cannot block the underlying page.
+- Maximum normal duration is eight seconds. Reduced motion is static/short and has no hidden long timer.
+- Primary visual identity is green; orange is a contextual motion accent. File 25 tokens override local fallbacks.
+- No audio, remote runtime dependency, fingerprinting or personal analytics.
 
-Version `0.2.0`:
+## Administration
 
-- hides the overlay by default and exposes it only after the early session bootstrap authorizes display;
-- includes a CSS-only bounded exit, so a failed or delayed runtime cannot leave the website blocked;
-- claims the session immediately, with session-storage fallback and short-lived cross-tab coordination;
-- requires an authenticated administrator, `manage_options`, and a valid WordPress nonce for previews;
-- removes unauthorized preview parameters and excludes authorized previews from caches and indexing;
-- moves initial focus into the dialog, contains Tab navigation, makes the background inert, restores original attributes, and restores prior focus;
-- completes through `animationend` with a bounded timer fallback and cleans up every listener and timer;
-- uses a minimum 44 by 44 CSS-pixel Skip target;
-- implements the approved circular, path-based SH logo without font-dependent SVG text.
+`Settings → Sabri Welcome Intro` provides:
 
-## Deterministic evidence
+- enable/disable kill switch;
+- 30–365 day frequency fallback;
+- maximum and reduced-motion durations;
+- approved brand copy and language;
+- eligible routes and suppressed prefixes;
+- optional schedule;
+- optional aggregate-only analytics;
+- signed administrator preview states;
+- system check and bounded audit evidence.
 
-- Corrected plugin files: `11`
-- PHP files: `6`
-- JavaScript files: `2`
-- CSS files: `1`
-- Corrected plugin bytes: `27,183`
-- Corrected source-tree SHA-256: `5e48eb5a295c53185ca45d7fabd3f36af7ff347a7ec1f1833828714c45a3bb42`
-- Corrected ZIP: `release/13-sabri-welcome-intro-animation-0.2.0.zip`
-- Corrected ZIP bytes: `11,932`
-- Corrected ZIP SHA-256: `a59aaab80d89a41cfa57c9bdff64a392ae8874e2c3b03161bd62020f845c07b1`
+## Cross-file contracts
 
-## Validation
+- File 00: `swi_manage_capability` and native capability checks.
+- File 20: `sabri_shell_module_registry`, `sabri_shell_welcome_intro`, `swi_runtime_config`, route/suppression filters.
+- File 24: `SABRI_PLATFORM_SAFE_MODE`, `swi_force_disabled`, `sabri_platform_safe_mode`.
+- File 25: `--sabri-color-*` visual tokens and RTL/accessibility presentation.
 
-The corrective workflow performs:
+See `docs/CONTRACTS.md` and `docs/REQUIREMENTS-TRACEABILITY.md`.
 
-1. JavaScript syntax checks.
-2. Executable bootstrap session tests.
-3. Executable dialog lifecycle tests.
-4. Deterministic source-contract tests.
-5. PHP lint and plugin-load/activation smoke tests.
-6. Declared PHP 7.4 compatibility lint/smoke testing.
-7. Static security and accessibility invariants.
-8. Two-build byte-reproducibility verification.
-9. ZIP integrity and release checksum verification.
-10. Corrected source checksum verification.
+## Local verification
 
-## Release boundary
+```bash
+php tests/php-contract-tests.php
+node --test tests/runtime-behavior.test.js
+bash tests/static-contracts.sh
+python3 tests/reproducible-package.test.py
+python3 tools/build-release.py
+sha256sum --check CHECKSUMS-1.0.0.sha256
+```
 
-Green source CI is not production acceptance. Do not merge to `main` or deploy live until `STAGING-ACCEPTANCE.md` is completed on Hostinger staging, including LiteSpeed delayed-script tests, real WordPress preview authorization, keyboard/accessibility checks, responsive browser review, File 20/theme integration, backup restoration, rollback, and Founder visual approval.
+## Status law
 
-The repository visibility remains a separate governance action because repository-setting mutation is not part of the available source-correction interface. See `GOVERNANCE-NOTICE.md`.
+Source, automated QA and deterministic packaging are independently verifiable in this repository. Hostinger staging, active-theme/File 20/File 25 integration, real browser/assistive-technology acceptance, backup restoration, Founder visual acceptance, production deployment and operational monitoring remain separate evidence gates and must not be inferred from source completion.

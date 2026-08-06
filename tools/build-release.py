@@ -1,44 +1,26 @@
 #!/usr/bin/env python3
-"""Build a byte-reproducible File 13 WordPress plugin ZIP."""
-
-from __future__ import annotations
-
-import hashlib
-import pathlib
-import sys
-import zipfile
-
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-PLUGIN_DIR = ROOT / "sabri-welcome-intro"
-RELEASE_DIR = ROOT / "release"
-OUTPUT = RELEASE_DIR / "13-sabri-welcome-intro-animation-0.2.0.zip"
-FIXED_TIME = (2026, 7, 30, 0, 0, 0)
-
-
-def build(output: pathlib.Path) -> str:
-    output.parent.mkdir(parents=True, exist_ok=True)
-    files = sorted(path for path in PLUGIN_DIR.rglob("*") if path.is_file())
-
-    with zipfile.ZipFile(output, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
-        for source in files:
-            relative = source.relative_to(ROOT).as_posix()
-            info = zipfile.ZipInfo(relative, FIXED_TIME)
-            info.compress_type = zipfile.ZIP_DEFLATED
-            info.create_system = 3
-            info.external_attr = (0o100644 & 0xFFFF) << 16
-            archive.writestr(info, source.read_bytes(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
-
-    digest = hashlib.sha256(output.read_bytes()).hexdigest()
-    return digest
-
-
-def main() -> int:
-    digest = build(OUTPUT)
-    checksum_path = RELEASE_DIR / "SHA256SUMS"
-    checksum_path.write_text(f"{digest}  {OUTPUT.name}\n", encoding="utf-8")
-    print(f"{digest}  {OUTPUT}")
-    return 0
-
-
-if __name__ == "__main__":
-    sys.exit(main())
+from pathlib import Path
+from zipfile import ZipFile, ZipInfo, ZIP_DEFLATED
+import hashlib, json, sys
+root = Path(__file__).resolve().parents[1]
+source = root / 'sabri-welcome-intro'
+outdir = root / 'release'; outdir.mkdir(exist_ok=True)
+out = outdir / '13-sabri-welcome-intro-animation-1.0.0.zip'
+top = 'sabri-welcome-intro-13'
+files = sorted(p for p in source.rglob('*') if p.is_file() and '__pycache__' not in p.parts)
+with ZipFile(out, 'w', compression=ZIP_DEFLATED, compresslevel=9) as z:
+    for p in files:
+        rel = p.relative_to(source).as_posix()
+        info = ZipInfo(f'{top}/{rel}', (1980, 1, 1, 0, 0, 0))
+        info.compress_type = ZIP_DEFLATED
+        info.external_attr = 0o100644 << 16
+        z.writestr(info, p.read_bytes(), compress_type=ZIP_DEFLATED, compresslevel=9)
+digest = hashlib.sha256(out.read_bytes()).hexdigest()
+(outdir / 'SHA256SUMS').write_text(f'{digest}  {out.name}\n', encoding='utf-8')
+manifest = {
+    'plugin': 'Sabri Welcome Intro Animation', 'version': '1.0.0', 'top_level_folder': top,
+    'archive': out.name, 'sha256': digest, 'bytes': out.stat().st_size, 'entries': len(files),
+    'files': [{'path': p.relative_to(source).as_posix(), 'bytes': p.stat().st_size, 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()} for p in files],
+}
+(root / 'MANIFEST-1.0.0.json').write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + '\n', encoding='utf-8')
+print(json.dumps({k: manifest[k] for k in ('archive','sha256','bytes','entries','top_level_folder')}, indent=2))

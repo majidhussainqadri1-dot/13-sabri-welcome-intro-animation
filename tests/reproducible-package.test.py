@@ -1,40 +1,17 @@
 #!/usr/bin/env python3
-from __future__ import annotations
-
-import hashlib
-import pathlib
-import tempfile
-import zipfile
-import importlib.util
-import sys
-
-sys.dont_write_bytecode = True
-
-ROOT = pathlib.Path(__file__).resolve().parents[1]
-MODULE_PATH = ROOT / "tools" / "build-release.py"
-spec = importlib.util.spec_from_file_location("build_release", MODULE_PATH)
-module = importlib.util.module_from_spec(spec)
-assert spec.loader is not None
-spec.loader.exec_module(module)
-
-digest = None
-
-with tempfile.TemporaryDirectory() as directory:
-    first = pathlib.Path(directory) / "first.zip"
-    second = pathlib.Path(directory) / "second.zip"
-    first_digest = module.build(first)
-    second_digest = module.build(second)
-
-    assert first.read_bytes() == second.read_bytes(), "release ZIP is not byte reproducible"
-    assert first_digest == second_digest
-
-    with zipfile.ZipFile(first) as archive:
-        assert archive.testzip() is None
-        names = archive.namelist()
-        assert names
-        assert all(name.startswith("sabri-welcome-intro/") for name in names)
-        assert "sabri-welcome-intro/sabri-welcome-intro.php" in names
-    digest = hashlib.sha256(first.read_bytes()).hexdigest()
-
-assert digest is not None
-print(digest)
+from pathlib import Path
+import hashlib, subprocess, tempfile, shutil, zipfile
+root = Path(__file__).resolve().parents[1]
+subprocess.run(['python3', str(root/'tools/build-release.py')], check=True, stdout=subprocess.DEVNULL)
+archive = root/'release/13-sabri-welcome-intro-animation-1.0.0.zip'
+first = hashlib.sha256(archive.read_bytes()).hexdigest()
+with tempfile.TemporaryDirectory() as d:
+    saved = Path(d)/'first.zip'; shutil.copy2(archive, saved)
+    subprocess.run(['python3', str(root/'tools/build-release.py')], check=True, stdout=subprocess.DEVNULL)
+    second = hashlib.sha256(archive.read_bytes()).hexdigest()
+    assert first == second, (first, second)
+    with zipfile.ZipFile(archive) as z:
+        names = z.namelist(); assert names and all(n.startswith('sabri-welcome-intro-13/') for n in names)
+        assert not any('..' in Path(n).parts or n.startswith('/') for n in names)
+        assert 'sabri-welcome-intro-13/sabri-welcome-intro.php' in names
+print(f'REPRODUCIBLE PACKAGE: PASS {first}')

@@ -1,4 +1,6 @@
-__pycache__/
-*.py[cod]
 .DS_Store
 Thumbs.db
+__pycache__/
+*.pyc
+*.log
+release/*.zip

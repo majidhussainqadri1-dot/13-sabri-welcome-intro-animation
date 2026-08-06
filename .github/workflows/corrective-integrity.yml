@@ -1,48 +1,44 @@
-name: Corrective Integrity
-
+name: File 13 Complete Integrity
 on:
   pull_request:
   push:
-    branches:
-      - audit/file-13-source-review
-
+    branches: [audit/file-13-source-review]
 permissions:
   contents: read
-
 jobs:
   verify:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
-      - name: Check out repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-
-      - name: Check JavaScript syntax
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+      - name: PHP syntax and behavior tests
         run: |
-          find sabri-welcome-intro -type f -name '*.js' -print0 | xargs -0 -n1 node --check
-          find tests -type f -name '*.js' -print0 | xargs -0 -n1 node --check
-
-      - name: Run deterministic JavaScript behavior and contract tests
-        run: node --test tests/*.test.js
-
-      - name: Lint and smoke-test PHP on runner
+          find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
+          php tests/php-contract-tests.php
+      - name: Declared PHP 7.4 compatibility
+        run: docker run --rm -v "$PWD:/workspace" -w /workspace php:7.4-cli sh -lc "find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l && php tests/php-contract-tests.php"
+      - name: JavaScript syntax and runtime behavior
         run: |
-          find sabri-welcome-intro -type f -name '*.php' -print0 | xargs -0 -n1 php -l
-          php -d zend.assertions=1 -d assert.exception=1 tests/php-load-smoke.php
-
-      - name: Verify declared PHP 7.4 compatibility
-        run: |
-          docker run --rm -v "$PWD:/workspace" -w /workspace php:7.4-cli sh -lc "find sabri-welcome-intro -type f -name '*.php' -print0 | xargs -0 -n1 php -l && php -d zend.assertions=1 -d assert.exception=1 tests/php-load-smoke.php"
-
-      - name: Run static security invariants
-        run: bash tests/static-security.sh
-
-      - name: Verify reproducible package
+          find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+          node --test tests/runtime-behavior.test.js
+      - name: Security, privacy and architecture contracts
+        run: bash tests/static-contracts.sh
+      - name: Reproducible package and archive safety
         run: |
           python3 tests/reproducible-package.test.py
           python3 tools/build-release.py
           (cd release && sha256sum --check SHA256SUMS)
-          unzip -t release/13-sabri-welcome-intro-animation-0.2.0.zip
-
-      - name: Verify committed corrected source checksums
-        run: sha256sum --check CHECKSUMS-CORRECTED.sha256
+          unzip -t release/13-sabri-welcome-intro-animation-1.0.0.zip
+      - name: Source and evidence integrity
+        run: sha256sum --check CHECKSUMS-1.0.0.sha256
+      - name: Publish installable release artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: file-13-welcome-intro-1.0.0
+          path: |
+            release/13-sabri-welcome-intro-animation-1.0.0.zip
+            release/SHA256SUMS
+            MANIFEST-1.0.0.json
+            SBOM.spdx.json
+          if-no-files-found: error
+          retention-days: 90

@@ -1,0 +1,116 @@
+{
+  "plugin": "Sabri Welcome Intro Animation",
+  "version": "1.0.0",
+  "top_level_folder": "sabri-welcome-intro-13",
+  "archive": "13-sabri-welcome-intro-animation-1.0.0.zip",
+  "sha256": "590e7e2208e6efdeb7fc6ef37494339c8a608887605d0b450dee634c89bb3e8b",
+  "bytes": 28906,
+  "entries": 21,
+  "files": [
+    {
+      "path": "assets/css/admin.css",
+      "bytes": 557,
+      "sha256": "a7c5aa009e579b3078c496a93eb143cc0b8fc6d1c5177fb8ba95310f01209930"
+    },
+    {
+      "path": "assets/css/welcome-intro.css",
+      "bytes": 6807,
+      "sha256": "d0d87b9e3891b139b5eca79f80c06faed8183d63f9823a3011eba8988efc6296"
+    },
+    {
+      "path": "assets/images/sabri-sh-logo.svg",
+      "bytes": 879,
+      "sha256": "1150526b1bf135d518f1ac9d979485101afccdc71e9ce44ef23a7db4f2f668d6"
+    },
+    {
+      "path": "assets/js/admin.js",
+      "bytes": 336,
+      "sha256": "5d381534f62a34f31434686940bdf749f96489ea36330fe6acb57546daa96e3a"
+    },
+    {
+      "path": "assets/js/welcome-intro.js",
+      "bytes": 10739,
+      "sha256": "8ff888471fdb2df57330bf5dbf2b40b2120427b60888eed4f9602d65f7dba6e2"
+    },
+    {
+      "path": "includes/class-swi-activator.php",
+      "bytes": 1649,
+      "sha256": "c5788b4721cec53ece0ab5b0df3ace26c5506ed027d6cfce559528c217eb6048"
+    },
+    {
+      "path": "includes/class-swi-admin.php",
+      "bytes": 12841,
+      "sha256": "a57b459999c530b8d6cffcc810f121d598e289e3384598f2539bfe259881b412"
+    },
+    {
+      "path": "includes/class-swi-analytics.php",
+      "bytes": 1495,
+      "sha256": "e13fea23937cefa3d491f94378be19935b8d1033cad65b49c44a58175d055cbf"
+    },
+    {
+      "path": "includes/class-swi-config.php",
+      "bytes": 9317,
+      "sha256": "c2517fee3491f55d640dcc8c60b9b8bd74ceb99dcd6daab59db0ad2c7427e168"
+    },
+    {
+      "path": "includes/class-swi-contracts.php",
+      "bytes": 654,
+      "sha256": "7128f46d6a8ab5d4318169e16529d51cf63ae4f4a6adacf937a395c779751aa7"
+    },
+    {
+      "path": "includes/class-swi-eligibility.php",
+      "bytes": 4799,
+      "sha256": "932b35814d38c78c0cc03b148e598d436eca604ef4886cf3f6aa8bad1057c602"
+    },
+    {
+      "path": "includes/class-swi-plugin.php",
+      "bytes": 705,
+      "sha256": "51f8b86c47ffa299711668451c8e251c196907b101636f14a0100df4eb894ecc"
+    },
+    {
+      "path": "includes/class-swi-privacy.php",
+      "bytes": 3820,
+      "sha256": "42aee5e15f4ae03e371bc5c4595cdb6fc49f7b683244d92a7814ba6eeb1d44d1"
+    },
+    {
+      "path": "includes/class-swi-renderer.php",
+      "bytes": 8257,
+      "sha256": "d9a0f8443c63f46e53221aa534b72591127236d3d877086fa6a204ba406f66a8"
+    },
+    {
+      "path": "includes/class-swi-rest.php",
+      "bytes": 5104,
+      "sha256": "fb66e4575ca5fc80c0f3bb1ce1aaa61e5b4d1b616779921d0431b6f2ab784a5a"
+    },
+    {
+      "path": "includes/class-swi-system-check.php",
+      "bytes": 1309,
+      "sha256": "c56d2fa1f2a7ad68fac577dfeeac280aefb3b4342386e045bd16a2bd962521f2"
+    },
+    {
+      "path": "includes/functions.php",
+      "bytes": 1683,
+      "sha256": "14a164317a2e11523400c40d6320175d69921619aa4eec73afec37da251c0c7a"
+    },
+    {
+      "path": "languages/sabri-welcome-intro.pot",
+      "bytes": 5083,
+      "sha256": "fe9becf9da9b98ce66d9660f54f57332f4873ebbfa7a89ebce05dfd0cec92f4d"
+    },
+    {
+      "path": "readme.txt",
+      "bytes": 2004,
+      "sha256": "d8bb74d5d32826b49f31308b6f454d30de71b5df0a2239384fb453c0492513a9"
+    },
+    {
+      "path": "sabri-welcome-intro.php",
+      "bytes": 1707,
+      "sha256": "06af4a09e335beb209574cf57cea3b1056a9c8e109f08aea9d2c15113d90b792"
+    },
+    {
+      "path": "uninstall.php",
+      "bytes": 589,
+      "sha256": "a5e460c20c3a3c74f52938bfd783e2330c1d75f4ef6d8e5de7bcb2652679adaf"
+    }
+  ]
+}

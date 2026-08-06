@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+root="$(cd "$(dirname "$0")/.." && pwd)"
+plugin="$root/sabri-welcome-intro"
+pass=0
+check() { if eval "$2"; then printf 'PASS: %s\n' "$1"; pass=$((pass+1)); else printf 'FAIL: %s\n' "$1"; exit 1; fi; }
+check 'plugin declares version 1.0.0' "grep -q \"Version: 1.0.0\" '$plugin/sabri-welcome-intro.php'"
+check '30-day minimum exists in server contract' "grep -q \"max( 30\" '$plugin/includes/class-swi-config.php'"
+check 'guest timestamp cookie uses SameSite Lax' "grep -q \"SameSite=Lax\" '$plugin/assets/js/welcome-intro.js'"
+check 'overlay is hidden by default' "grep -qE '^[[:space:]]*hidden$' '$plugin/includes/class-swi-renderer.php' && grep -q '\\.swi-intro\\[hidden\\]' '$plugin/assets/css/welcome-intro.css'"
+check 'primary identity is green with contextual orange' "grep -qi '#087a3e' '$plugin/assets/css/welcome-intro.css' && grep -qi '#ff8a1f' '$plugin/assets/css/welcome-intro.css'"
+check 'SVG is path based and has no text element' "grep -q '<path' '$plugin/assets/images/sabri-sh-logo.svg' && ! grep -q '<text' '$plugin/assets/images/sabri-sh-logo.svg'"
+check 'no autoplay sound or audio element exists' "! grep -RniE '<audio|Audio\\(|autoplay.*sound' '$plugin' --include='*.php' --include='*.js'"
+check 'no remote runtime scripts or styles exist' "! grep -RniE 'wp_enqueue_(script|style).*https?://' '$plugin' --include='*.php'"
+check 'admin writes require capability and nonce' "grep -q \"swi_current_user_can_manage()\" '$plugin/includes/class-swi-admin.php' && grep -q \"check_admin_referer\" '$plugin/includes/class-swi-admin.php'"
+check 'preview is signed and noindex' "grep -q \"wp_verify_nonce\" '$plugin/includes/class-swi-renderer.php' && grep -q \"noindex\" '$plugin/includes/class-swi-renderer.php'"
+check 'kill-switch contracts exist' "grep -q \"SABRI_PLATFORM_SAFE_MODE\" '$plugin/includes/class-swi-eligibility.php' && grep -q \"swi_force_disabled\" '$plugin/includes/class-swi-eligibility.php'"
+check 'File 20 registry and slot contracts exist' "grep -q \"sabri_shell_module_registry\" '$plugin/includes/class-swi-contracts.php' && grep -q \"sabri_shell_welcome_intro\" '$plugin/includes/class-swi-contracts.php'"
+check 'File 25 token fallbacks are consumed' "grep -q -- \"--sabri-color-primary\" '$plugin/assets/css/welcome-intro.css'"
+check 'privacy export and erasure are registered' "grep -q \"wp_privacy_personal_data_exporters\" '$plugin/includes/class-swi-privacy.php' && grep -q \"wp_privacy_personal_data_erasers\" '$plugin/includes/class-swi-privacy.php'"
+check 'uninstall is non-destructive by default' "grep -q \"SWI_PURGE_ON_UNINSTALL\" '$plugin/uninstall.php'"
+check 'no private or secret material is present' "! grep -RniE '(BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|api[_-]?key[[:space:]]*=[[:space:]]*[A-Za-z0-9]{16,}|password[[:space:]]*=[[:space:]]*[^[:space:]]+)' '$root' --exclude-dir=release"
+printf 'STATIC CONTRACTS: %d passed, 0 failed\n' "$pass"
