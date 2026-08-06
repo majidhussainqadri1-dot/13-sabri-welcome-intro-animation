@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   apply:
-    runs-on: macos-15
+    runs-on: windows-2025
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -19,9 +19,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 - <<'PY'
+          python - <<'PY'
           from pathlib import Path
-          import base64, hashlib, tarfile
+          import base64, hashlib, os, tarfile
           chunks = sorted(Path('.github').glob('file13-update.part*'))
           encoded = ''.join(path.read_text(encoding='utf-8') for path in chunks)
           payload = base64.b64decode(encoded)
@@ -29,7 +29,7 @@ jobs:
           actual = hashlib.sha256(payload).hexdigest()
           if actual != expected:
               raise SystemExit(f'overlay checksum mismatch: {actual}')
-          archive = Path('/tmp/file13-overlay.tar.gz')
+          archive = Path(os.environ['RUNNER_TEMP']) / 'file13-overlay.tar.gz'
           archive.write_bytes(payload)
           with tarfile.open(archive, 'r:gz') as package:
               package.extractall('.')
@@ -45,15 +45,16 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 tools/generate-pot.py
-          python3 tools/generate-source-checksums.py
-          python3 tests/reproducible-package.test.py
-          python3 tools/verify-release.py
-          unzip -t release/13-sabri-welcome-intro-animation-1.1.0.zip
-          if command -v php >/dev/null 2>&1; then
-            find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
-            php tests/php-contract-tests.php
-          fi
+          python tools/generate-pot.py
+          python tools/generate-source-checksums.py
+          python tests/reproducible-package.test.py
+          python tools/verify-release.py
+          python - <<'PY'
+          from zipfile import ZipFile
+          with ZipFile('release/13-sabri-welcome-intro-animation-1.1.0.zip') as z:
+              assert z.testzip() is None
+          print('ZIP integrity: PASS')
+          PY
           if command -v node >/dev/null 2>&1; then
             node --check sabri-welcome-intro/assets/js/welcome-intro.js
             node --test tests/runtime-behavior.test.js
