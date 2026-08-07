@@ -1,1 +1,0 @@
-Temporary owner-authored CI trigger for the finalized forty-round source. This file will be removed after the exact-head integrity run is observed.
