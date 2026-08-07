@@ -15,12 +15,13 @@ jobs:
         run: |
           find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
           php tests/php-contract-tests.php
+          php tests/forty-round-regressions.php
       - name: Declared PHP 7.4 compatibility
-        run: docker run --rm -v "$PWD:/workspace" -w /workspace php:7.4-cli sh -lc "find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l && php tests/php-contract-tests.php"
+        run: docker run --rm -v "$PWD:/workspace" -w /workspace php:7.4-cli sh -lc "find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l && php tests/php-contract-tests.php && php tests/forty-round-regressions.php"
       - name: JavaScript syntax and runtime behavior
         run: |
           find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
-          node --test tests/runtime-behavior.test.js
+          node --test tests/runtime-behavior.test.js tests/forty-round-runtime.test.js tests/forty-round-static.test.js
       - name: Security, privacy and architecture contracts
         run: bash tests/static-contracts.sh
       - name: Reproducible package and archive safety
@@ -31,32 +32,17 @@ jobs:
           (cd release && sha256sum --check SHA256SUMS)
           unzip -t release/13-sabri-welcome-intro-animation-1.0.0.zip
       - name: Source and evidence integrity
-        shell: bash
-        run: |
-          set +e
-          failed=0
-          while read -r expected file; do
-            [ -n "$file" ] || continue
-            if [ ! -f "$file" ]; then
-              echo "::error file=$file::Checksum ledger file is missing"
-              failed=1
-              continue
-            fi
-            actual="$(sha256sum "$file" | awk '{print $1}')"
-            if [ "$actual" != "$expected" ]; then
-              echo "::error file=$file::Checksum mismatch: expected $expected, got $actual"
-              failed=1
-            fi
-          done < CHECKSUMS-1.0.0.sha256
-          exit "$failed"
+        run: python3 tools/generate-checksums.py --check
       - name: Publish installable release artifact
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: file-13-welcome-intro-1.0.0
+          name: file-13-welcome-intro-1.0.0-forty-round
           path: |
             release/13-sabri-welcome-intro-animation-1.0.0.zip
             release/SHA256SUMS
             MANIFEST-1.0.0.json
             SBOM.spdx.json
+            FORTY-ROUND-QA-EVIDENCE.md
+            docs/FORTY-ROUND-REVIEW-2026-08-07.md
           if-no-files-found: error
           retention-days: 90
