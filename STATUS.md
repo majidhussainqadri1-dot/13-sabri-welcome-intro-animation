@@ -1,26 +1,40 @@
-# File 13 Status
+# File 13 Status — 1.0.0
 
-## Current candidate
+## Current verdict
 
-- Branch: `audit/file-13-source-review`
-- Plugin version: `1.0.0`
-- Review rounds completed: `40/40`
-- Defect-bearing rounds corrected and retested: `18`
-- Clean rounds: `22`
-- Known unresolved repository source/package blockers: `0`
+**SOURCE IMPLEMENTATION COMPLETE — LOCAL AUTOMATED QA GREEN — DETERMINISTIC PACKAGE COMPLETE — HOSTINGER STAGING AND FOUNDER ACCEPTANCE REQUIRED BEFORE MERGE/DEPLOYMENT**
 
-## Exact-head automated evidence
+## Completed in this corrective release
 
-- PHP contract assertions: `61/61`
-- Forty-round PHP regression assertions: `9/9`
-- The same `70/70` assertions pass on declared PHP `7.4`
-- Node runtime/static tests: `28/28`
-- Static security/privacy/architecture contracts: `16/16`
-- Deterministic release package: pass
-- Source/evidence checksum ledger: pass
-- Release ZIP SHA-256: `139cca1f849e54debd268c876f105f808ca785851a798ad87c5f76f0030d4f09`
-- Release ZIP: `87,178` bytes, `21` entries, canonical top folder `sabri-welcome-intro-13`
+- All 15 File 13 functional requirements have concrete implementation and test/document evidence.
+- All 10 non-functional requirements have source controls, automated evidence, or an explicit staging acceptance gate where a real environment is indispensable.
+- The superseding 30-day frequency directive replaced the obsolete session-only behavior.
+- Green became the primary brand color; orange remains a contextual motion cue.
+- File 00, 20, 24 and 25 integration points are versioned and fail safely.
+- Admin configuration, signed preview route, optimistic concurrency, audit, privacy export/erasure, health status, kill switches, migration and non-destructive uninstall are present.
+- Installable ZIP is deterministically generated and published by GitHub Actions; its SHA-256, source ledger, manifest, SBOM, test suites and runbooks are committed.
 
-## Status boundary
+## Automated evidence
 
-Repository source implementation, automated QA and deterministic packaging are complete for the reviewed scope. Hostinger-equivalent staging, deployed File 00/20/24/25 integration, real browser and assistive-technology acceptance, LiteSpeed cache behavior, backup restore and rollback rehearsal, Founder visual acceptance, production deployment and operational monitoring remain separate mandatory evidence gates.
+- PHP syntax: all plugin and test PHP files pass.
+- PHP contract assertions: `61/61` pass.
+- JavaScript syntax: all JavaScript files pass.
+- JavaScript runtime tests: `13/13` pass.
+- Static security/privacy/architecture contracts: `16/16` pass.
+- Deterministic package rebuild: byte-identical.
+- ZIP traversal/integrity: pass.
+- Source checksum ledger: pass after final generation.
+
+## External acceptance gates
+
+- real WordPress 7.0.1 / PHP 8.3 activation and upgrade on Hostinger-equivalent staging;
+- active theme `wp_body_open`/footer behavior and exact File 20 slot integration;
+- LiteSpeed cache variants and cache purge behavior;
+- real File 00 account preference and File 24 safe-mode adapters;
+- File 25 visual-token and responsive/RTL regression acceptance;
+- Chrome, Firefox, Safari and Edge; mobile and desktop; keyboard, screen reader, zoom and reduced motion;
+- backup restoration and rollback rehearsal;
+- Founder copy/logo/visual acceptance;
+- controlled live deployment and monitoring window.
+
+No production-complete claim is made until those gates are evidenced.
