@@ -159,7 +159,15 @@ final class SWI_Admin {
 	}
 
 	private function datetime_local( $value ) {
-		$timestamp = $value ? strtotime( $value ) : false;
-		return false === $timestamp ? '' : gmdate( 'Y-m-d\TH:i', $timestamp );
+		if ( ! $value ) {
+			return '';
+		}
+		try {
+			$date = new DateTimeImmutable( (string) $value );
+			$timezone = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+			return $date->setTimezone( $timezone )->format( 'Y-m-d\TH:i' );
+		} catch ( Exception $exception ) {
+			return '';
+		}
 	}
 }

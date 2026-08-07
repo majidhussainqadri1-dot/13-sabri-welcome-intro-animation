@@ -71,7 +71,11 @@ final class SWI_Config {
 			return $config;
 		}
 
-		return self::sanitize( array_merge( $config, $filtered ), false );
+		$runtime = self::sanitize( array_merge( $config, $filtered ), false );
+		foreach ( array( 'config_version', 'updated_at', 'updated_by' ) as $governed_key ) {
+			$runtime[ $governed_key ] = $config[ $governed_key ];
+		}
+		return $runtime;
 	}
 
 	/**
@@ -249,7 +253,22 @@ final class SWI_Config {
 		if ( '' === $value ) {
 			return '';
 		}
-		$timestamp = strtotime( $value );
-		return false === $timestamp ? '' : gmdate( 'c', $timestamp );
+
+		try {
+			$site_timezone = function_exists( 'wp_timezone' ) ? wp_timezone() : new DateTimeZone( 'UTC' );
+			$utc_timezone  = new DateTimeZone( 'UTC' );
+			if ( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/', $value ) ) {
+				$date = DateTimeImmutable::createFromFormat( '!Y-m-d\TH:i', $value, $site_timezone );
+				$errors = DateTimeImmutable::getLastErrors();
+				if ( false === $date || ( is_array( $errors ) && ( $errors['warning_count'] > 0 || $errors['error_count'] > 0 ) ) ) {
+					return '';
+				}
+			} else {
+				$date = new DateTimeImmutable( $value, $site_timezone );
+			}
+			return $date->setTimezone( $utc_timezone )->format( DATE_ATOM );
+		} catch ( Exception $exception ) {
+			return '';
+		}
 	}
 }

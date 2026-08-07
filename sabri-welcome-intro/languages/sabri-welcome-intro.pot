@@ -22,7 +22,7 @@ msgstr ""
 msgid "Changed keys"
 msgstr ""
 
-#: includes/class-swi-renderer.php:118
+#: includes/class-swi-renderer.php:120
 msgid "Close welcome intro"
 msgstr ""
 
@@ -34,7 +34,7 @@ msgstr ""
 msgid "Configuration version"
 msgstr ""
 
-#: includes/class-swi-renderer.php:131
+#: includes/class-swi-renderer.php:133
 msgid "Continue to Platform"
 msgstr ""
 
@@ -86,7 +86,7 @@ msgstr ""
 msgid "Frequency"
 msgstr ""
 
-#: includes/class-swi-rest.php:122
+#: includes/class-swi-rest.php:129
 msgid "Invalid event token."
 msgstr ""
 
@@ -102,7 +102,7 @@ msgstr ""
 msgid "Maximum duration"
 msgstr ""
 
-#: includes/class-swi-rest.php:127
+#: includes/class-swi-rest.php:100 includes/class-swi-rest.php:137
 msgid "Missing event identifier."
 msgstr ""
 
@@ -146,7 +146,7 @@ msgstr ""
 msgid "Sabri Welcome Intro"
 msgstr ""
 
-#: includes/class-swi-renderer.php:123
+#: includes/class-swi-renderer.php:125
 msgid "Sabri circular SH logo"
 msgstr ""
 
@@ -166,7 +166,7 @@ msgstr ""
 msgid "Show the intro again on the next eligible visit"
 msgstr ""
 
-#: includes/class-swi-renderer.php:135
+#: includes/class-swi-renderer.php:137
 msgid "Skip Intro"
 msgstr ""
 
@@ -186,15 +186,15 @@ msgstr ""
 msgid "System check"
 msgstr ""
 
-#: includes/class-swi-config.php:131
+#: includes/class-swi-config.php:135
 msgid "The settings changed in another session. Reload and try again."
 msgstr ""
 
-#: includes/class-swi-config.php:137
+#: includes/class-swi-config.php:141
 msgid "The settings could not be saved."
 msgstr ""
 
-#: includes/class-swi-rest.php:91
+#: includes/class-swi-rest.php:95
 msgid "This event cannot change the welcome preference."
 msgstr ""
 
@@ -202,7 +202,7 @@ msgstr ""
 msgid "Time (UTC)"
 msgstr ""
 
-#: includes/class-swi-rest.php:86
+#: includes/class-swi-rest.php:90 includes/class-swi-rest.php:132
 msgid "Too many requests. Try again shortly."
 msgstr ""
 
@@ -214,7 +214,7 @@ msgstr ""
 msgid "Welcome intro preference"
 msgstr ""
 
-#: includes/class-swi-renderer.php:127
+#: includes/class-swi-renderer.php:129
 msgid "Welcome. Continue to enter the platform or skip this introduction. Press Escape to close."
 msgstr ""
 

@@ -52,7 +52,7 @@ body.swi-intro-active { overflow: hidden !important; }
 .swi-icon-button svg { block-size: 22px; fill: currentColor; inline-size: 22px; }
 .swi-content { align-items: center; display: flex; flex-direction: column; isolation: isolate; max-inline-size: 960px; position: relative; text-align: center; inline-size: 100%; }
 .swi-logo { animation: swi-logo-in 1.25s cubic-bezier(.22,1,.36,1) .45s both; block-size: clamp(108px, 15vw, 166px); filter: drop-shadow(0 18px 30px rgb(8 80 45 / 15%)); inline-size: clamp(108px, 15vw, 166px); margin-block-end: clamp(20px, 4vh, 34px); opacity: 0; }
-.swi-brand-name { animation: swi-title-in 1.4s cubic-bezier(.22,1,.36,1) 1.5s both; color: var(--swi-primary-strong); direction: ltr; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(2rem, 6.8vw, 4.5rem); font-weight: 780; letter-spacing: -.035em; line-height: 1.12; margin: 0; max-inline-size: 20ch; opacity: 0; text-wrap: balance; }
+.swi-brand-name { animation: swi-title-in 1.4s cubic-bezier(.22,1,.36,1) 1.5s both; color: var(--swi-primary-strong); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(2rem, 6.8vw, 4.5rem); font-weight: 780; letter-spacing: -.035em; line-height: 1.12; margin: 0; max-inline-size: 20ch; opacity: 0; text-wrap: balance; }
 .swi-brand-claim { animation: swi-claim-in 1.7s cubic-bezier(.22,1,.36,1) 2.8s both; color: #29483e; color: color-mix(in srgb, var(--swi-ink) 88%, white); font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: clamp(1rem, 2.4vw, 1.42rem); font-weight: 530; line-height: 1.55; margin-block: clamp(14px, 2.5vh, 24px) 0; max-inline-size: 780px; opacity: 0; text-wrap: balance; }
 .swi-line-track { block-size: 4px; inline-size: min(82vw, 760px); margin-block-start: clamp(22px, 3.5vh, 36px); max-inline-size: 760px; overflow: hidden; position: relative; }
 .swi-line { animation: swi-line-draw 2s cubic-bezier(.22,1,.36,1) 4.2s both; background: linear-gradient(90deg, var(--swi-primary), var(--swi-accent)); border-radius: 999px; box-shadow: 0 0 14px rgb(255 138 31 / 60%); box-shadow: 0 0 14px color-mix(in srgb, var(--swi-accent) 60%, transparent); display: block; block-size: 100%; inline-size: 100%; transform: scaleX(0); transform-origin: 0 50%; }
@@ -63,7 +63,7 @@ body.swi-intro-active { overflow: hidden !important; }
 .swi-button-secondary { background: #fff; border-color: rgb(18 48 38 / 22%); border-color: color-mix(in srgb, var(--swi-ink) 22%, transparent); color: var(--swi-ink); }
 .swi-button:hover, .swi-icon-button:hover { filter: brightness(.97); transform: translateY(-1px); }
 .swi-button:focus-visible, .swi-icon-button:focus-visible, .swi-intro:focus-visible { outline: 3px solid var(--swi-focus); outline-offset: 3px; }
-.swi-is-closing { animation: none !important; opacity: 0; pointer-events: none; transition: opacity 200ms ease; visibility: hidden; }
+.swi-is-closing { animation: none !important; opacity: 0; pointer-events: none; transition: opacity 200ms ease; }
 .swi-visually-hidden { block-size: 1px; clip: rect(0 0 0 0); clip-path: inset(50%); inline-size: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; white-space: nowrap; }
 @keyframes swi-logo-in { from { opacity: 0; transform: scale(.84) translateY(12px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 @keyframes swi-title-in { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
@@ -77,6 +77,8 @@ body.swi-intro-active { overflow: hidden !important; }
   .swi-button { inline-size: 100%; }
 }
 [dir="rtl"] .swi-line { transform-origin: 100% 50%; }
+[dir="rtl"] .swi-controls { inset-inline-end: max(16px, env(safe-area-inset-left)); }
+[dir="rtl"] .swi-button-primary svg { transform: scaleX(-1); }
 @media (prefers-reduced-motion: reduce) {
   .swi-intro, .swi-ambient, .swi-logo, .swi-brand-name, .swi-brand-claim, .swi-line { animation: none !important; opacity: 1; transform: none; }
   .swi-button, .swi-icon-button, .swi-is-closing { transition: none !important; }

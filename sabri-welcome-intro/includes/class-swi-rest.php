@@ -76,6 +76,10 @@ final class SWI_REST {
 				'sanitize_callback' => static function ( $value ) {
 					return substr( preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $value ), 0, 64 );
 				},
+				'validate_callback' => static function ( $value ) {
+					$clean = substr( preg_replace( '/[^A-Za-z0-9_-]/', '', (string) $value ), 0, 64 );
+					return '' !== $clean;
+				},
 			),
 		);
 	}
@@ -92,7 +96,10 @@ final class SWI_REST {
 		}
 		$version = absint( $request->get_param( 'config_version' ) );
 		$key     = (string) $request->get_param( 'idempotency_key' );
-		if ( '' !== $key && get_transient( 'swi_dismiss_' . md5( $user_id . '|' . $key ) ) ) {
+		if ( '' === $key ) {
+			return new WP_Error( 'swi_missing_idempotency', __( 'Missing event identifier.', 'sabri-welcome-intro' ), array( 'status' => 400 ) );
+		}
+		if ( get_transient( 'swi_dismiss_' . md5( $user_id . '|' . $key ) ) ) {
 			return rest_ensure_response( array( 'ok' => true, 'duplicate' => true ) );
 		}
 
@@ -120,6 +127,9 @@ final class SWI_REST {
 		$nonce = $request->get_header( 'X-SWI-Nonce' );
 		if ( ! is_string( $nonce ) || ! wp_verify_nonce( $nonce, 'swi_public_event' ) ) {
 			return new WP_Error( 'swi_invalid_nonce', __( 'Invalid event token.', 'sabri-welcome-intro' ), array( 'status' => 403 ) );
+		}
+		if ( $this->rate_limited( 'event', 'global', 300, MINUTE_IN_SECONDS ) ) {
+			return new WP_Error( 'swi_rate_limited', __( 'Too many requests. Try again shortly.', 'sabri-welcome-intro' ), array( 'status' => 429 ) );
 		}
 
 		$key = (string) $request->get_param( 'idempotency_key' );

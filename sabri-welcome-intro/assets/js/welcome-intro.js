@@ -18,6 +18,7 @@
   var restNonce = intro.getAttribute('data-rest-nonce') || '';
   var eventNonce = intro.getAttribute('data-event-nonce') || '';
   var analytics = intro.getAttribute('data-analytics') === '1';
+  var accountAuthoritative = intro.getAttribute('data-account-authoritative') === '1';
   var now = Date.now();
   var closed = false;
   var timer = 0;
@@ -61,6 +62,7 @@
   function recentlySeen() {
     if (preview) return false;
     if (safeGet(window.sessionStorage, sessionKey) === '1') return true;
+    if (accountAuthoritative) return false;
     var cutoff = now - frequencyDays * 86400000;
     var local = validTimestamp(safeGet(window.localStorage, localKey));
     var cookie = validTimestamp(readCookie(cookieName));
@@ -102,7 +104,7 @@
     if (!restUrl || preview) return;
     var body = JSON.stringify({ event: eventName, config_version: configVersion, idempotency_key: eventId() });
     var headers = { 'Content-Type': 'application/json' };
-    if (restNonce && path === '/dismiss') headers['X-WP-Nonce'] = restNonce;
+    if (restNonce) headers['X-WP-Nonce'] = restNonce;
     if (eventNonce && path === '/event') headers['X-SWI-Nonce'] = eventNonce;
     try {
       if (window.fetch) {
@@ -190,34 +192,43 @@
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   }
   function failOpen(reason) {
+    window.clearTimeout(timer); window.clearTimeout(skipTimer);
+    removeListeners();
+    document.body.classList.remove('swi-intro-active');
+    restoreBackground();
     emit('error', { reason: reason, configVersion: configVersion, preview: preview });
     if (analytics) record('error', false);
     if (intro.isConnected) intro.remove();
+    restoreFocus();
   }
 
-  if (previewState === 'disabled' || previewState === 'error') { failOpen('preview_' + previewState); return; }
-  if (!preview && (recentlySeen() || anotherTabClaimed())) { intro.remove(); return; }
-  if (!cssReady()) { failOpen('css_unavailable'); return; }
+  try {
+    if (previewState === 'disabled' || previewState === 'error') { failOpen('preview_' + previewState); return; }
+    if (!preview && (recentlySeen() || anotherTabClaimed())) { intro.remove(); return; }
+    if (!cssReady()) { failOpen('css_unavailable'); return; }
 
-  if (previewState === 'reduced') reduceMotion = true;
-  if (reduceMotion) { intro.classList.add('swi-reduced-motion'); duration = reducedDuration; }
-  if (previewState === 'skipped') { intro.removeAttribute('hidden'); window.setTimeout(skipIntro, 120); return; }
+    if (previewState === 'reduced') reduceMotion = true;
+    if (reduceMotion) { intro.classList.add('swi-reduced-motion'); duration = reducedDuration; }
+    if (previewState === 'skipped') { intro.removeAttribute('hidden'); window.setTimeout(skipIntro, 120); return; }
 
-  claim();
-  intro.removeAttribute('hidden');
-  document.body.classList.add('swi-intro-active');
-  setBackgroundInert();
-  if (closeButton) closeButton.addEventListener('click', closeIntroButton);
-  if (continueButton) continueButton.addEventListener('click', continueIntro);
-  if (skipButton) skipButton.addEventListener('click', skipIntro);
-  document.addEventListener('keydown', onKeydown, true);
-  document.addEventListener('visibilitychange', onVisibilityChange);
-  intro.addEventListener('animationend', onAnimationEnd);
-  emit('shown', { configVersion: configVersion, preview: preview });
-  if (analytics) record('shown', false);
-  window.requestAnimationFrame(function () {
-    var target = continueButton || skipButton || closeButton || intro;
-    try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
-  });
-  timer = window.setTimeout(function () { close('completed', false); }, duration);
+    claim();
+    intro.removeAttribute('hidden');
+    document.body.classList.add('swi-intro-active');
+    setBackgroundInert();
+    if (closeButton) closeButton.addEventListener('click', closeIntroButton);
+    if (continueButton) continueButton.addEventListener('click', continueIntro);
+    if (skipButton) skipButton.addEventListener('click', skipIntro);
+    document.addEventListener('keydown', onKeydown, true);
+    document.addEventListener('visibilitychange', onVisibilityChange);
+    intro.addEventListener('animationend', onAnimationEnd);
+    emit('shown', { configVersion: configVersion, preview: preview });
+    if (analytics) record('shown', false);
+    window.requestAnimationFrame(function () {
+      var target = continueButton || skipButton || closeButton || intro;
+      try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
+    });
+    timer = window.setTimeout(function () { close('completed', false); }, duration);
+  } catch (error) {
+    failOpen('runtime_exception');
+  }
 }());

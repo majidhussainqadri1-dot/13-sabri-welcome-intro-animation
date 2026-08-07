@@ -16,6 +16,10 @@ final class SWI_Activator {
 
 	public static function deactivate() {
 		SWI_Config::record_audit( 'plugin_deactivated', array(), (int) SWI_Config::get()['config_version'] );
+		global $wp_rewrite;
+		if ( is_object( $wp_rewrite ) && isset( $wp_rewrite->extra_rules_top['^welcome-intro-preview/?$'] ) ) {
+			unset( $wp_rewrite->extra_rules_top['^welcome-intro-preview/?$'] );
+		}
 		if ( function_exists( 'flush_rewrite_rules' ) ) {
 			flush_rewrite_rules( false );
 		}

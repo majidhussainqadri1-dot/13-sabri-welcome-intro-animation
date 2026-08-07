@@ -12,6 +12,9 @@ final class SWI_System_Check {
 			'js'   => is_readable( SWI_DIR . 'assets/js/welcome-intro.js' ),
 			'logo' => is_readable( SWI_DIR . 'assets/images/sabri-sh-logo.svg' ),
 		);
+		$shell_version = (string) apply_filters( 'swi_shell_contract_version', '' );
+		$visual_version = (string) apply_filters( 'swi_visual_contract_version', '' );
+		$assurance_version = (string) apply_filters( 'swi_assurance_contract_version', '' );
 		return array(
 			'plugin_version'    => SWI_VERSION,
 			'schema_version'    => (string) get_option( SWI_Config::OPTION_SCHEMA, '' ),
@@ -23,8 +26,12 @@ final class SWI_System_Check {
 			'suppressed_routes' => count( (array) $config['suppressed_prefixes'] ),
 			'analytics_enabled' => ! empty( $config['analytics_enabled'] ),
 			'assets'            => $assets,
-			'shell_registry'    => has_filter( 'sabri_shell_module_registry' ),
-			'shell_slot'        => has_action( 'sabri_shell_welcome_intro' ),
+			'shell_registry_callback' => false !== has_filter( 'sabri_shell_module_registry' ),
+			'shell_slot_callback'     => false !== has_action( 'sabri_shell_welcome_intro' ),
+			'shell_contract_version'  => $shell_version,
+			'visual_contract_version' => $visual_version,
+			'assurance_contract_version' => $assurance_version,
+			'integration_status' => '' !== $shell_version ? 'connected' : 'fallback',
 			'status'            => in_array( false, $assets, true ) ? 'degraded' : 'healthy',
 		);
 	}

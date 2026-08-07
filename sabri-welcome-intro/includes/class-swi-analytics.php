@@ -35,8 +35,12 @@ final class SWI_Analytics {
 
 		ksort( $metrics );
 		$metrics = array_slice( $metrics, -90, null, true );
-		update_option( SWI_Config::OPTION_METRICS, $metrics, false );
-		return true;
+		$updated = update_option( SWI_Config::OPTION_METRICS, $metrics, false );
+		if ( $updated ) {
+			return true;
+		}
+		$persisted = get_option( SWI_Config::OPTION_METRICS, array() );
+		return is_array( $persisted ) && $persisted === $metrics;
 	}
 
 	/** @return array<string,mixed> */

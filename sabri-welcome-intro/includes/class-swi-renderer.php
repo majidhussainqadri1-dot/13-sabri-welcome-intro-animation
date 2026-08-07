@@ -111,8 +111,9 @@ final class SWI_Renderer {
 			data-preview-state="<?php echo esc_attr( $state ); ?>"
 			data-rest-url="<?php echo esc_url( $rest_url ); ?>"
 			data-rest-nonce="<?php echo esc_attr( is_user_logged_in() ? wp_create_nonce( 'wp_rest' ) : '' ); ?>"
-			data-event-nonce="<?php echo esc_attr( wp_create_nonce( 'swi_public_event' ) ); ?>"
+			data-event-nonce="<?php echo esc_attr( empty( $config['analytics_enabled'] ) ? '' : wp_create_nonce( 'swi_public_event' ) ); ?>"
 			data-analytics="<?php echo esc_attr( empty( $config['analytics_enabled'] ) ? '0' : '1' ); ?>"
+			data-account-authoritative="<?php echo esc_attr( is_user_logged_in() ? '1' : '0' ); ?>"
 		>
 			<div class="swi-ambient" aria-hidden="true"></div>
 			<div class="swi-controls">
@@ -122,8 +123,8 @@ final class SWI_Renderer {
 			</div>
 			<div class="swi-content">
 				<img class="swi-logo" src="<?php echo esc_url( SWI_URL . 'assets/images/sabri-sh-logo.svg' ); ?>" width="160" height="160" alt="<?php esc_attr_e( 'Sabri circular SH logo', 'sabri-welcome-intro' ); ?>" decoding="async">
-				<p id="swi-brand-name" class="swi-brand-name" lang="<?php echo esc_attr( $config['brand_language'] ); ?>"><?php echo esc_html( $config['brand_name'] ); ?></p>
-				<p id="swi-brand-claim" class="swi-brand-claim" lang="<?php echo esc_attr( $config['brand_language'] ); ?>"><?php echo esc_html( $config['brand_claim'] ); ?></p>
+				<p id="swi-brand-name" class="swi-brand-name" lang="<?php echo esc_attr( $config['brand_language'] ); ?>" dir="auto"><?php echo esc_html( $config['brand_name'] ); ?></p>
+				<p id="swi-brand-claim" class="swi-brand-claim" lang="<?php echo esc_attr( $config['brand_language'] ); ?>" dir="auto"><?php echo esc_html( $config['brand_claim'] ); ?></p>
 				<div class="swi-line-track" aria-hidden="true"><span class="swi-line"></span></div>
 				<p id="swi-screenreader-note" class="swi-visually-hidden"><?php esc_html_e( 'Welcome. Continue to enter the platform or skip this introduction. Press Escape to close.', 'sabri-welcome-intro' ); ?></p>
 				<div class="swi-actions">
