@@ -35,7 +35,7 @@ function makeElement(tagName, document, throwOnAdd = false) {
   };
 }
 function runtime(options = {}) {
-  const documentListeners = new Map(); const events = []; const fetches = []; const timers = new Map(); let nextTimer = 1; let cookie = '';
+  const documentListeners = new Map(); const events = []; const fetches = []; const timers = new Map(); const windowListeners = new Map(); let nextTimer = 1; let cookie = '';
   const document = {
     activeElement: null,
     addEventListener(key, fn) { documentListeners.set(key, fn); },
@@ -50,7 +50,7 @@ function runtime(options = {}) {
     hidden: '', 'data-preview': '0', 'data-preview-state': 'default', 'data-frequency-days': '30', 'data-duration': '8000', 'data-reduced-duration': '900',
     'data-config-version': '3', 'data-cookie-name': 'swi_seen_at_v1', 'data-session-key': 'swi_seen_session_v1', 'data-local-key': 'swi_seen_at_v1',
     'data-claim-key': 'swi_claim_v1', 'data-rest-url': options.restUrl || '', 'data-rest-nonce': options.restNonce || '', 'data-event-nonce': options.eventNonce || '',
-    'data-analytics': options.analytics ? '1' : '0', 'data-account-authoritative': options.accountAuthoritative ? '1' : '0'
+    'data-analytics': options.analytics ? '1' : '0', 'data-account-authoritative': options.accountAuthoritative ? '1' : '0', 'data-user-id': String(options.userId || 0)
   };
   Object.entries(attributes).forEach(([key, value]) => intro.setAttribute(key, value));
   intro.querySelector = (query) => query === '[data-swi-close]' ? close : query === '[data-swi-continue]' ? cont : query === '[data-swi-skip]' ? skip : null;
@@ -61,6 +61,7 @@ function runtime(options = {}) {
     location: { protocol: 'https:' }, localStorage, sessionStorage,
     matchMedia() { return { matches: false }; }, getComputedStyle() { return { getPropertyValue() { return '1'; } }; }, requestAnimationFrame(fn) { fn(); },
     setTimeout(fn, delay) { const id = nextTimer++; timers.set(id, { fn, delay }); return id; }, clearTimeout(id) { timers.delete(id); },
+    addEventListener(key, fn) { windowListeners.set(key, fn); }, removeEventListener(key, fn) { if (windowListeners.get(key) === fn) windowListeners.delete(key); },
     fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },
     crypto: { getRandomValues(array) { for (let i = 0; i < array.length; i += 1) array[i] = i + 1; return array; } }
   };
@@ -70,14 +71,14 @@ function runtime(options = {}) {
 }
 
 test('account-authoritative eligible response ignores stale guest timestamp', () => {
-  const r = runtime({ accountAuthoritative: true, local: { swi_seen_at_v1: String(Date.now()) } });
+  const r = runtime({ accountAuthoritative: true, userId: 5, local: { swi_seen_at_v1: String(Date.now()) } });
   assert.equal(r.intro.isConnected, true);
   assert.equal(r.intro.hasAttribute('hidden'), false);
   assert.equal(r.sessionStorage.values.get('swi_seen_session_v1'), '1');
 });
 
 test('same-session claim still suppresses account-authoritative response', () => {
-  const r = runtime({ accountAuthoritative: true, session: { swi_seen_session_v1: '1' } });
+  const r = runtime({ accountAuthoritative: true, userId: 5, session: { swi_seen_session_v1: '1' } });
   assert.equal(r.intro.isConnected, false);
 });
 
@@ -90,9 +91,9 @@ test('unexpected activation exception restores an unblocked page', () => {
 });
 
 test('logged-in aggregate event sends both REST and event nonces', () => {
-  const r = runtime({ restUrl: '/wp-json/sabri-welcome-intro/v1', restNonce: 'rest', eventNonce: 'event', analytics: true });
-  assert.equal(r.fetches.length, 1);
-  assert.equal(r.fetches[0].url.endsWith('/event'), true);
-  assert.equal(r.fetches[0].init.headers['X-WP-Nonce'], 'rest');
-  assert.equal(r.fetches[0].init.headers['X-SWI-Nonce'], 'event');
+  const r = runtime({ restUrl: '/wp-json/sabri-welcome-intro/v1', restNonce: 'rest', eventNonce: 'event', analytics: true, accountAuthoritative: true, userId: 5 });
+  const eventRequests = r.fetches.filter((request) => request.url.endsWith('/event'));
+  assert.ok(eventRequests.length >= 1);
+  assert.equal(eventRequests[0].init.headers['X-WP-Nonce'], 'rest');
+  assert.equal(eventRequests[0].init.headers['X-SWI-Nonce'], 'event');
 });
