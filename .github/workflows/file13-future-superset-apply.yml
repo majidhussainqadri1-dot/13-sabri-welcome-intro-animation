@@ -52,6 +52,11 @@ jobs:
           if old not in text:
               raise SystemExit('runtime harness window anchor missing')
           text = text.replace(old, new, 1)
+          old = "test('Continue persists timestamp, restores background and focus',()=>{ const r=run(); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0); assert.equal(r.main.getAttribute('aria-hidden'),null); assert.equal(r.inert.value,false); assert.equal(r.prev.focused,true); });"
+          new = "test('Continue persists timestamp, restores background and focus',()=>{ const r=run({accountAuthoritative:'0',userId:'0'}); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0); assert.equal(r.main.getAttribute('aria-hidden'),null); assert.equal(r.inert.value,false); assert.equal(r.prev.focused,true); });"
+          if old not in text:
+              raise SystemExit('guest persistence assertion anchor missing')
+          text = text.replace(old, new, 1)
           old = "assert.equal(r.intro.classList.contains('swi-reduced-motion'), true);"
           new = "assert.equal(r.intro.classList.contains('swi-variant-static'), true);"
           if old not in text:
