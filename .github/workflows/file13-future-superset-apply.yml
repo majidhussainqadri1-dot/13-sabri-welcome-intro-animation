@@ -61,10 +61,16 @@ jobs:
           php tests/forty-round-regressions.php
           php tests/governance-monotonic-regressions.php
           php tests/future-superset-regressions.php
-      - name: JavaScript syntax and runtime suites
-        run: |
-          find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
-          node --test tests/runtime-behavior.test.js tests/forty-round-runtime.test.js tests/forty-round-static.test.js tests/future-superset-runtime.test.js
+      - name: JavaScript syntax
+        run: find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+      - name: Runtime behavior suite
+        run: node --test tests/runtime-behavior.test.js
+      - name: Forty-round runtime suite
+        run: node --test tests/forty-round-runtime.test.js
+      - name: Forty-round static Node suite
+        run: node --test tests/forty-round-static.test.js
+      - name: Future Superset runtime suite
+        run: node --test tests/future-superset-runtime.test.js
       - name: Security privacy and architecture static contracts
         run: bash tests/static-contracts.sh
       - name: Translation and visual baseline verification
