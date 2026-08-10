@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import print_function
 from pathlib import Path
+import difflib
 import hashlib
 import sys
 
@@ -45,6 +46,14 @@ if '--check' in sys.argv:
     actual = ledger.read_text(encoding='utf-8') if ledger.exists() else ''
     if actual != expected:
         print('checksum ledger mismatch', file=sys.stderr)
+        for line in difflib.unified_diff(
+            actual.splitlines(),
+            expected.splitlines(),
+            fromfile='CHECKSUMS-1.0.0.sha256',
+            tofile='generated',
+            lineterm='',
+        ):
+            print(line, file=sys.stderr)
         sys.exit(1)
     print('SOURCE/EVIDENCE CHECKSUMS: verified')
 else:
