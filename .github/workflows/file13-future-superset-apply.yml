@@ -40,23 +40,31 @@ jobs:
           tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
           rm -f .github/file13-future.part*
           rm -f .github/workflows/file13-future-superset-apply.yml
-      - name: Pre-commit exact-source verification
+      - name: PHP syntax and contract suites
         run: |
           find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
           php tests/php-contract-tests.php
           php tests/forty-round-regressions.php
           php tests/governance-monotonic-regressions.php
           php tests/future-superset-regressions.php
+      - name: JavaScript syntax and runtime suites
+        run: |
           find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
           node --test tests/runtime-behavior.test.js tests/forty-round-runtime.test.js tests/forty-round-static.test.js tests/future-superset-runtime.test.js
-          bash tests/static-contracts.sh
+      - name: Security privacy and architecture static contracts
+        run: bash tests/static-contracts.sh
+      - name: Translation and visual baseline verification
+        run: |
           python3 tools/generate-pot.py
           python3 tools/generate-visual-baseline.py --check
+      - name: Reproducible package verification
+        run: |
           python3 tests/reproducible-package.test.py
           python3 tools/build-release.py
           (cd release && sha256sum --check SHA256SUMS)
           unzip -t release/13-sabri-welcome-intro-animation-1.1.0.zip
-          python3 tools/generate-checksums.py --check
+      - name: Source and evidence checksum verification
+        run: python3 tools/generate-checksums.py --check
       - name: Commit governed Future Superset
         run: |
           git config user.name 'github-actions[bot]'
