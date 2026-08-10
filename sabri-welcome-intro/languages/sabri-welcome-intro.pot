@@ -1,0 +1,283 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Sabri Welcome Intro Animation 1.1.0\n"
+"POT-Creation-Date: 2026-08-10 10:30+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: includes/class-swi-admin.php:50
+msgid "0 means no forced close. Any nonzero timing requires an approved visual specification."
+msgstr ""
+
+#: includes/class-swi-admin.php:66
+msgid "Accessibility previews"
+msgstr ""
+
+#: includes/class-swi-privacy.php:29
+msgid "Accessibility profile"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "Action"
+msgstr ""
+
+#: includes/class-swi-admin.php:64
+msgid "Advanced Preview Lab"
+msgstr ""
+
+#: includes/class-swi-config.php:175
+msgid "Another settings update is in progress. Reload and try again."
+msgstr ""
+
+#: includes/class-swi-admin.php:68
+msgid "Approve Current Visual Baseline"
+msgstr ""
+
+#: includes/class-swi-admin.php:50
+msgid "Automatic close"
+msgstr ""
+
+#: includes/class-swi-admin.php:53
+msgid "Brand claim"
+msgstr ""
+
+#: includes/class-swi-admin.php:52
+msgid "Brand name"
+msgstr ""
+
+#: includes/class-swi-renderer.php:98
+msgid "Close welcome intro"
+msgstr ""
+
+#: includes/class-swi-privacy.php:26
+msgid "Configuration version"
+msgstr ""
+
+#: includes/class-swi-renderer.php:106
+msgid "Continue to Platform"
+msgstr ""
+
+#: includes/class-swi-admin.php:54
+msgid "Copy language"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "Created"
+msgstr ""
+
+#: includes/class-swi-admin.php:59
+msgid "Default accessibility profile"
+msgstr ""
+
+#: includes/class-swi-admin.php:55
+msgid "Eligible routes"
+msgstr ""
+
+#: includes/class-swi-admin.php:48
+msgid "Eligible routes only"
+msgstr ""
+
+#: includes/class-swi-privacy.php:49
+msgid "Enable the intro again and clear recurrence / Never Show Again suppression"
+msgstr ""
+
+#: includes/class-swi-admin.php:48
+msgid "Enabled"
+msgstr ""
+
+#: includes/class-swi-privacy.php:28
+msgid "Experience version"
+msgstr ""
+
+#: includes/class-swi-admin.php:43
+msgid "File 13 owns only the accessible, non-blocking welcome experience and its privacy-minimal preferences. File 20 remains shell owner and File 25 remains global visual-token owner."
+msgstr ""
+
+#: includes/class-swi-admin.php:35
+msgid "Founder approval capability is required."
+msgstr ""
+
+#: includes/class-swi-admin.php:67
+msgid "Founder visual approval"
+msgstr ""
+
+#: includes/class-swi-admin.php:49
+msgid "Frequency"
+msgstr ""
+
+#: includes/class-swi-admin.php:60
+msgid "Future safeguards and capabilities"
+msgstr ""
+
+#: includes/class-swi-admin.php:45
+msgid "Governed configuration"
+msgstr ""
+
+#: includes/class-swi-rest.php:72
+msgid "Invalid event token."
+msgstr ""
+
+#: includes/class-swi-privacy.php:25
+msgid "Last dismissed at"
+msgstr ""
+
+#: includes/class-swi-privacy.php:51
+msgid "Last dismissed: %s UTC"
+msgstr ""
+
+#: includes/class-swi-rest.php:43 includes/class-swi-rest.php:54 includes/class-swi-rest.php:74
+msgid "Missing event identifier."
+msgstr ""
+
+#: includes/class-swi-renderer.php:108
+msgid "Never Show Again"
+msgstr ""
+
+#: includes/class-swi-privacy.php:27
+msgid "Never show again"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "No snapshots recorded yet."
+msgstr ""
+
+#: includes/class-swi-admin.php:44
+msgid "Operation completed: %s"
+msgstr ""
+
+#: includes/class-swi-admin.php:44
+msgid "Operation failed: %s"
+msgstr ""
+
+#: includes/class-swi-admin.php:58
+msgid "Performance circuit budget"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "Reason"
+msgstr ""
+
+#: includes/class-swi-admin.php:72
+msgid "Recent audit"
+msgstr ""
+
+#: includes/class-swi-admin.php:51
+msgid "Reduced-motion duration"
+msgstr ""
+
+#: includes/class-swi-admin.php:71
+msgid "Repository/runtime health snapshot"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "Restore"
+msgstr ""
+
+#: includes/class-swi-admin.php:62
+msgid "Restore Safe Defaults"
+msgstr ""
+
+#: includes/class-swi-admin.php:18
+msgid "Restore the safe default Welcome Intro settings?"
+msgstr ""
+
+#: includes/class-swi-admin.php:69
+msgid "Rollback snapshots"
+msgstr ""
+
+#: includes/class-swi-admin.php:17 includes/class-swi-admin.php:17 includes/class-swi-privacy.php:14 includes/class-swi-privacy.php:15 includes/class-swi-privacy.php:24 includes/class-swi-privacy.php:46
+msgid "Sabri Welcome Intro"
+msgstr ""
+
+#: includes/class-swi-admin.php:42
+msgid "Sabri Welcome Intro — Future Welcome Experience 1.1"
+msgstr ""
+
+#: includes/class-swi-renderer.php:100
+msgid "Sabri circular SH logo"
+msgstr ""
+
+#: includes/class-swi-admin.php:57
+msgid "Schedule"
+msgstr ""
+
+#: includes/class-swi-admin.php:19
+msgid "Settings"
+msgstr ""
+
+#: includes/class-swi-admin.php:64
+msgid "Signed previews are noindex/no-cache and never mutate public recurrence state."
+msgstr ""
+
+#: includes/class-swi-renderer.php:107
+msgid "Skip Intro"
+msgstr ""
+
+#: includes/class-swi-admin.php:56
+msgid "Suppressed route prefixes"
+msgstr ""
+
+#: includes/class-swi-config.php:232
+msgid "The selected rollback snapshot is unavailable."
+msgstr ""
+
+#: includes/class-swi-config.php:178 includes/class-swi-config.php:193 includes/class-swi-config.php:233
+msgid "The settings changed in another session. Reload and try again."
+msgstr ""
+
+#: includes/class-swi-config.php:182
+msgid "The settings could not be saved."
+msgstr ""
+
+#: includes/class-swi-privacy.php:50
+msgid "This account currently has “Never show again” enabled."
+msgstr ""
+
+#: includes/class-swi-rest.php:42
+msgid "This event cannot change the welcome preference."
+msgstr ""
+
+#: includes/class-swi-admin.php:71
+msgid "This health panel is repository/runtime evidence only; it does not prove staging or live deployment."
+msgstr ""
+
+#: includes/class-swi-privacy.php:56
+msgid "This preference changes only the File 13 welcome presentation and does not modify the global File 25 design system."
+msgstr ""
+
+#: includes/class-swi-rest.php:41 includes/class-swi-rest.php:53 includes/class-swi-rest.php:73
+msgid "Too many requests. Try again shortly."
+msgstr ""
+
+#: includes/class-swi-privacy.php:53
+msgid "Welcome accessibility profile"
+msgstr ""
+
+#: includes/class-swi-privacy.php:48
+msgid "Welcome intro preference"
+msgstr ""
+
+#: includes/class-swi-renderer.php:104
+msgid "Welcome. Continue to enter the platform or skip this introduction. Press Escape to close."
+msgstr ""
+
+#: includes/class-swi-config.php:191
+msgid "You are not allowed to approve the visual baseline."
+msgstr ""
+
+#: includes/class-swi-admin.php:20
+msgid "You are not allowed to manage these settings."
+msgstr ""
+
+#: includes/class-swi-admin.php:67
+msgid "approval absent or baseline changed"
+msgstr ""
+
+#: includes/class-swi-admin.php:67
+msgid "current baseline matches approval"
+msgstr ""
+
+#: includes/class-swi-admin.php:49
+msgid "days minimum"
+msgstr ""

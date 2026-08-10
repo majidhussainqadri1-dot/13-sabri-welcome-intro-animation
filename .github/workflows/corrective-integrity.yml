@@ -1,0 +1,66 @@
+name: File 13 Complete Integrity
+on:
+  push:
+    branches: [audit/file-13-source-review, main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Runtime versions
+        run: |
+          php -v
+          node --version
+          python3 --version
+      - name: PHP syntax
+        run: find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
+      - name: PHP contract suite
+        run: php tests/php-contract-tests.php
+      - name: Historical regression suites on current source
+        run: |
+          php tests/forty-round-regressions.php
+          php tests/governance-monotonic-regressions.php
+      - name: Future Superset 18 PHP regressions
+        run: php tests/future-superset-regressions.php
+      - name: JavaScript syntax
+        run: find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+      - name: Core JavaScript runtime behavior
+        run: node --test tests/runtime-behavior.test.js
+      - name: Historical forty-round JavaScript runtime
+        run: node --test tests/forty-round-runtime.test.js
+      - name: Historical forty-round JavaScript static
+        run: node --test tests/forty-round-static.test.js
+      - name: Future Superset JavaScript runtime
+        run: node --test tests/future-superset-runtime.test.js
+      - name: Security privacy architecture contracts
+        run: bash tests/static-contracts.sh
+      - name: Sequential eighty-round review gate
+        run: python3 tests/eighty-round-review.py
+      - name: Translation catalogue is current
+        run: python3 tools/generate-pot.py --check
+      - name: Reproducible installable package
+        run: |
+          python3 tests/reproducible-package.test.py
+          unzip -t release/13-sabri-welcome-intro-animation-1.1.0.zip
+          (cd release && sha256sum --check SHA256SUMS)
+      - name: No whitespace errors or temporary payload fragments
+        run: |
+          git diff --check
+          test -z "$(find .github -maxdepth 1 -type f -name 'file13-*.part*' -print -quit)"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        with:
+          name: file-13-welcome-intro-1.1.0-eighty-round
+          path: |
+            release/13-sabri-welcome-intro-animation-1.1.0.zip
+            release/SHA256SUMS
+            MANIFEST-1.1.0.json
+          if-no-files-found: error
+          retention-days: 14
