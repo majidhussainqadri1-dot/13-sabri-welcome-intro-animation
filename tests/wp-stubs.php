@@ -40,7 +40,7 @@ function untrailingslashit( $value ) { return rtrim( (string) $value, '/\\' ); }
 function trailingslashit( $value ) { return untrailingslashit( $value ) . '/'; }
 function wp_unslash( $value ) { return $value; }
 function wp_json_encode( $value ) { return json_encode( $value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE ); }
-function wp_timezone() { return new DateTimeZone( 'UTC' ); }
+function wp_timezone() { return new DateTimeZone( 'Asia/Karachi' ); }
 function wp_generate_uuid4() { return '11111111-2222-4333-8444-555555555555'; }
 function home_url( $path = '/' ) { return 'https://example.test' . ( '/' === substr( $path, 0, 1 ) ? $path : '/' . $path ); }
 function esc_url_raw( $url ) { return filter_var( $url, FILTER_SANITIZE_URL ); }
