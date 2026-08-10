@@ -7,13 +7,11 @@ if ( ! defined( 'SWI_PURGE_ON_UNINSTALL' ) || true !== SWI_PURGE_ON_UNINSTALL ) 
 	return;
 }
 
-delete_option( 'swi_config' );
-delete_option( 'swi_schema_version' );
-delete_option( 'swi_audit_log' );
-delete_option( 'swi_aggregate_metrics' );
-delete_option( 'swi_config_write_lock' );
-delete_option( 'swi_enabled' );
+foreach ( array( 'swi_config', 'swi_schema_version', 'swi_audit_log', 'swi_aggregate_metrics', 'swi_config_write_lock', 'swi_approved_snapshots', 'swi_enabled' ) as $option ) {
+	delete_option( $option );
+}
 
 global $wpdb;
-$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => 'swi_last_dismissed_at' ) );
-$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => 'swi_last_config_version' ) );
+foreach ( array( 'swi_last_dismissed_at', 'swi_last_config_version', 'swi_never_show', 'swi_last_experience_version' ) as $meta_key ) {
+	$wpdb->delete( $wpdb->usermeta, array( 'meta_key' => $meta_key ) );
+}
