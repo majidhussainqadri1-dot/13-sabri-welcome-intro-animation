@@ -7,6 +7,7 @@ final class SWI_Config {
 	const OPTION_SCHEMA  = 'swi_schema_version';
 	const OPTION_AUDIT   = 'swi_audit_log';
 	const OPTION_METRICS = 'swi_aggregate_metrics';
+	const OPTION_WRITE_LOCK = 'swi_config_write_lock';
 	const USER_META_LAST = 'swi_last_dismissed_at';
 	const USER_META_VER  = 'swi_last_config_version';
 	const COOKIE_NAME    = 'swi_seen_at_v1';
@@ -60,27 +61,82 @@ final class SWI_Config {
 	 * @return array<string,mixed>
 	 */
 	public static function get() {
-		$stored = get_option( self::OPTION_CONFIG, array() );
-		if ( ! is_array( $stored ) ) {
-			$stored = array();
-		}
-
-		$config = self::sanitize( array_merge( self::defaults(), $stored ), false );
+		$config   = self::stored_config();
 		$filtered = apply_filters( 'swi_runtime_config', $config );
 		if ( ! is_array( $filtered ) ) {
 			return $config;
 		}
 
 		$runtime = self::sanitize( array_merge( $config, $filtered ), false );
-		foreach ( array( 'config_version', 'updated_at', 'updated_by' ) as $governed_key ) {
-			$runtime[ $governed_key ] = $config[ $governed_key ];
+		return self::restrict_runtime_config( $config, $runtime );
+	}
+
+	/**
+	 * Return the canonical stored configuration without companion runtime filters.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private static function stored_config() {
+		$stored = get_option( self::OPTION_CONFIG, array() );
+		if ( ! is_array( $stored ) ) {
+			$stored = array();
+		}
+		return self::sanitize( array_merge( self::defaults(), $stored ), false );
+	}
+
+	/**
+	 * Companion runtime configuration is restriction-only. File 20/24 may suppress
+	 * or narrow eligibility, but cannot replace File 13 copy/visual governance,
+	 * shorten the 30-day-or-longer recurrence, remove protected route suppressions,
+	 * broaden eligible routes, widen an approved schedule, re-enable a kill switch,
+	 * or opt the site into analytics.
+	 *
+	 * @param array<string,mixed> $local Canonical stored configuration.
+	 * @param array<string,mixed> $runtime Sanitized companion proposal.
+	 * @return array<string,mixed>
+	 */
+	private static function restrict_runtime_config( array $local, array $runtime ) {
+		$effective = $local;
+		$effective['enabled'] = ! empty( $local['enabled'] ) && ! empty( $runtime['enabled'] ) ? 1 : 0;
+		$effective['analytics_enabled'] = ! empty( $local['analytics_enabled'] ) && ! empty( $runtime['analytics_enabled'] ) ? 1 : 0;
+		$effective['frequency_days'] = max( absint( $local['frequency_days'] ), absint( $runtime['frequency_days'] ) );
+
+		$local_routes   = array_values( array_unique( (array) $local['eligible_routes'] ) );
+		$runtime_routes = array_values( array_unique( (array) $runtime['eligible_routes'] ) );
+		if ( in_array( '*', $local_routes, true ) ) {
+			$effective['eligible_routes'] = $runtime_routes;
+		} elseif ( in_array( '*', $runtime_routes, true ) ) {
+			$effective['eligible_routes'] = $local_routes;
+		} else {
+			$effective['eligible_routes'] = array_values( array_intersect( $local_routes, $runtime_routes ) );
 		}
 
-		// Runtime integrations may further restrict local governance, but may never
-		// re-enable an administrator kill switch or opt a site into analytics.
-		$runtime['enabled'] = ! empty( $config['enabled'] ) && ! empty( $runtime['enabled'] ) ? 1 : 0;
-		$runtime['analytics_enabled'] = ! empty( $config['analytics_enabled'] ) && ! empty( $runtime['analytics_enabled'] ) ? 1 : 0;
-		return $runtime;
+		$effective['suppressed_prefixes'] = array_values( array_unique( array_merge(
+			(array) $local['suppressed_prefixes'],
+			(array) $runtime['suppressed_prefixes']
+		) ) );
+
+		$local_start   = (string) $local['starts_at'];
+		$runtime_start = (string) $runtime['starts_at'];
+		if ( '' === $local_start ) {
+			$effective['starts_at'] = $runtime_start;
+		} elseif ( '' !== $runtime_start && strtotime( $runtime_start ) > strtotime( $local_start ) ) {
+			$effective['starts_at'] = $runtime_start;
+		}
+
+		$local_end   = (string) $local['ends_at'];
+		$runtime_end = (string) $runtime['ends_at'];
+		if ( '' === $local_end ) {
+			$effective['ends_at'] = $runtime_end;
+		} elseif ( '' !== $runtime_end && strtotime( $runtime_end ) < strtotime( $local_end ) ) {
+			$effective['ends_at'] = $runtime_end;
+		}
+
+		if ( '' !== $effective['starts_at'] && '' !== $effective['ends_at'] && strtotime( $effective['starts_at'] ) > strtotime( $effective['ends_at'] ) ) {
+			$effective['enabled'] = 0;
+		}
+
+		return $effective;
 	}
 
 	/**
@@ -136,20 +192,51 @@ final class SWI_Config {
 	 * @return array<string,mixed>|WP_Error
 	 */
 	public static function save( array $raw, $expected_version ) {
-		$current = self::get();
-		if ( absint( $expected_version ) !== absint( $current['config_version'] ) ) {
-			return new WP_Error( 'swi_config_conflict', __( 'The settings changed in another session. Reload and try again.', 'sabri-welcome-intro' ) );
+		$lock_token = self::acquire_write_lock();
+		if ( false === $lock_token ) {
+			return new WP_Error( 'swi_config_busy', __( 'Another settings update is in progress. Reload and try again.', 'sabri-welcome-intro' ), array( 'status' => 409 ) );
 		}
 
-		$next = self::sanitize( $raw, true );
-		$ok   = update_option( self::OPTION_CONFIG, $next, false );
-		if ( ! $ok && $next !== $current ) {
-			return new WP_Error( 'swi_config_write_failed', __( 'The settings could not be saved.', 'sabri-welcome-intro' ) );
+		try {
+			$current = self::stored_config();
+			if ( absint( $expected_version ) !== absint( $current['config_version'] ) ) {
+				return new WP_Error( 'swi_config_conflict', __( 'The settings changed in another session. Reload and try again.', 'sabri-welcome-intro' ), array( 'status' => 409 ) );
+			}
+
+			$next = self::sanitize( $raw, true );
+			$ok   = update_option( self::OPTION_CONFIG, $next, false );
+			if ( ! $ok && $next !== $current ) {
+				return new WP_Error( 'swi_config_write_failed', __( 'The settings could not be saved.', 'sabri-welcome-intro' ) );
+			}
+
+			self::record_audit( 'config_updated', self::changed_keys( $current, $next ), $next['config_version'] );
+			do_action( 'swi_config_updated', $next, $current );
+			return $next;
+		} finally {
+			self::release_write_lock( $lock_token );
+		}
+	}
+
+	/** @return string|false */
+	private static function acquire_write_lock() {
+		$existing = get_option( self::OPTION_WRITE_LOCK, null );
+		if ( is_array( $existing ) && isset( $existing['expires_at'] ) && absint( $existing['expires_at'] ) < time() ) {
+			delete_option( self::OPTION_WRITE_LOCK );
 		}
 
-		self::record_audit( 'config_updated', self::changed_keys( $current, $next ), $next['config_version'] );
-		do_action( 'swi_config_updated', $next, $current );
-		return $next;
+		$token = function_exists( 'wp_generate_uuid4' ) ? wp_generate_uuid4() : uniqid( 'swi-', true );
+		$lock  = array( 'token' => $token, 'expires_at' => time() + 15 );
+		if ( ! add_option( self::OPTION_WRITE_LOCK, $lock, '', false ) ) {
+			return false;
+		}
+		return $token;
+	}
+
+	private static function release_write_lock( $token ) {
+		$lock = get_option( self::OPTION_WRITE_LOCK, null );
+		if ( is_array( $lock ) && isset( $lock['token'] ) && hash_equals( (string) $lock['token'], (string) $token ) ) {
+			delete_option( self::OPTION_WRITE_LOCK );
+		}
 	}
 
 	/**
