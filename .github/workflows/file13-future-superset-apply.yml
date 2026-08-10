@@ -40,42 +40,6 @@ jobs:
           tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
           rm -f .github/file13-future.part*
           rm -f .github/workflows/file13-future-superset-apply.yml
-      - name: Refresh legacy runtime harness for Future Superset semantics
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          runtime = Path('tests/runtime-behavior.test.js')
-          text = runtime.read_text()
-          old = "    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto: { getRandomValues(arr) { for (let i = 0; i < arr.length; i++) arr[i] = i + 1; return arr; } }"
-          new = "    addEventListener() {}, removeEventListener() {},\n    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto: { getRandomValues(arr) { for (let i = 0; i < arr.length; i++) arr[i] = i + 1; return arr; } }"
-          if old not in text:
-              raise SystemExit('runtime harness window anchor missing')
-          text = text.replace(old, new, 1)
-          old = "test('Continue persists timestamp, restores background and focus',()=>{ const r=run(); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0); assert.equal(r.main.getAttribute('aria-hidden'),null); assert.equal(r.inert.value,false); assert.equal(r.prev.focused,true); });"
-          new = "test('Continue persists timestamp, restores background and focus',()=>{ const r=run({accountAuthoritative:'0',userId:'0'}); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0); assert.equal(r.main.getAttribute('aria-hidden'),null); assert.equal(r.inert.value,false); assert.equal(r.prev.focused,true); });"
-          if old not in text:
-              raise SystemExit('guest persistence assertion anchor missing')
-          text = text.replace(old, new, 1)
-          old = "assert.equal(r.intro.classList.contains('swi-reduced-motion'), true);"
-          new = "assert.equal(r.intro.classList.contains('swi-variant-static'), true);"
-          if old not in text:
-              raise SystemExit('reduced-motion assertion anchor missing')
-          runtime.write_text(text.replace(old, new, 1))
-
-          forty = Path('tests/forty-round-runtime.test.js')
-          text = forty.read_text()
-          old = "    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto: { getRandomValues(array) { for (let i = 0; i < array.length; i += 1) array[i] = i + 1; return array; } }"
-          new = "    addEventListener() {}, removeEventListener() {},\n    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto: { getRandomValues(array) { for (let i = 0; i < array.length; i += 1) array[i] = i + 1; return array; } }"
-          if old not in text:
-              raise SystemExit('forty-round harness window anchor missing')
-          text = text.replace(old, new, 1)
-          old = "  assert.equal(r.fetches.length, 1);\n  assert.equal(r.fetches[0].url.endsWith('/event'), true);\n  assert.equal(r.fetches[0].init.headers['X-WP-Nonce'], 'rest');\n  assert.equal(r.fetches[0].init.headers['X-SWI-Nonce'], 'event');"
-          new = "  const eventRequests = r.fetches.filter((request) => request.url.endsWith('/event'));\n  assert.ok(eventRequests.length >= 1);\n  assert.equal(eventRequests[0].init.headers['X-WP-Nonce'], 'rest');\n  assert.equal(eventRequests[0].init.headers['X-SWI-Nonce'], 'event');"
-          if old not in text:
-              raise SystemExit('aggregate-event assertion anchor missing')
-          forty.write_text(text.replace(old, new, 1))
-          PY
       - name: Pre-commit exact-source verification
         run: |
           find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
