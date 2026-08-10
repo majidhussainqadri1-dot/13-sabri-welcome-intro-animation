@@ -24,10 +24,10 @@ final class SWI_Config {
 			'enabled'              => 1,
 			'config_version'       => 1,
 			'frequency_days'       => 30,
-			'duration_ms'          => 8000,
+			'duration_ms'          => 0,
 			'reduced_duration_ms'  => 900,
 			'brand_name'           => 'Sabri Social Homeopathy Platform',
-			'brand_claim'          => 'Learn Sabri Classical Homeopathy — Connect Globally — Build Your Worldwide Clinic',
+			'brand_claim'          => 'The Tridimensional Healing System of Soul, Vital Force, and Matter',
 			'brand_language'       => 'en-US',
 			'eligible_routes'      => array( '/' ),
 			'suppressed_prefixes'  => array(
@@ -75,6 +75,11 @@ final class SWI_Config {
 		foreach ( array( 'config_version', 'updated_at', 'updated_by' ) as $governed_key ) {
 			$runtime[ $governed_key ] = $config[ $governed_key ];
 		}
+
+		// Runtime integrations may further restrict local governance, but may never
+		// re-enable an administrator kill switch or opt a site into analytics.
+		$runtime['enabled'] = ! empty( $config['enabled'] ) && ! empty( $runtime['enabled'] ) ? 1 : 0;
+		$runtime['analytics_enabled'] = ! empty( $config['analytics_enabled'] ) && ! empty( $runtime['analytics_enabled'] ) ? 1 : 0;
 		return $runtime;
 	}
 
@@ -96,7 +101,8 @@ final class SWI_Config {
 		$requested_version = isset( $raw['config_version'] ) ? absint( $raw['config_version'] ) : $version;
 		$config['config_version']      = $increment_version ? max( 1, $version + 1 ) : max( 1, $requested_version ?: 1 );
 		$config['frequency_days']      = min( 365, max( 30, absint( $raw['frequency_days'] ?? $defaults['frequency_days'] ) ) );
-		$config['duration_ms']         = min( 8000, max( 1200, absint( $raw['duration_ms'] ?? $defaults['duration_ms'] ) ) );
+		$requested_duration            = absint( $raw['duration_ms'] ?? $defaults['duration_ms'] );
+		$config['duration_ms']         = 0 === $requested_duration ? 0 : min( 30000, max( 1200, $requested_duration ) );
 		$config['reduced_duration_ms'] = min( 1500, max( 250, absint( $raw['reduced_duration_ms'] ?? $defaults['reduced_duration_ms'] ) ) );
 		$config['brand_name']          = self::sanitize_copy( $raw['brand_name'] ?? $defaults['brand_name'], 120, $defaults['brand_name'] );
 		$config['brand_claim']         = self::sanitize_copy( $raw['brand_claim'] ?? $defaults['brand_claim'], 280, $defaults['brand_claim'] );

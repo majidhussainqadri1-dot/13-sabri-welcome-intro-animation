@@ -20,7 +20,8 @@ swi_test_reset();
 $d = SWI_Config::defaults();
 check( 1 === $d['enabled'], 'safe defaults enable only eligible routes' );
 check( 30 === $d['frequency_days'], 'default suppression is 30 days' );
-check( 8000 === $d['duration_ms'], 'maximum default duration is eight seconds' );
+check( 0 === $d['duration_ms'], 'default has no forced historical eight-second auto-close' );
+check( 'The Tridimensional Healing System of Soul, Vital Force, and Matter' === $d['brand_claim'], 'default claim matches the governing welcome identity' );
 check( array( '/' ) === $d['eligible_routes'], 'default eligible route is home only' );
 check( in_array( '/clinical', $d['suppressed_prefixes'], true ), 'clinical routes are suppressed' );
 check( in_array( '/emergency', $d['suppressed_prefixes'], true ), 'emergency routes are suppressed' );
@@ -38,7 +39,7 @@ $raw = array_merge( $d, array(
 ) );
 $s = SWI_Config::sanitize( $raw, false );
 check( 30 === $s['frequency_days'], 'frequency cannot be configured below 30 days' );
-check( 8000 === $s['duration_ms'], 'duration is capped at eight seconds' );
+check( 30000 === $s['duration_ms'], 'optional automatic close remains safety-bounded without restoring the obsolete eight-second cap' );
 check( 250 === $s['reduced_duration_ms'], 'reduced-motion lower bound is enforced' );
 check( 'Safe Brand' === $s['brand_name'], 'brand copy is stripped of markup' );
 check( 'urscript' === $s['brand_language'], 'language tag is allowlisted' );

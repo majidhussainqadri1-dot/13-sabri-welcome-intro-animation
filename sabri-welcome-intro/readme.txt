@@ -18,6 +18,7 @@ File 13 provides the canonical welcome intro experience. Version 1.0.0 implement
 * same-session and multi-tab suppression;
 * home-only safe default and explicit suppression for login, clinical, booking, emergency and task routes;
 * Continue, Skip, Close and Escape controls;
+* user-controlled Continue/Skip/Close/Escape with no forced eight-second timeout by default;
 * reduced-motion, keyboard, focus, screen-reader and RTL support;
 * hidden-by-default fail-open behavior when JavaScript, CSS or storage fails;
 * green primary visual identity with contextual orange motion accent;
@@ -40,4 +41,5 @@ File 13 provides the canonical welcome intro experience. Version 1.0.0 implement
 * Replaced once-per-session-only behavior with a 30-day minimum frequency policy.
 * Added account preference, route governance, configuration versioning, audit, analytics, privacy, REST and shell contracts.
 * Adopted green primary identity and retained orange as a contextual motion accent.
+* Reconciled the historical eight-second rule: automatic close is disabled by default and any nonzero duration requires Founder-approved visual specification.
 * Added complete automated source/package QA and release documentation.

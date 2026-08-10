@@ -50,7 +50,7 @@ final class SWI_Admin {
 		$raw = array(
 			'enabled'             => isset( $_POST['enabled'] ) ? 1 : 0,
 			'frequency_days'      => isset( $_POST['frequency_days'] ) ? wp_unslash( $_POST['frequency_days'] ) : 30,
-			'duration_ms'         => isset( $_POST['duration_ms'] ) ? wp_unslash( $_POST['duration_ms'] ) : 8000,
+			'duration_ms'         => isset( $_POST['duration_ms'] ) ? wp_unslash( $_POST['duration_ms'] ) : 0,
 			'reduced_duration_ms' => isset( $_POST['reduced_duration_ms'] ) ? wp_unslash( $_POST['reduced_duration_ms'] ) : 900,
 			'brand_name'          => isset( $_POST['brand_name'] ) ? wp_unslash( $_POST['brand_name'] ) : '',
 			'brand_claim'         => isset( $_POST['brand_claim'] ) ? wp_unslash( $_POST['brand_claim'] ) : '',
@@ -113,7 +113,7 @@ final class SWI_Admin {
 						<table class="form-table" role="presentation">
 							<tr><th scope="row"><?php esc_html_e( 'Enabled', 'sabri-welcome-intro' ); ?></th><td><label><input type="checkbox" name="enabled" value="1" <?php checked( 1, $config['enabled'] ); ?>> <?php esc_html_e( 'Enable on eligible routes', 'sabri-welcome-intro' ); ?></label></td></tr>
 							<tr><th scope="row"><label for="swi-frequency"><?php esc_html_e( 'Frequency', 'sabri-welcome-intro' ); ?></label></th><td><input id="swi-frequency" class="small-text" type="number" min="30" max="365" name="frequency_days" value="<?php echo esc_attr( $config['frequency_days'] ); ?>"> <?php esc_html_e( 'days minimum', 'sabri-welcome-intro' ); ?></td></tr>
-							<tr><th scope="row"><label for="swi-duration"><?php esc_html_e( 'Maximum duration', 'sabri-welcome-intro' ); ?></label></th><td><input id="swi-duration" class="small-text" type="number" min="1200" max="8000" step="100" name="duration_ms" value="<?php echo esc_attr( $config['duration_ms'] ); ?>"> ms</td></tr>
+							<tr><th scope="row"><label for="swi-duration"><?php esc_html_e( 'Automatic close duration', 'sabri-welcome-intro' ); ?></label></th><td><input id="swi-duration" class="small-text" type="number" min="0" max="30000" step="100" name="duration_ms" value="<?php echo esc_attr( $config['duration_ms'] ); ?>"> ms <p class="description"><?php esc_html_e( 'Use 0 for no forced automatic close. A nonzero duration requires a Founder-approved visual specification.', 'sabri-welcome-intro' ); ?></p></td></tr>
 							<tr><th scope="row"><label for="swi-reduced"><?php esc_html_e( 'Reduced-motion duration', 'sabri-welcome-intro' ); ?></label></th><td><input id="swi-reduced" class="small-text" type="number" min="250" max="1500" step="50" name="reduced_duration_ms" value="<?php echo esc_attr( $config['reduced_duration_ms'] ); ?>"> ms</td></tr>
 							<tr><th scope="row"><label for="swi-name"><?php esc_html_e( 'Brand name', 'sabri-welcome-intro' ); ?></label></th><td><input id="swi-name" class="regular-text" type="text" maxlength="120" name="brand_name" value="<?php echo esc_attr( $config['brand_name'] ); ?>"></td></tr>
 							<tr><th scope="row"><label for="swi-claim"><?php esc_html_e( 'Brand claim', 'sabri-welcome-intro' ); ?></label></th><td><textarea id="swi-claim" class="large-text" rows="3" maxlength="280" name="brand_claim"><?php echo esc_textarea( $config['brand_claim'] ); ?></textarea></td></tr>

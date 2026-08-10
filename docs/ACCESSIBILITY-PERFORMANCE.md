@@ -24,7 +24,7 @@
 
 - no measurable layout shift from the hidden overlay;
 - underlying DOM available immediately;
-- normal completion no later than 8,000 ms; reduced path 250–1,500 ms;
+- no forced automatic close by default; when a Founder-approved nonzero duration is configured it must match the approved visual specification and remain within the 30,000 ms safety bound; reduced path remains 250–1,500 ms when auto-close is enabled;
 - representative public page Core Web Vitals remain in the “good” range;
 - no page-level horizontal scrollbar at 320 CSS px or 400% zoom;
 - keyboard, NVDA/JAWS/VoiceOver, RTL and reduced-motion manual acceptance.

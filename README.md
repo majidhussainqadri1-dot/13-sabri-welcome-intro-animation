@@ -6,7 +6,7 @@ Production-oriented WordPress source for the Sabri Social Homeopathy Platform we
 
 - Plugin version: `1.0.0`
 - Schema version: `1.0.0`
-- Canonical installable ZIP is deterministically built by CI as `release/13-sabri-welcome-intro-animation-1.0.0.zip` and published as the `file-13-welcome-intro-1.0.0` workflow artifact
+- Canonical installable ZIP is deterministically built by CI as `release/13-sabri-welcome-intro-animation-1.0.0.zip` and published as the File 13 workflow artifact
 - ZIP root: `sabri-welcome-intro-13/`
 - WordPress text domain: `sabri-welcome-intro`
 - PHP: `7.4+`
@@ -20,8 +20,9 @@ Production-oriented WordPress source for the Sabri Social Homeopathy Platform we
 - Logged-in account timestamp is preferred; first-party timestamp cookie and local storage provide a guest/failure fallback.
 - Login, registration, account, support, appointment-task, clinical, emergency, checkout, cart, admin, REST, feed and embed requests are suppressed by default.
 - Overlay markup is hidden by default. Missing JavaScript, CSS, storage or network support cannot block the underlying page.
-- Maximum normal duration is eight seconds. Reduced motion is static/short and has no hidden long timer.
-- Primary visual identity is green; orange is a contextual motion accent. File 25 tokens override local fallbacks.
+- The historical forced eight-second rule is not active. Automatic close is disabled by default (`0`); any nonzero duration requires a Founder-approved visual specification and remains safety-bounded in code.
+- The default welcome identity claim is `The Tridimensional Healing System of Soul, Vital Force, and Matter`.
+- Primary visual identity is exact Sabri Green `#087A4E`; orange is a contextual motion accent. File 25 tokens override local fallbacks.
 - No audio, remote runtime dependency, fingerprinting or personal analytics.
 
 ## Administration
@@ -30,7 +31,7 @@ Production-oriented WordPress source for the Sabri Social Homeopathy Platform we
 
 - enable/disable kill switch;
 - 30–365 day frequency fallback;
-- maximum and reduced-motion durations;
+- optional Founder-approved automatic-close duration (`0` means no forced close) and reduced-motion duration;
 - approved brand copy and language;
 - eligible routes and suppressed prefixes;
 - optional schedule;
@@ -45,13 +46,16 @@ Production-oriented WordPress source for the Sabri Social Homeopathy Platform we
 - File 24: `SABRI_PLATFORM_SAFE_MODE`, `swi_force_disabled`, `sabri_platform_safe_mode`.
 - File 25: `--sabri-color-*` visual tokens and RTL/accessibility presentation.
 
+Integration hooks are restriction-only at security/privacy boundaries: companion filters may suppress an eligible intro, but cannot re-enable a local kill switch, opt a site into analytics, or turn a denied eligibility decision into an allowed one.
+
 See `docs/CONTRACTS.md` and `docs/REQUIREMENTS-TRACEABILITY.md`.
 
 ## Local verification
 
 ```bash
 php tests/php-contract-tests.php
-node --test tests/runtime-behavior.test.js
+php tests/forty-round-regressions.php
+node --test tests/runtime-behavior.test.js tests/forty-round-runtime.test.js tests/forty-round-static.test.js
 bash tests/static-contracts.sh
 python3 tests/reproducible-package.test.py
 python3 tools/build-release.py
@@ -60,4 +64,4 @@ sha256sum --check CHECKSUMS-1.0.0.sha256
 
 ## Status law
 
-Source, automated QA and deterministic packaging are independently verifiable in this repository. Hostinger staging, active-theme/File 20/File 25 integration, real browser/assistive-technology acceptance, backup restoration, Founder visual acceptance, production deployment and operational monitoring remain separate evidence gates and must not be inferred from source completion.
+Source, automated QA and deterministic packaging are independently verifiable in this repository. Hostinger staging, active-theme/File 00/File 20/File 25 integration, real browser/assistive-technology acceptance, backup restoration, Founder visual acceptance, production deployment and operational monitoring remain separate evidence gates and must not be inferred from source completion.

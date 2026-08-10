@@ -7,7 +7,8 @@
   var preview = intro.getAttribute('data-preview') === '1';
   var previewState = intro.getAttribute('data-preview-state') || 'default';
   var frequencyDays = Math.max(30, parseInt(intro.getAttribute('data-frequency-days'), 10) || 30);
-  var duration = Math.min(8000, Math.max(1200, parseInt(intro.getAttribute('data-duration'), 10) || 8000));
+  var requestedDuration = parseInt(intro.getAttribute('data-duration'), 10);
+  var duration = Number.isFinite(requestedDuration) && requestedDuration > 0 ? Math.min(30000, Math.max(1200, requestedDuration)) : 0;
   var reducedDuration = Math.min(1500, Math.max(250, parseInt(intro.getAttribute('data-reduced-duration'), 10) || 900));
   var configVersion = Math.max(1, parseInt(intro.getAttribute('data-config-version'), 10) || 1);
   var cookieName = intro.getAttribute('data-cookie-name') || 'swi_seen_at_v1';
@@ -208,7 +209,7 @@
     if (!cssReady()) { failOpen('css_unavailable'); return; }
 
     if (previewState === 'reduced') reduceMotion = true;
-    if (reduceMotion) { intro.classList.add('swi-reduced-motion'); duration = reducedDuration; }
+    if (reduceMotion) { intro.classList.add('swi-reduced-motion'); if (duration > 0) duration = Math.min(duration, reducedDuration); }
     if (previewState === 'skipped') { intro.removeAttribute('hidden'); window.setTimeout(skipIntro, 120); return; }
 
     claim();
@@ -227,7 +228,7 @@
       var target = continueButton || skipButton || closeButton || intro;
       try { target.focus({ preventScroll: true }); } catch (error) { target.focus(); }
     });
-    timer = window.setTimeout(function () { close('completed', false); }, duration);
+    if (duration > 0) timer = window.setTimeout(function () { close('completed', false); }, duration);
   } catch (error) {
     failOpen('runtime_exception');
   }

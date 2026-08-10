@@ -10,6 +10,10 @@ msgstr ""
 msgid "Aggregate analytics"
 msgstr ""
 
+#: includes/class-swi-admin.php:116
+msgid "Automatic close duration"
+msgstr ""
+
 #: includes/class-swi-admin.php:119
 msgid "Brand claim"
 msgstr ""
@@ -98,10 +102,6 @@ msgstr ""
 msgid "Last dismissed: %s UTC"
 msgstr ""
 
-#: includes/class-swi-admin.php:116
-msgid "Maximum duration"
-msgstr ""
-
 #: includes/class-swi-rest.php:100 includes/class-swi-rest.php:137
 msgid "Missing event identifier."
 msgstr ""
@@ -186,11 +186,11 @@ msgstr ""
 msgid "System check"
 msgstr ""
 
-#: includes/class-swi-config.php:135
+#: includes/class-swi-config.php:141
 msgid "The settings changed in another session. Reload and try again."
 msgstr ""
 
-#: includes/class-swi-config.php:141
+#: includes/class-swi-config.php:147
 msgid "The settings could not be saved."
 msgstr ""
 
@@ -204,6 +204,10 @@ msgstr ""
 
 #: includes/class-swi-rest.php:90 includes/class-swi-rest.php:132
 msgid "Too many requests. Try again shortly."
+msgstr ""
+
+#: includes/class-swi-admin.php:116
+msgid "Use 0 for no forced automatic close. A nonzero duration requires a Founder-approved visual specification."
 msgstr ""
 
 #: includes/class-swi-admin.php:153

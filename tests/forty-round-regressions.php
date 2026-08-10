@@ -1,8 +1,6 @@
 <?php
 require __DIR__ . '/wp-stubs.php';
-if ( ! function_exists( 'wp_timezone' ) ) {
-	function wp_timezone() { return new DateTimeZone( 'Asia/Karachi' ); }
-}
+if ( ! function_exists( 'wp_timezone' ) ) { function wp_timezone() { return new DateTimeZone( 'Asia/Karachi' ); } }
 require dirname( __DIR__ ) . '/sabri-welcome-intro/includes/class-swi-config.php';
 require dirname( __DIR__ ) . '/sabri-welcome-intro/includes/class-swi-eligibility.php';
 require dirname( __DIR__ ) . '/sabri-welcome-intro/includes/class-swi-analytics.php';
@@ -26,6 +24,28 @@ f13_check( 7 === $config['config_version'], 'runtime contract cannot falsify gov
 f13_check( 19 === $config['updated_by'], 'runtime contract cannot falsify governed updater identity' );
 
 swi_test_reset();
+$stored = SWI_Config::defaults();
+$stored['enabled'] = 0;
+$stored['analytics_enabled'] = 0;
+$GLOBALS['swi_test_options'][ SWI_Config::OPTION_CONFIG ] = $stored;
+add_filter( 'swi_runtime_config', static function ( $config ) { $config['enabled'] = 1; $config['analytics_enabled'] = 1; return $config; } );
+$config = SWI_Config::get();
+f13_check( 0 === $config['enabled'], 'runtime contract cannot re-enable the administrator kill switch' );
+f13_check( 0 === $config['analytics_enabled'], 'runtime contract cannot opt the site into analytics' );
+
+swi_test_reset();
+$raw = SWI_Config::defaults();
+$raw['duration_ms'] = 0;
+$duration = SWI_Config::sanitize( $raw, false );
+f13_check( 0 === $duration['duration_ms'], 'historical forced eight-second timeout is disabled by default' );
+$raw['duration_ms'] = 12000;
+$duration = SWI_Config::sanitize( $raw, false );
+f13_check( 12000 === $duration['duration_ms'], 'Founder-approved nonzero duration is no longer capped at eight seconds' );
+$raw['duration_ms'] = 45000;
+$duration = SWI_Config::sanitize( $raw, false );
+f13_check( 30000 === $duration['duration_ms'], 'automatic close duration remains bounded for safety' );
+
+swi_test_reset();
 $raw = SWI_Config::defaults();
 $raw['starts_at'] = '2026-08-07T09:00';
 $scheduled = SWI_Config::sanitize( $raw, false );
@@ -33,6 +53,13 @@ f13_check( '2026-08-07T04:00:00+00:00' === $scheduled['starts_at'], 'datetime-lo
 $raw['starts_at'] = '2026-02-31T09:00';
 $invalid = SWI_Config::sanitize( $raw, false );
 f13_check( '' === $invalid['starts_at'], 'invalid calendar datetime is rejected rather than normalized silently' );
+
+swi_test_reset();
+$GLOBALS['swi_test_options'][ SWI_Config::OPTION_CONFIG ] = SWI_Config::defaults();
+$_SERVER['REQUEST_URI'] = '/clinical/case';
+add_filter( 'swi_eligibility_decision', static function ( $decision ) { $decision['eligible'] = true; $decision['reason'] = 'forced_open'; return $decision; } );
+$decision = ( new SWI_Eligibility() )->resolve( SWI_Config::defaults(), false );
+f13_check( ! $decision['eligible'] && 'suppressed_route' === $decision['reason'], 'eligibility integration cannot broaden a route denial' );
 
 swi_test_reset();
 $GLOBALS['swi_test_current_user'] = 9;
@@ -44,9 +71,7 @@ f13_check( is_wp_error( $missing ) && 'swi_missing_idempotency' === $missing->ge
 swi_test_reset();
 $GLOBALS['swi_test_options'][ SWI_Config::OPTION_CONFIG ] = array_merge( SWI_Config::defaults(), array( 'analytics_enabled' => 1 ) );
 $rest = new SWI_REST( new SWI_Analytics() );
-for ( $i = 0; $i < 300; ++$i ) {
-	$rest->event( new WP_REST_Request( array( 'event' => 'shown', 'config_version' => 1, 'idempotency_key' => 'k' . $i ), array( 'X-SWI-Nonce' => 'valid-swi_public_event' ) ) );
-}
+for ( $i = 0; $i < 300; ++$i ) { $rest->event( new WP_REST_Request( array( 'event' => 'shown', 'config_version' => 1, 'idempotency_key' => 'k' . $i ), array( 'X-SWI-Nonce' => 'valid-swi_public_event' ) ) ); }
 $limited = $rest->event( new WP_REST_Request( array( 'event' => 'shown', 'config_version' => 1, 'idempotency_key' => 'overflow' ), array( 'X-SWI-Nonce' => 'valid-swi_public_event' ) ) );
 f13_check( is_wp_error( $limited ) && 'swi_rate_limited' === $limited->get_error_code(), 'public aggregate event endpoint has a privacy-safe global abuse ceiling' );
 
@@ -61,5 +86,5 @@ $GLOBALS['swi_test_options'][ SWI_Config::OPTION_CONFIG ] = SWI_Config::defaults
 $check = SWI_System_Check::snapshot();
 f13_check( 'fallback' === $check['integration_status'], 'system check does not misreport self-registered hooks as a connected File 20 host' );
 
-printf( "FORTY-ROUND PHP REGRESSIONS: %d passed, %d failed\n", $passed, $failed );
+printf( "POST-PLAN PHP REGRESSIONS: %d passed, %d failed\n", $passed, $failed );
 exit( $failed ? 1 : 0 );

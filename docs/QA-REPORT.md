@@ -1,32 +1,37 @@
 # Automated QA Report — File 13 Version 1.0.0
 
-Executed: 2026-08-06 18:14 PKT (13:14 UTC)
+Updated preflight: 2026-08-10 PKT
 
-## Round 1 — functional and architecture regression
+## Historical exact-head evidence
 
-- PHP syntax: 16 files PASS.
-- JavaScript syntax: 3 files PASS.
-- PHP contract tests: 61 PASS, 0 FAIL.
-- JavaScript runtime tests: 13 PASS, 0 FAIL.
-- Static security/privacy/architecture contracts: 16 PASS, 0 FAIL.
-- Deterministic package rebuild: PASS.
-- ZIP CRC and traversal-safe layout: PASS.
-- PHP 8-only API scan: none found; declared PHP 7.4-compatible syntax retained.
-- TODO/FIXME/HACK source markers: none.
-- Remote runtime URLs: none.
+The 7 August candidate at `57f2f015b977a7d5c15e125146f0d7bc4343f6d3` had green GitHub Actions and preserved forty-round evidence. That evidence is historical after the 10 August plan-reconciliation source changes and must not be presented as proof for the new head.
 
-## Round 2 — fresh adversarial rerun
+## 10 August plan-reconciliation preflight
 
-Completed after final source/documentation assembly: 16 PHP syntax PASS; 3 JavaScript syntax PASS; 61 PHP assertions PASS; 13 JavaScript tests PASS; 16 static contracts PASS; deterministic package PASS; ZIP integrity PASS. No defect was found in the fresh rerun.
+Fresh comparison against the governing central plan and File 13 plan found and corrected four repository-level defects:
 
-## Release artifact
+1. historical forced eight-second duration still active;
+2. `#087A3E` near-match used instead of exact Sabri Green `#087A4E`;
+3. default claim did not use the governing healing identity;
+4. integration filters could broaden local kill/privacy/eligibility denials.
 
-- Archive: deterministically built by CI as `release/13-sabri-welcome-intro-animation-1.0.0.zip` and published in the `file-13-welcome-intro-1.0.0` artifact
-- ZIP root: `sabri-welcome-intro-13/`
-- Entries: 21
-- Bytes: 84,044
-- SHA-256: `7c76061501b243c76c37f7ce3ed213f1cf3a9f7fef6c312c3b8de7fd6bd87088`
+Local verification after correction:
+
+- modified PHP syntax: PASS;
+- PHP contract tests: **62 PASS, 0 FAIL**;
+- post-plan PHP regressions: **15 PASS, 0 FAIL**;
+- static security/privacy/architecture contracts: **19 PASS, 0 FAIL**;
+- JavaScript syntax: PASS;
+- deterministic package build: PASS;
+- ZIP CRC/integrity: PASS;
+- package entries: **21**;
+- package bytes: **88,910**;
+- package SHA-256: `407aac00a10249cc942a10646b8d263584093d2108abc0a3ba2ae185cfe60615`.
+
+## Exact-head CI gate
+
+The branch update must run the repository GitHub Actions workflow again. The exact new commit and its GitHub check result—not this local preflight—are the authoritative repository CI evidence.
 
 ## Evidence boundary
 
-This report proves repository source behavior under stubs, JavaScript VM tests, static inspection and deterministic packaging. It does not prove active WordPress/theme/File 00/20/24/25 integration, Hostinger cache behavior, real browser/assistive-technology behavior, backup restoration, Founder acceptance, live deployment or operational monitoring.
+This report proves repository-verifiable preflight behavior only. It does not prove active WordPress/theme/File 00/20/24/25 integration, Hostinger cache behavior, real browser/assistive-technology behavior, backup restoration, Founder acceptance, live deployment or operational monitoring.

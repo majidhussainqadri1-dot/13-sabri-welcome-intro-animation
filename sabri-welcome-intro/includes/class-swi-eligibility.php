@@ -130,6 +130,17 @@ final class SWI_Eligibility {
 		$filtered['eligible'] = (bool) $filtered['eligible'];
 		$filtered['reason']   = sanitize_key( $filtered['reason'] );
 		$filtered['path']     = isset( $filtered['path'] ) ? SWI_Config::normalize_path( $filtered['path'] ) : $decision['path'];
+
+		// Integration filters are restriction-only. A companion plugin may suppress
+		// an otherwise eligible intro, but it must never broaden a denied state and
+		// bypass the kill switch, Safe Mode, route policy, schedule or frequency.
+		if ( empty( $decision['eligible'] ) && ! empty( $filtered['eligible'] ) ) {
+			$decision['eligible'] = false;
+			$decision['reason']   = sanitize_key( $decision['reason'] );
+			$decision['path']     = SWI_Config::normalize_path( $decision['path'] ) ?: '/';
+			return $decision;
+		}
+
 		return $filtered;
 	}
 }
