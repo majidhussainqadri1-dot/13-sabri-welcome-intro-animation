@@ -55,8 +55,12 @@ test('REST mutation contracts require idempotency and rate-limit aggregate event
   assert.match(rest, /rate_limited\( 'event', 'global', 300/);
 });
 
-test('configuration governance preserves recorded metadata and validates site-local time', () => {
-  assert.match(config, /config_version[^\n]+updated_at[^\n]+updated_by/);
+test('configuration governance preserves canonical metadata and validates site-local time', () => {
+  assert.match(config, /private static function stored_config\(\)/);
+  assert.match(config, /\$effective\s*=\s*\$local/);
+  assert.match(config, /'config_version'/);
+  assert.match(config, /'updated_at'/);
+  assert.match(config, /'updated_by'/);
   assert.match(config, /wp_timezone\(\)/);
   assert.match(config, /DateTimeImmutable::getLastErrors\(\)/);
 });
