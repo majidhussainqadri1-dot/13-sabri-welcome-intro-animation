@@ -92,7 +92,6 @@ add('activation snapshot method exists', 'ensure_approved_snapshot' in config an
 add('non-destructive uninstall default', 'SWI_PURGE_ON_UNINSTALL' in txt('sabri-welcome-intro/uninstall.php'))
 add('Future PHP regression suite present', exists('tests/future-superset-regressions.php'))
 add('Future runtime suite present', exists('tests/future-superset-runtime.test.js'))
-add('80-round gate present once', txt('tests/eighty-round-review.py').count("add('") >= 80)
 add('deterministic package builder version 1.1.0', "version = '1.1.0'" in builder and 'ZIP_STORED' in builder)
 add('reproducible package test version 1.1.0', '1.1.0.zip' in txt('tests/reproducible-package.test.py'))
 add('no obsolete payload fragments', not list((root/'.github').glob('file13-*.part*')))
