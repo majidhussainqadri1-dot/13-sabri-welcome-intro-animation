@@ -1,8 +1,7 @@
-# File 13 Forty-Round QA Evidence
+# Historical Forty-Round QA Evidence
 
-- Review rounds completed: **40**
-- Defect-bearing rounds: **18**
-- Clean rounds: **22**
-- Corrections were applied before the next numbered round.
-- Dedicated evidence: `docs/FORTY-ROUND-REVIEW-2026-08-07.md`, `tests/forty-round-regressions.php`, `tests/forty-round-runtime.test.js`, and `tests/forty-round-static.test.js`.
-- Release claim boundary: repository source, automated QA and deterministic packaging only; staging, Founder acceptance, production and operations remain independent gates.
+The earlier File 13 1.0 candidate completed forty separately numbered review rounds. That work remains valuable provenance, including the defect/fix history, but it is **not current 1.1.0 exact-head proof** after the Future Welcome Experience Superset and later governance/test/package/document changes.
+
+The current candidate must instead satisfy the fresh sequential **80-round review** plus the permanent exact-head `File 13 Complete Integrity` workflow. Historical forty-round PHP/JavaScript regression suites are still re-run against current source so corrected invariants are not silently lost.
+
+Do not quote a historical forty-round CI run, artifact ID, ZIP checksum, package byte count or assertion total as evidence for the current head unless the exact current-head workflow freshly reproduces it.
