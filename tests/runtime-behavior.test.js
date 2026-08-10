@@ -27,11 +27,7 @@ function element(tag, document) {
 function createRuntime(options = {}) {
   const docListeners = new Map(); const events = []; const timers = new Map(); const fetches = [];
   let timerId = 1; let cookie = options.cookie || '';
-  const document = {
-    activeElement: null, hidden: false,
-    addEventListener(k, fn) { docListeners.set(k, fn); }, removeEventListener(k, fn) { if (docListeners.get(k) === fn) docListeners.delete(k); },
-    dispatchEvent(e) { events.push(e); return true; }
-  };
+  const document = { activeElement: null, hidden: false, addEventListener(k, fn) { docListeners.set(k, fn); }, removeEventListener(k, fn) { if (docListeners.get(k) === fn) docListeners.delete(k); }, dispatchEvent(e) { events.push(e); return true; } };
   const root = element('HTML', document); const body = element('BODY', document); root.children = [body]; body.parentElement = root; document.documentElement = root; document.body = body;
   const previous = element('A', document); const intro = element('ASIDE', document); const close = element('BUTTON', document); const cont = element('BUTTON', document); const skip = element('BUTTON', document); const never = element('BUTTON', document); const ambient = element('DIV', document);
   previous.parentElement = body; intro.parentElement = body; close.parentElement = cont.parentElement = skip.parentElement = never.parentElement = ambient.parentElement = intro; intro.children = [ambient, close, cont, skip, never]; body.children = [previous, intro]; document.activeElement = previous;
@@ -40,24 +36,13 @@ function createRuntime(options = {}) {
   document.getElementById = (id) => id === 'swi-intro' ? intro : null;
   Object.defineProperty(document, 'cookie', { get() { return cookie; }, set(v) { cookie = v; } });
   const localStorage = storage(options.local || {}, options.storageThrows); const sessionStorage = storage(options.session || {}, options.storageThrows);
-  const window = {
-    location: { protocol: 'https:' }, localStorage, sessionStorage,
-    matchMedia: () => ({ matches: Boolean(options.reduced) }),
-    getComputedStyle: () => ({ getPropertyValue: () => options.cssMissing ? '' : '1' }),
-    requestAnimationFrame(fn) { fn(); },
-    setTimeout(fn, delay) { const id = timerId++; timers.set(id, { fn, delay }); return id; }, clearTimeout(id) { timers.delete(id); },
-    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },
-    crypto: { getRandomValues(arr) { for (let i = 0; i < arr.length; i++) arr[i] = i + 1; return arr; } }
-  };
+  const window = { location: { protocol: 'https:' }, localStorage, sessionStorage, matchMedia: () => ({ matches: Boolean(options.reduced) }), getComputedStyle: () => ({ getPropertyValue: () => options.cssMissing ? '' : '1' }), requestAnimationFrame(fn) { fn(); }, setTimeout(fn, delay) { const id = timerId++; timers.set(id, { fn, delay }); return id; }, clearTimeout(id) { timers.delete(id); }, fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); }, crypto: { getRandomValues(arr) { for (let i = 0; i < arr.length; i++) arr[i] = i + 1; return arr; } } };
   function CustomEvent(name, init) { this.type = name; this.detail = init.detail; }
   vm.runInNewContext(source, { Array, Boolean, CustomEvent, Date, JSON, Math, Number, Promise, String, Uint32Array, decodeURIComponent, document, encodeURIComponent, parseInt, window }, { filename: 'welcome-intro.js' });
   return { document, root, body, previous, intro, close, cont, skip, never, docListeners, events, timers, fetches, localStorage, sessionStorage, cookie: () => cookie };
 }
 
-test('first eligible visit reveals only after CSS readiness and claims the session', () => {
-  const r = createRuntime();
-  assert.equal(r.intro.hasAttribute('hidden'), false); assert.equal(r.body.classList.contains('swi-intro-active'), true); assert.equal(r.previous.getAttribute('inert'), ''); assert.equal(r.document.activeElement, r.cont); assert.equal(r.sessionStorage.values.get('swi_seen_session_v1'), '1'); assert.ok(r.events.some((event) => event.type === 'swi:shown'));
-});
+test('first eligible visit reveals only after CSS readiness and claims the session', () => { const r = createRuntime(); assert.equal(r.intro.hasAttribute('hidden'), false); assert.equal(r.body.classList.contains('swi-intro-active'), true); assert.equal(r.previous.getAttribute('inert'), ''); assert.equal(r.document.activeElement, r.cont); assert.equal(r.sessionStorage.values.get('swi_seen_session_v1'), '1'); assert.ok(r.events.some((event) => event.type === 'swi:shown')); });
 test('default runtime has no forced historical auto-close timer', () => { const r = createRuntime(); assert.equal([...r.timers.values()].some((x) => x.delay >= 1200), false); });
 test('same session never renders again', () => { const r = createRuntime({ session: { swi_seen_session_v1: '1' } }); assert.equal(r.intro.isConnected, false); assert.equal(r.body.classList.contains('swi-intro-active'), false); });
 test('timestamp suppresses for at least 30 days', () => { const r = createRuntime({ local: { swi_seen_at_v1: String(Date.now() - 29 * 86400000) } }); assert.equal(r.intro.isConnected, false); });
@@ -67,7 +52,7 @@ test('Continue persists version-aware timestamp, restores background and focus',
 test('Escape performs the skip journey', () => { const r = createRuntime(); let prevented = false; r.docListeners.get('keydown')({ key: 'Escape', preventDefault() { prevented = true; } }); assert.equal(prevented, true); const closeTimer = [...r.timers.values()].find((x) => x.delay === 220); closeTimer.fn(); assert.equal(r.events.at(-1).type, 'swi:skipped'); });
 test('focus trap wraps in both directions including Never Show Again', () => { const r = createRuntime(); const key = r.docListeners.get('keydown'); r.never.focus(); key({ key: 'Tab', shiftKey: false, preventDefault() {} }); assert.equal(r.document.activeElement, r.close); r.close.focus(); key({ key: 'Tab', shiftKey: true, preventDefault() {} }); assert.equal(r.document.activeElement, r.never); });
 test('reduced motion is static without reintroducing a forced timer', () => { const r = createRuntime({ reduced: true }); assert.equal(r.intro.classList.contains('swi-variant-static'), true); assert.equal([...r.timers.values()].some((x) => x.delay === 900), false); });
-test('preview never changes public persistence', () => { const r = createRuntime({ preview: true }); r.cont.listeners.get('click')(); assert.equal(r.intro.isConnected, false); assert.equal(r.cookie(), ''); assert.equal(r.localStorage.values.has('swi_seen_at_v1'), false); });
+test('preview never changes public persistence but honors the closing transition', () => { const r = createRuntime({ preview: true }); r.cont.listeners.get('click')(); const t = [...r.timers.values()].find((x) => x.delay === 220); assert.ok(t); t.fn(); assert.equal(r.intro.isConnected, false); assert.equal(r.cookie(), ''); assert.equal(r.localStorage.values.has('swi_seen_at_v1'), false); });
 test('authenticated dismissal uses nonce and idempotent request body', () => { const r = createRuntime({ restUrl: '/wp-json/sabri-welcome-intro/v1', restNonce: 'nonce', accountAuthoritative: true, userId: 5 }); r.skip.listeners.get('click')(); const request = r.fetches.find((entry) => entry.url.endsWith('/dismiss')); assert.ok(request); assert.equal(request.init.headers['X-WP-Nonce'], 'nonce'); const body = JSON.parse(request.init.body); assert.equal(body.event, 'skipped'); assert.equal(body.config_version, 3); assert.equal(body.experience_version, '1.1.0'); assert.ok(body.idempotency_key); });
 test('public analytics is opt-in and uses separate event nonce', () => { const r = createRuntime({ restUrl: '/wp-json/sabri-welcome-intro/v1', analytics: true, eventNonce: 'event' }); const request = r.fetches.find((entry) => entry.url.endsWith('/event')); assert.ok(request); assert.equal(request.init.headers['X-SWI-Nonce'], 'event'); });
 test('disabled/error preview is a visible fail-open test and does not mutate storage', () => { const r = createRuntime({ preview: true, previewState: 'error' }); assert.equal(r.intro.isConnected, false); assert.equal(r.events[0].type, 'swi:error'); assert.equal(r.localStorage.values.size, 0); });
