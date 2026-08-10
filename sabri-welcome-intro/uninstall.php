@@ -11,6 +11,7 @@ delete_option( 'swi_config' );
 delete_option( 'swi_schema_version' );
 delete_option( 'swi_audit_log' );
 delete_option( 'swi_aggregate_metrics' );
+delete_option( 'swi_config_write_lock' );
 delete_option( 'swi_enabled' );
 
 global $wpdb;
