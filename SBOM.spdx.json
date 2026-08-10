@@ -2,27 +2,29 @@
   "spdxVersion": "SPDX-2.3",
   "dataLicense": "CC0-1.0",
   "SPDXID": "SPDXRef-DOCUMENT",
-  "name": "Sabri-Welcome-Intro-Animation-1.0.0",
-  "documentNamespace": "https://sabrihomeopathy.com/spdx/file-13/1.0.0",
+  "name": "Sabri-Welcome-Intro-Animation-1.1.0",
+  "documentNamespace": "https://sabrihomeopathy.com/spdx/file-13/1.1.0",
   "creationInfo": {
-    "created": "2026-08-07T04:19:00Z",
+    "created": "2026-08-10T11:05:00Z",
     "creators": [
       "Organization: Sabri Social Homeopathy Platform",
       "Tool: repository-native-SBOM"
-    ]
+    ],
+    "comment": "Repository SBOM for the File 13 1.1.0 source candidate. It is not evidence of staging or live deployment."
   },
   "packages": [
     {
       "name": "sabri-welcome-intro",
       "SPDXID": "SPDXRef-Package",
-      "versionInfo": "1.0.0",
+      "versionInfo": "1.1.0",
       "downloadLocation": "NOASSERTION",
       "filesAnalyzed": false,
       "licenseConcluded": "NOASSERTION",
       "licenseDeclared": "GPL-2.0-or-later",
       "copyrightText": "Copyright Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed",
       "externalRefs": [],
-      "primaryPackagePurpose": "APPLICATION"
+      "primaryPackagePurpose": "APPLICATION",
+      "comment": "No third-party runtime library is bundled by File 13. WordPress/PHP/browser APIs and companion File 00/20/24/25 contracts are external platform dependencies, not vendored packages."
     }
   ],
   "relationships": [
