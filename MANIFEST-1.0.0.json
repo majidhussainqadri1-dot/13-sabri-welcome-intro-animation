@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "top_level_folder": "sabri-welcome-intro-13",
   "archive": "13-sabri-welcome-intro-animation-1.0.0.zip",
-  "sha256": "407aac00a10249cc942a10646b8d263584093d2108abc0a3ba2ae185cfe60615",
-  "bytes": 88910,
+  "sha256": "de5d58937671a5852a1e7ab93430881a0bc53379faa384a84e4fa3a08b664959",
+  "bytes": 92568,
   "entries": 21,
   "files": [
     {
@@ -49,8 +49,8 @@
     },
     {
       "path": "includes/class-swi-config.php",
-      "bytes": 10542,
-      "sha256": "0d4b9d6e0b7a59e1d45de37a3f3a2c62874156d3833e97553a002bd5f536ed29"
+      "bytes": 14040,
+      "sha256": "ba944284238f54365bf8bef3e828f59bdccb93287701f4df099259129e00260b"
     },
     {
       "path": "includes/class-swi-contracts.php",
@@ -94,8 +94,8 @@
     },
     {
       "path": "languages/sabri-welcome-intro.pot",
-      "bytes": 5316,
-      "sha256": "b33cdd4dc370a726f9b33c181eaf7890c8a88c25990e5ea74755bf9861a277c9"
+      "bytes": 5434,
+      "sha256": "b4664392074abe188c605a4f54f54dfbf3f2335e16c853613b4434478a926ded"
     },
     {
       "path": "readme.txt",
@@ -109,8 +109,8 @@
     },
     {
       "path": "uninstall.php",
-      "bytes": 589,
-      "sha256": "a5e460c20c3a3c74f52938bfd783e2330c1d75f4ef6d8e5de7bcb2652679adaf"
+      "bytes": 631,
+      "sha256": "14705b1ed1e7033b406f3e10c28c4539d44dfecf80ae14fb90320b84028f7ca5"
     }
   ]
 }
