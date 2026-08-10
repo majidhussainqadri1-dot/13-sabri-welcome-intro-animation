@@ -39,7 +39,6 @@ jobs:
           gzip -t /tmp/file13-future.tar.gz
           tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
           rm -f .github/file13-future.part*
-          rm -f .github/workflows/file13-future-superset-apply.yml
       - name: Align inherited runtime harness with v1.1 semantics
         run: |
           python3 - <<'PY'
@@ -90,13 +89,6 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -A
-          if ! git diff --cached --check > /tmp/final-commit-check.log 2>&1; then
-            git reset
-            cp /tmp/final-commit-check.log .github/FUTURE-SUPERSET-LAST-COMMIT-FAILURE.log
-            git add .github/FUTURE-SUPERSET-LAST-COMMIT-FAILURE.log
-            git commit -m 'File 13: capture Future Superset final commit-gate defect'
-            git push origin HEAD:audit/file-13-source-review
-            exit 1
-          fi
+          git diff --cached --check
           git commit -m 'File 13: implement approved Future Welcome Experience Superset 18'
           git push origin HEAD:audit/file-13-source-review
