@@ -1,50 +1,60 @@
-# File 13 Status — 1.0.0
+# File 13 Status — 1.1.0 Future Welcome Experience Superset
 
 ## Current verdict
 
-**SOURCE IMPLEMENTATION RECONCILED TO THE LATEST CENTRAL/FILE-13 PLAN — REPOSITORY QA AND DETERMINISTIC PACKAGE REQUIRE A GREEN CHECK ON THE EXACT CURRENT PR HEAD — HOSTINGER STAGING AND FOUNDER ACCEPTANCE REMAIN REQUIRED BEFORE MERGE/DEPLOYMENT**
+**SOURCE IMPLEMENTATION NOW INCLUDES THE APPROVED 18 FUTURE WELCOME ENHANCEMENTS AND IS UNDER FRESH EXACT-HEAD 80-ROUND/CI VERIFICATION — HOSTINGER STAGING, REAL COMPANION INTEGRATION, FOUNDER VISUAL ACCEPTANCE, LIVE DEPLOYMENT AND OPERATIONAL ACCEPTANCE REMAIN SEPARATE REQUIRED GATES.**
 
-## Governing reconciliation completed 10 August 2026
+## Governing reconciliation — 10 August 2026
 
-- 30-day minimum frequency remains authoritative after the first eligible visit; same-session/navigation duplication remains suppressed.
-- The historical forced eight-second duration is no longer active: automatic close defaults to `0`; a nonzero value requires Founder-approved visual specification and is safety-bounded.
-- Exact Sabri Green `#087A4E` is the local/File 25 fallback; orange remains contextual only.
+- The authoritative recurrence model is a **minimum 30-day recurrence plus same-session/navigation/multi-tab suppression**, not the obsolete once-per-session-only wording.
+- The historical forced eight-second auto-close is not active. `duration_ms` defaults to `0`; any non-zero timing requires an independently Founder-approved visual specification and remains safety-bounded.
+- Exact Sabri Green `#087A4E` is the local fallback for the File 25 primary token; orange is contextual accent only.
 - The default welcome claim is `The Tridimensional Healing System of Soul, Vital Force, and Matter`.
-- Runtime integrations are monotonic at security/privacy boundaries: they may restrict, but cannot re-enable the local kill switch, opt analytics in, or broaden a denied eligibility decision.
-- GitHub Actions are pinned to reviewed immutable SHAs of current Node24-compatible official actions; future action updates remain change-controlled.
+- File 13 remains a non-blocking welcome-experience owner only. File 20 remains global shell/layout owner; File 25 remains global design-token owner; File 00 remains identity/capability owner; File 24 remains security/privacy assurance owner.
+- Runtime companion integrations are restriction-only: they may impose stricter recurrence, routes, schedule, safe-mode or privacy conditions, but cannot lift a local denial, opt analytics in, remove protected route suppressions, or replace File 13 governed copy.
+
+## Future Welcome Experience Superset — 18/18 source capabilities
+
+The `1.1.0` candidate contains source and regression evidence for: adaptive full/light/static intro selection; Never Show Again; signed Replay Welcome; version-aware replay; cross-device preference synchronization; guest→account reconciliation; instant interaction exit; Data Saver static mode; performance circuit breaker; accessibility profiles; localized governed copy; Advanced Preview Lab; Founder visual-baseline approval workflow; deterministic visual baseline hashing; privacy-safe aggregate telemetry; approval-aware health evidence; bounded rollback snapshots; and a PWA/offline precache adapter without owning service-worker registration.
 
 ## Repository-verifiable implementation
 
-- All 15 File 13 functional requirements have concrete implementation and test/document evidence under the latest reconciliation.
-- All 10 non-functional requirements have source controls, automated evidence, or an explicit staging acceptance gate where a real environment is indispensable.
-- File 00, 20, 24 and 25 integration points are versioned and fail safely.
-- Admin configuration, signed preview route, optimistic concurrency, audit, privacy export/erasure, health status, kill switches, migration and non-destructive uninstall are present.
-- Installable ZIP is deterministically generated; its SHA-256, source ledger, manifest, SBOM, test suites and runbooks are repository artifacts.
+- All original File 13 functional requirements remain mapped to source/tests, with the reconciled recurrence and duration rules applied.
+- Future Superset has dedicated PHP and JavaScript regression suites plus an exact 80-check sequential review gate.
+- Admin configuration, Preview Lab, signed replay, optimistic configuration concurrency, privacy export/erasure, preference synchronization, health evidence, safe mode/kill switch, migration and non-destructive uninstall are present.
+- Deterministic packaging targets `13-sabri-welcome-intro-animation-1.1.0.zip` with canonical top-level folder `sabri-welcome-intro-13/`.
+- The exact ZIP SHA-256, byte count and entry count are **not hard-coded here**, because any source-changing commit invalidates historical package evidence. The fresh exact-head CI artifact and `release/SHA256SUMS` are authoritative.
 
 ## Required exact-head repository checks
 
-The exact current PR head must independently pass the repository workflow. Historical green checks are never reused as current proof. The expected suite is:
+Every final candidate must freshly pass:
 
-- PHP contract assertions: `62/62`;
-- post-plan PHP regression assertions: `15/15`;
-- Node runtime/static tests: `28/28`;
-- static security/privacy/architecture contracts: `19/19`;
-- PHP syntax and declared PHP 7.4 compatibility: pass;
-- deterministic package, ZIP CRC/integrity and source/evidence checksum ledger: pass;
-- canonical installable package SHA-256: `407aac00a10249cc942a10646b8d263584093d2108abc0a3ba2ae185cfe60615`.
+- PHP syntax;
+- PHP contract suite;
+- historical post-plan/governance regressions against current source;
+- Future Superset PHP regressions;
+- JavaScript syntax;
+- core, historical and Future runtime/static JavaScript suites;
+- security/privacy/architecture static contracts;
+- sequential 80-round review gate;
+- translation catalogue freshness;
+- reproducible 1.1.0 package build, ZIP integrity and SHA-256 verification;
+- no temporary payload fragments or whitespace errors.
 
-The PR/check-runs, rather than a hard-coded historical commit in this file, are the authoritative record of whether the exact current head satisfies those gates.
+A historical successful workflow, old ZIP or old checksum is never current-head proof.
 
 ## External acceptance gates
 
-- real WordPress 7.0.1 / PHP 8.3 activation and upgrade on Hostinger-equivalent staging;
-- active theme `wp_body_open`/footer behavior and exact File 20 slot integration;
-- LiteSpeed cache variants and cache purge behavior;
-- real File 00 account preference and File 24 safe-mode adapters;
-- File 25 visual-token and responsive/RTL regression acceptance;
-- Chrome, Firefox, Safari and Edge; mobile and desktop; keyboard, screen reader, zoom and reduced motion;
-- backup restoration and rollback rehearsal;
+- Hostinger-equivalent staging fresh install/upgrade/migration on the target WordPress/PHP environment;
+- real deployed File 00 / File 20 / File 24 / File 25 contract integration;
+- active-theme `wp_body_open`/footer/shell-slot behavior;
+- LiteSpeed cache/session/30-day recurrence behavior;
+- Chrome, Firefox, Safari and Edge across mobile/desktop;
+- keyboard, screen reader, 200%/400% zoom, RTL and reduced-motion acceptance;
+- backup restore and rollback rehearsal;
 - Founder copy/logo/visual/duration acceptance;
-- controlled live deployment and monitoring window.
+- controlled production deployment, live smoke/re-test and monitoring.
 
-No staging-accepted, production-complete, live-deployed or operational claim is made until those gates are evidenced.
+## Truth boundary
+
+Repository status may become **Coded / Packaged / Automated-QA Green** only on a fresh successful exact-head workflow. It does not establish **Staging-Accepted / Live-Deployed / Operational**. No production-complete or live-complete claim is made here.
