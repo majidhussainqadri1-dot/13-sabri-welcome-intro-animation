@@ -1,0 +1,49 @@
+name: File 13 Future Superset Atomic Apply
+on:
+  push:
+    branches: [audit/file-13-source-review]
+    paths:
+      - '.github/workflows/file13-future-superset-apply.yml'
+permissions:
+  contents: write
+jobs:
+  apply:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+      - name: Reconstruct approved Future Superset payload
+        run: |
+          cat .github/file13-future.part* > /tmp/file13-future.b64
+          base64 -d /tmp/file13-future.b64 > /tmp/file13-future.tar.gz
+          gzip -t /tmp/file13-future.tar.gz
+          tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
+          rm -f .github/file13-future.part*
+          rm -f .github/workflows/file13-future-superset-apply.yml
+      - name: Pre-commit exact-source verification
+        run: |
+          find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
+          php tests/php-contract-tests.php
+          php tests/forty-round-regressions.php
+          php tests/governance-monotonic-regressions.php
+          php tests/future-superset-regressions.php
+          find sabri-welcome-intro tests -type f -name '*.js' -print0 | sort -z | xargs -0 -n1 node --check
+          node --test tests/runtime-behavior.test.js tests/forty-round-runtime.test.js tests/forty-round-static.test.js tests/future-superset-runtime.test.js
+          bash tests/static-contracts.sh
+          python3 tools/generate-pot.py
+          python3 tools/generate-visual-baseline.py --check
+          python3 tests/reproducible-package.test.py
+          python3 tools/build-release.py
+          (cd release && sha256sum --check SHA256SUMS)
+          unzip -t release/13-sabri-welcome-intro-animation-1.1.0.zip
+          python3 tools/generate-checksums.py --check
+      - name: Commit governed Future Superset
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --cached --check
+          git commit -m 'File 13: implement approved Future Welcome Experience Superset 18'
+          git push origin HEAD:audit/file-13-source-review
