@@ -2,7 +2,7 @@
 
 ## Current verdict
 
-**SOURCE IMPLEMENTATION RECONCILED TO THE LATEST CENTRAL/FILE-13 PLAN — LOCAL QA GREEN — DETERMINISTIC PACKAGE COMPLETE — EXACT-HEAD GITHUB CI MUST BE RE-RUN AFTER THE 10 AUGUST UPDATE — HOSTINGER STAGING AND FOUNDER ACCEPTANCE REQUIRED BEFORE MERGE/DEPLOYMENT**
+**SOURCE IMPLEMENTATION RECONCILED TO THE LATEST CENTRAL/FILE-13 PLAN — REPOSITORY QA AND DETERMINISTIC PACKAGE REQUIRE A GREEN CHECK ON THE EXACT CURRENT PR HEAD — HOSTINGER STAGING AND FOUNDER ACCEPTANCE REMAIN REQUIRED BEFORE MERGE/DEPLOYMENT**
 
 ## Governing reconciliation completed 10 August 2026
 
@@ -11,6 +11,7 @@
 - Exact Sabri Green `#087A4E` is the local/File 25 fallback; orange remains contextual only.
 - The default welcome claim is `The Tridimensional Healing System of Soul, Vital Force, and Matter`.
 - Runtime integrations are monotonic at security/privacy boundaries: they may restrict, but cannot re-enable the local kill switch, opt analytics in, or broaden a denied eligibility decision.
+- GitHub Actions are pinned to reviewed immutable SHAs of current Node24-compatible official actions; future action updates remain change-controlled.
 
 ## Repository-verifiable implementation
 
@@ -20,16 +21,19 @@
 - Admin configuration, signed preview route, optimistic concurrency, audit, privacy export/erasure, health status, kill switches, migration and non-destructive uninstall are present.
 - Installable ZIP is deterministically generated; its SHA-256, source ledger, manifest, SBOM, test suites and runbooks are repository artifacts.
 
-## Local preflight after reconciliation
+## Required exact-head repository checks
 
-- PHP contract assertions: `62/62` pass.
-- Post-plan PHP regression assertions: `15/15` pass.
-- Static security/privacy/architecture contracts: `19/19` pass.
-- Modified PHP syntax and JavaScript syntax: pass.
-- Deterministic package/ZIP integrity: pass.
-- Candidate package SHA-256: `407aac00a10249cc942a10646b8d263584093d2108abc0a3ba2ae185cfe60615`.
+The exact current PR head must independently pass the repository workflow. Historical green checks are never reused as current proof. The expected suite is:
 
-The exact new GitHub branch head must independently pass GitHub Actions after these source changes; historical green checks from `57f2f015...` are not reused as current proof.
+- PHP contract assertions: `62/62`;
+- post-plan PHP regression assertions: `15/15`;
+- Node runtime/static tests: `28/28`;
+- static security/privacy/architecture contracts: `19/19`;
+- PHP syntax and declared PHP 7.4 compatibility: pass;
+- deterministic package, ZIP CRC/integrity and source/evidence checksum ledger: pass;
+- canonical installable package SHA-256: `407aac00a10249cc942a10646b8d263584093d2108abc0a3ba2ae185cfe60615`.
+
+The PR/check-runs, rather than a hard-coded historical commit in this file, are the authoritative record of whether the exact current head satisfies those gates.
 
 ## External acceptance gates
 
