@@ -16,7 +16,16 @@ jobs:
           fetch-depth: 0
       - name: Reconstruct approved Future Superset payload
         run: |
+          sha256sum .github/file13-future.part*
+          printf '%s  %s\n' \
+            eaf6efc3642bc64a8599dd76544f64dba450f134e545efcb45e0fb96c9751391 .github/file13-future.part00 \
+            f97d00ff191e936417baf5efa82cc145060329a89b8613f105fa9dcf9d6edecf .github/file13-future.part01 \
+            87c253d0a807d352271bd8ce14b26f8da4c6ac5215f1c1ad4f244fd3d2b87dfc .github/file13-future.part02 \
+            48ac81d375394dc8dc70c6d6750cfbdc8b9c6b75fc3948b536efa60bbd6f9a87 .github/file13-future.part03 \
+            23ce878cafe5a87b2b7ef66da5772cb101b3983404f451739b7cdc93991a5d68 .github/file13-future.part04 | sha256sum --check
           cat .github/file13-future.part* > /tmp/file13-future.b64
+          test "$(wc -c < /tmp/file13-future.b64)" -eq 81432
+          printf '%s  %s\n' 0c1f5d8c07d53439aafed5087f65223270405aa9b48136bff43fee90f0cdd1d8 /tmp/file13-future.b64 | sha256sum --check
           base64 -d /tmp/file13-future.b64 > /tmp/file13-future.tar.gz
           gzip -t /tmp/file13-future.tar.gz
           tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
