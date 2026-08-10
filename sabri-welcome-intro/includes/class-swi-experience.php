@@ -27,10 +27,32 @@ final class SWI_Experience {
 	/** @return string[] */
 	public static function pwa_precache_assets() { return array( SWI_URL . 'assets/css/welcome-intro.css', SWI_URL . 'assets/js/welcome-intro.js', SWI_URL . 'assets/images/sabri-sh-logo.svg' ); }
 
-	/** @return array<string,string> */
+	/**
+	 * Deterministic Founder visual baseline. It binds both source visuals and the
+	 * canonical stored visual/copy policy. Runtime projections are intentionally
+	 * excluded so File 20/24 cannot silently change what a Founder approval means.
+	 *
+	 * @return array<string,mixed>
+	 */
 	public static function visual_baseline() {
 		$files = array( 'css' => SWI_DIR . 'assets/css/welcome-intro.css', 'js' => SWI_DIR . 'assets/js/welcome-intro.js', 'logo' => SWI_DIR . 'assets/images/sabri-sh-logo.svg', 'renderer' => SWI_DIR . 'includes/class-swi-renderer.php' );
-		$out = array(); foreach ( $files as $key => $path ) { $out[ $key ] = is_readable( $path ) ? hash_file( 'sha256', $path ) : ''; } ksort( $out ); return $out;
+		$out = array();
+		foreach ( $files as $key => $path ) { $out[ $key ] = is_readable( $path ) ? hash_file( 'sha256', $path ) : ''; }
+		$stored = class_exists( 'SWI_Config' ) ? get_option( SWI_Config::OPTION_CONFIG, array() ) : array();
+		$stored = is_array( $stored ) ? $stored : array();
+		$defaults = class_exists( 'SWI_Config' ) ? SWI_Config::defaults() : array();
+		$config = array_merge( $defaults, $stored );
+		$visual_keys = array(
+			'experience_version', 'duration_ms', 'reduced_duration_ms', 'brand_name', 'brand_claim', 'brand_language', 'localized_copy',
+			'adaptive_mode', 'instant_exit_enabled', 'data_saver_static', 'performance_circuit_breaker', 'performance_budget_ms',
+			'accessibility_profiles', 'default_accessibility_profile', 'never_show_enabled', 'replay_enabled', 'version_replay_enabled',
+		);
+		$spec = array();
+		foreach ( $visual_keys as $key ) { $spec[ $key ] = array_key_exists( $key, $config ) ? $config[ $key ] : null; }
+		ksort( $spec );
+		$out['governed_visual_spec'] = $spec;
+		ksort( $out );
+		return $out;
 	}
 
 	/** @return string */
