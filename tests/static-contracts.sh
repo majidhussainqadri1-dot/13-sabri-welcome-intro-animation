@@ -3,7 +3,7 @@ set -euo pipefail
 root="$(cd "$(dirname "$0")/.." && pwd)"
 plugin="$root/sabri-welcome-intro"
 pass=0
-check() { if eval "$2"; then printf 'PASS: %s\n' "$1"; pass=$((pass+1)); else printf 'FAIL: %s\n' "$1"; exit 1; fi; }
+check() { if eval "$2"; then printf 'PASS: %s\n' "$1"; pass=$((pass+1)); else printf 'FAIL: %s\n' "$1"; printf '::error title=File 13 static contract::%s\n' "$1"; exit 1; fi; }
 contains() { grep -Fq -- "$2" "$1"; }
 not_contains() { ! grep -Fq -- "$2" "$1"; }
 check 'plugin declares version 1.1.0' "contains '$plugin/sabri-welcome-intro.php' 'Version: 1.1.0' && contains '$plugin/sabri-welcome-intro.php' \"SWI_VERSION', '1.1.0\""
