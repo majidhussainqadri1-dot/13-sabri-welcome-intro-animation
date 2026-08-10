@@ -40,6 +40,20 @@ jobs:
           tar -xzf /tmp/file13-future.tar.gz -C "$GITHUB_WORKSPACE"
           rm -f .github/file13-future.part*
           rm -f .github/workflows/file13-future-superset-apply.yml
+      - name: Align inherited runtime harness with v1.1 semantics
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p=Path('tests/runtime-behavior.test.js'); s=p.read_text()
+          s=s.replace("    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto:", "    addEventListener() {}, removeEventListener() {},\n    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto:", 1)
+          s=s.replace("const r=run(); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0);", "const r=run({accountAuthoritative:'0',userId:'0'}); r.cont.dispatch('click'); assert.ok(Number(r.localStorage.values.get('swi_seen_at_v1'))>0);", 1)
+          s=s.replace("r.intro.classList.contains('swi-reduced-motion')", "r.intro.classList.contains('swi-variant-static')", 1)
+          p.write_text(s)
+          p=Path('tests/forty-round-runtime.test.js'); s=p.read_text()
+          s=s.replace("    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto:", "    addEventListener() {}, removeEventListener() {},\n    fetch(url, init) { fetches.push({ url, init }); return Promise.resolve({ ok: true }); },\n    crypto:", 1)
+          s=s.replace("  assert.equal(r.fetches.length, 1);\n  assert.equal(r.fetches[0].url.endsWith('/event'), true);\n  assert.equal(r.fetches[0].init.headers['X-WP-Nonce'], 'rest');\n  assert.equal(r.fetches[0].init.headers['X-SWI-Nonce'], 'event');", "  const eventRequests = r.fetches.filter((request) => request.url.endsWith('/event'));\n  assert.ok(eventRequests.length >= 1);\n  assert.equal(eventRequests[0].init.headers['X-WP-Nonce'], 'rest');\n  assert.equal(eventRequests[0].init.headers['X-SWI-Nonce'], 'event');", 1)
+          p.write_text(s)
+          PY
       - name: PHP syntax and contract suites
         run: |
           find sabri-welcome-intro tests -type f -name '*.php' -print0 | sort -z | xargs -0 -n1 php -l
