@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0 — 2026-08-10 Future Welcome Experience Superset + eighty-round closure
+
+- Added the approved 18-feature Future Welcome Experience Superset: adaptive full/light/static variants; Never Show Again; signed Replay Welcome; version-aware replay; cross-device preference sync; guest→account reconciliation; instant interaction exit; Data Saver static mode; performance circuit breaker; accessibility profiles; localized governed copy; Advanced Preview Lab; Founder visual approval; deterministic visual-baseline hashing; privacy-safe adaptive/replay telemetry; approval-aware health evidence; bounded rollback snapshots; and a PWA/offline precache adapter without owning service-worker registration.
+- Preserved the governing minimum 30-day recurrence with same-session/navigation/multi-tab suppression.
+- Preserved the reconciled no-forced-auto-close default (`duration_ms = 0`); nonzero automatic timing remains separately approval-gated and safety-bounded.
+- Preserved exact Sabri Green `#087A4E` as the local primary-token fallback and orange as contextual accent only.
+- Added authenticated `/preference` reconciliation with idempotency/rate limits and Future preference privacy export/erasure.
+- Added account/device experience-version metadata, Never Show Again state and File-13-only accessibility preference state.
+- Added restriction-only runtime configuration boundaries so companion integrations cannot broaden locally governed routes, recurrence, schedule, privacy, safe-mode or copy.
+- Added bounded configuration snapshots and approval-aware visual-baseline truth checks.
+- Added Future-specific PHP/JavaScript regression suites and a deterministic sequential 80-round review gate.
+- Restored permanent exact-head CI, refreshed the translation catalogue and aligned deterministic packaging to `1.1.0`.
+- Removed obsolete temporary/self-mutating Future payload fragments and one-time update machinery from the candidate branch.
+- Updated repository documentation so historical 1.0 checksums, package counts and CI runs are never reused as current-head proof.
+
 ## 1.0.0 — 2026-08-10 plan reconciliation
 
 - Reconciled the latest central-plan rule that the former forced eight-second opening duration is historical: automatic close now defaults to `0`; any nonzero duration requires Founder-approved visual specification and is safety-bounded at 30 seconds.
