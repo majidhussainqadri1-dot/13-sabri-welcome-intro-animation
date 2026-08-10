@@ -15,69 +15,22 @@ const systemCheck = read('sabri-welcome-intro/includes/class-swi-system-check.ph
 const config = read('sabri-welcome-intro/includes/class-swi-config.php');
 const analytics = read('sabri-welcome-intro/includes/class-swi-analytics.php');
 
-test('account-level timestamp is authoritative while same-session suppression remains', () => {
+test('account-level state is authoritative while bounded guest handoff and same-session suppression remain', () => {
   assert.match(renderer, /data-account-authoritative/);
-  assert.match(js, /if \(accountAuthoritative\) return false/);
+  assert.match(renderer, /data-account-seen-at/);
+  assert.match(js, /if \(accountAuthoritative\) \{/);
+  assert.match(js, /guestReconcile && recentLocal\(local\) && local\.ts > accountSeenAt/);
+  assert.match(js, /reconcileGuestToAccount/);
   assert.match(js, /safeGet\(window\.sessionStorage, sessionKey\)/);
 });
 
-test('authenticated REST requests carry the WordPress nonce for every event path', () => {
-  assert.match(js, /if \(restNonce\) headers\['X-WP-Nonce'\] = restNonce/);
-});
-
-test('runtime exception path is fail-open and restores page state', () => {
-  assert.match(js, /function failOpen\(reason\)/);
-  assert.match(js, /body\.classList\.remove\('swi-intro-active'\)/);
-  assert.match(js, /restoreBackground\(\)/);
-  assert.match(js, /try \{[\s\S]*previewState[\s\S]*\} catch \(error\) \{[\s\S]*failOpen\('runtime_exception'\)/);
-});
-
-test('public analytics nonce is only exposed when analytics is enabled', () => {
-  assert.match(renderer, /analytics_enabled[^\n]+wp_create_nonce\( 'swi_public_event' \)/);
-});
-
-test('mixed-language brand copy uses automatic direction and RTL-safe controls', () => {
-  assert.match(renderer, /class="swi-brand-name"[^\n]*dir="auto"/);
-  assert.match(renderer, /class="swi-brand-claim"[^\n]*dir="auto"/);
-  assert.doesNotMatch(css, /\.swi-brand-name[^}]*direction:\s*ltr/s);
-  assert.match(css, /\[dir="rtl"\] \.swi-controls/);
-  assert.match(css, /\[dir="rtl"\] \.swi-button-primary svg/);
-});
-
-test('closing transition does not hide the overlay before animation completion', () => {
-  const closing = css.match(/\.swi-is-closing\s*\{([^}]*)\}/s);
-  assert.ok(closing);
-  assert.doesNotMatch(closing[1], /visibility:\s*hidden/);
-});
-
-test('REST mutation contracts require idempotency and rate-limit aggregate events', () => {
-  assert.match(rest, /swi_missing_idempotency/);
-  assert.match(rest, /rate_limited\( 'event', 'global', 300/);
-});
-
-test('configuration governance preserves canonical metadata and validates site-local time', () => {
-  assert.match(config, /private static function stored_config\(\)/);
-  assert.match(config, /\$effective\s*=\s*\$local/);
-  assert.match(config, /'config_version'/);
-  assert.match(config, /'updated_at'/);
-  assert.match(config, /'updated_by'/);
-  assert.match(config, /wp_timezone\(\)/);
-  assert.match(config, /DateTimeImmutable::getLastErrors\(\)/);
-});
-
-test('analytics success is checked against the persisted aggregate', () => {
-  assert.match(analytics, /get_option\( SWI_Config::OPTION_METRICS/);
-  assert.match(analytics, /\$persisted === \$metrics/);
-});
-
-test('deactivation removes the preview rewrite before flushing', () => {
-  assert.match(activator, /extra_rules_top/);
-  assert.match(activator, /welcome-intro-preview/);
-  assert.match(activator, /flush_rewrite_rules/);
-});
-
-test('system check distinguishes local callbacks from external owner contracts', () => {
-  assert.match(systemCheck, /shell_registry_callback/);
-  assert.match(systemCheck, /shell_contract_version/);
-  assert.match(systemCheck, /'fallback'/);
-});
+test('authenticated REST requests carry the WordPress nonce for every event path', () => { assert.match(js, /if \(restNonce\) headers\['X-WP-Nonce'\] = restNonce/); });
+test('runtime exception path is fail-open and restores page state', () => { assert.match(js, /function failOpen\(reason\)/); assert.match(js, /body\.classList\.remove\('swi-intro-active'\)/); assert.match(js, /restoreBackground\(\)/); assert.match(js, /try \{[\s\S]*previewState[\s\S]*\} catch \(error\) \{[\s\S]*failOpen\('runtime_exception'\)/); });
+test('public analytics nonce is only exposed when analytics is enabled', () => { assert.match(renderer, /analytics_enabled[^\n]+wp_create_nonce\( 'swi_public_event' \)/); });
+test('mixed-language brand copy uses automatic direction and RTL-safe controls', () => { assert.match(renderer, /class="swi-brand-name"[^\n]*dir="auto"/); assert.match(renderer, /class="swi-brand-claim"[^\n]*dir="auto"/); assert.doesNotMatch(css, /\.swi-brand-name[^}]*direction:\s*ltr/s); assert.match(css, /\[dir="rtl"\] \.swi-controls/); assert.match(css, /\[dir="rtl"\] \.swi-button-primary svg/); });
+test('closing transition does not hide the overlay before animation completion', () => { const closing = css.match(/\.swi-is-closing\s*\{([^}]*)\}/s); assert.ok(closing); assert.doesNotMatch(closing[1], /visibility:\s*hidden/); });
+test('REST mutation contracts require idempotency and rate-limit aggregate events', () => { assert.match(rest, /swi_missing_idempotency/); assert.match(rest, /rate_limited\( 'event', 'global', 300/); });
+test('configuration governance preserves canonical metadata and validates site-local time', () => { assert.match(config, /private static function stored_config\(\)/); assert.match(config, /\$effective\s*=\s*\$local/); assert.match(config, /'config_version'/); assert.match(config, /'updated_at'/); assert.match(config, /'updated_by'/); assert.match(config, /wp_timezone\(\)/); assert.match(config, /DateTimeImmutable::getLastErrors\(\)/); });
+test('analytics success is checked against the persisted aggregate', () => { assert.match(analytics, /get_option\( SWI_Config::OPTION_METRICS/); assert.match(analytics, /\$persisted === \$metrics/); });
+test('deactivation removes the preview rewrite before flushing', () => { assert.match(activator, /extra_rules_top/); assert.match(activator, /welcome-intro-preview/); assert.match(activator, /flush_rewrite_rules/); });
+test('system check distinguishes local callbacks from external owner contracts', () => { assert.match(systemCheck, /shell_registry_callback/); assert.match(systemCheck, /shell_contract_version/); assert.match(systemCheck, /'fallback'/); });
