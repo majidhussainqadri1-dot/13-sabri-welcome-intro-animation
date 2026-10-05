@@ -143,15 +143,58 @@ final class Settings {
 	}
 
 	private static function append_audit( array $before, array $after, $actor_id ) {
+		global $wpdb;
+
 		$changed = array();
 		foreach ( $after as $key => $value ) {
 			if ( ! array_key_exists( $key, $before ) || $before[ $key ] !== $value ) { $changed[] = sanitize_key( $key ); }
 		}
-		$audit = get_option( self::AUDIT_OPTION, array() );
-		$audit = is_array( $audit ) ? $audit : array();
-		$audit[] = array( 'at' => gmdate( 'c' ), 'actor_id' => absint( $actor_id ), 'from' => absint( $before['config_version'] ), 'to' => absint( $after['config_version'] ), 'changed' => array_values( array_unique( $changed ) ) );
-		if ( count( $audit ) > 100 ) { $audit = array_slice( $audit, -100 ); }
-		update_option( self::AUDIT_OPTION, $audit, false );
+		$record = array(
+			'at' => gmdate( 'c' ),
+			'actor_id' => absint( $actor_id ),
+			'from' => absint( $before['config_version'] ),
+			'to' => absint( $after['config_version'] ),
+			'changed' => array_values( array_unique( $changed ) ),
+		);
+
+		if ( false === get_option( self::AUDIT_OPTION, false ) ) {
+			add_option( self::AUDIT_OPTION, array(), '', false );
+		}
+
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			$db_row = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT option_id, option_value FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",
+					self::AUDIT_OPTION
+				),
+				ARRAY_A
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			if ( ! is_array( $db_row ) || ! array_key_exists( 'option_value', $db_row ) ) { continue; }
+
+			$audit = maybe_unserialize( $db_row['option_value'] );
+			$audit = is_array( $audit ) ? $audit : array();
+			$audit[] = $record;
+			if ( count( $audit ) > 100 ) { $audit = array_slice( $audit, -100 ); }
+
+			$updated = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->options} SET option_value=%s WHERE option_id=%d AND option_name=%s AND option_value=%s",
+					maybe_serialize( $audit ),
+					absint( $db_row['option_id'] ),
+					self::AUDIT_OPTION,
+					(string) $db_row['option_value']
+				)
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+			if ( 1 === $updated ) {
+				wp_cache_delete( self::AUDIT_OPTION, 'options' );
+				delete_option( 'swi_intro_audit_gap' );
+				return;
+			}
+		}
+
+		$gap = array( 'at' => gmdate( 'c' ), 'from' => $record['from'], 'to' => $record['to'] );
+		update_option( 'swi_intro_audit_gap', $gap, false );
+		do_action( 'swi_intro_audit_contention', $record );
 	}
 
 	public static function active_now( array $config = null ) {
