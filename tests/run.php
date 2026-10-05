@@ -28,7 +28,7 @@ foreach ( $required as $file ) {
 }
 
 $checks = array(
-	$plugin . '/includes/class-renderer.php' => array( 'sabri_shell_welcome_intro_invoke', 'sabri_shell_file25_visual_contract', "'file-25' === $owner", 'surface_strong', '#087a4e' ),
+	$plugin . '/includes/class-renderer.php' => array( 'sabri_shell_welcome_intro_invoke', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
 	$plugin . '/includes/class-eligibility.php' => array( 'file-20-shell-placement', 'SafeMode', 'SWI_DISABLE_INTRO' ),
 	$plugin . '/assets/js/welcome-intro.js' => array( 'swi.dismissed.until', 'Math.max(30', 'Escape', 'prefers-reduced-motion' ),
 	$plugin . '/includes/class-settings.php' => array( "'enabled' => false", "'status' => 'disabled'", 'max( 30', 'config_version', 'eligible_paths', 'option_value=%s' ),
