@@ -47,10 +47,18 @@ final class Admin {
 		echo '<div class="wrap"><h1>' . esc_html__( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ) . '</h1>';
 		if ( isset( $_GET['swi_saved'] ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'Configuration saved.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		if ( isset( $_GET['swi_error'] ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'Configuration was not saved. Reload and try again.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
+		if ( isset( $_GET['swi_registry_synced'] ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'File 01 registry synchronized.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
+		if ( isset( $_GET['swi_registry_error'] ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — File 20 hook: ' . esc_html( $health['file20_contract_present'] ? 'present' : 'missing' ) . '</p>';
+		$foundation = Foundation::status();
+		echo '<p><strong>' . esc_html__( 'File 01 registry:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $foundation['state'] ) . '</p>';
 		echo '<p><a class="button" href="' . esc_url( $preview ) . '" target="_blank" rel="noopener">' . esc_html__( 'Preview', SWI_TEXT_DOMAIN ) . '</a> ';
 		echo '<a class="button" href="' . esc_url( add_query_arg( 'state', 'reduced', $preview ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Reduced-motion preview', SWI_TEXT_DOMAIN ) . '</a> ';
 		echo '<a class="button" href="' . esc_url( add_query_arg( 'state', 'error', $preview ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Failure preview', SWI_TEXT_DOMAIN ) . '</a></p>';
+		echo '<form style="display:inline-block;margin-bottom:12px" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( Foundation::SYNC_ACTION ) . '">';
+		wp_nonce_field( Foundation::SYNC_ACTION, '_swi_nonce' );
+		submit_button( __( 'Sync File 01 Registry', SWI_TEXT_DOMAIN ), 'secondary', 'submit', false );
+		echo '</form>';
 		echo '<form method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( self::SAVE_ACTION ) . '"><input type="hidden" name="expected_revision" value="' . esc_attr( absint( $config['config_version'] ) ) . '">';
 		wp_nonce_field( self::SAVE_ACTION, '_swi_nonce' );
 		echo '<table class="form-table" role="presentation">';
