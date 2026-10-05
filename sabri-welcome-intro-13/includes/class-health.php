@@ -18,6 +18,7 @@ final class Health {
 			&& defined( 'SABRI_SHELL_VERSION' )
 			&& false !== has_action( 'wp_body_open', array( $file20_class, 'invoke_welcome_intro' ) );
 		$visual = Renderer::visual_tokens();
+		$foundation = Foundation::status();
 		$issues = array();
 
 		if ( ! $file20_hook ) { $issues[] = 'file20_welcome_contract_missing'; }
@@ -25,6 +26,7 @@ final class Health {
 		if ( version_compare( get_bloginfo( 'version' ), '6.0', '<' ) ) { $issues[] = 'wordpress_below_declared_minimum'; }
 		if ( absint( $config['recurrence_days'] ) < 30 ) { $issues[] = 'recurrence_below_governing_floor'; }
 		if ( ! wp_next_scheduled( Analytics::CLEANUP_HOOK ) ) { $issues[] = 'analytics_cleanup_not_scheduled'; }
+		if ( ! empty( $foundation['available'] ) && 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { $issues[] = 'file01_registry_unsynced'; }
 
 		return array(
 			'plugin_version' => SWI_VERSION,
@@ -35,6 +37,7 @@ final class Health {
 			'file20_contract_present' => (bool) $file20_hook,
 			'file20_version' => defined( 'SABRI_SHELL_VERSION' ) ? (string) SABRI_SHELL_VERSION : '',
 			'visual_primary' => $visual['primary'],
+			'file01_registry' => $foundation,
 			'status' => empty( $issues ) ? 'healthy' : 'degraded',
 			'issues' => $issues,
 			'live_deployment' => 'unverified',
