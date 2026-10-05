@@ -26,11 +26,16 @@ final class Eligibility {
 		if ( get_query_var( self::PREVIEW_QUERY_VAR ) ) { return false; }
 		if ( empty( $context['route_eligible'] ) || 'file-20-shell-placement' !== (string) ( $context['owner'] ?? '' ) ) { return false; }
 		if ( empty( $context['contract_version'] ) || ! preg_match( '/^\d+\.\d+\.\d+$/', (string) $context['contract_version'] ) ) { return false; }
+
+		$layout = strtolower( (string) ( $context['layout_mode'] ?? '' ) );
+		if ( false !== strpos( $layout, 'minimal' ) || false !== strpos( $layout, 'immersive' ) ) { return false; }
 		if ( function_exists( 'is_feed' ) && is_feed() ) { return false; }
 		if ( function_exists( 'is_404' ) && is_404() ) { return false; }
 
 		$path = self::current_path();
+		if ( self::hard_suppressed_path( $path ) ) { return false; }
 		if ( ! self::path_allowed( $path, $config['eligible_paths'] ) ) { return false; }
+
 		return (bool) apply_filters( 'swi_intro_request_eligible', true, $context, $config, $path );
 	}
 
@@ -49,6 +54,31 @@ final class Eligibility {
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
 		$path = wp_parse_url( $request_uri, PHP_URL_PATH );
 		return Settings::normalize_path( is_string( $path ) ? $path : '/' );
+	}
+
+	private static function hard_suppressed_path( $path ) {
+		$prefixes = array(
+			'/wp-admin',
+			'/wp-login.php',
+			'/login',
+			'/account',
+			'/doctor/apply',
+			'/doctor/application',
+			'/doctor/verification',
+			'/appointment',
+			'/appointments',
+			'/clinical',
+			'/emergency',
+			'/recovery',
+		);
+		$prefixes = apply_filters( 'swi_intro_hard_suppressed_paths', $prefixes );
+		foreach ( (array) $prefixes as $prefix ) {
+			$prefix = Settings::normalize_path( $prefix );
+			if ( '' !== $prefix && ( $path === $prefix || str_starts_with( $path, trailingslashit( $prefix ) ) ) ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private static function path_allowed( $path, $allowed_paths ) {
