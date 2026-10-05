@@ -84,18 +84,50 @@ final class Settings {
 	}
 
 	public static function update( array $input, $expected_revision, $actor_id = 0 ) {
-		$current = self::get();
+		global $wpdb;
+
+		// Compare-and-swap against the exact serialized row so two administrators
+		// cannot both save the same revision and silently overwrite each other.
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT option_id, option_value FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",
+				self::OPTION
+			),
+			ARRAY_A
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+		if ( ! is_array( $row ) || ! array_key_exists( 'option_value', $row ) ) {
+			return new \WP_Error( 'swi_config_missing', __( 'The welcome-intro configuration is missing.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
+		}
+
+		$stored = maybe_unserialize( $row['option_value'] );
+		$stored = is_array( $stored ) ? $stored : array();
+		$current = array_replace( self::defaults(), $stored );
 		$expected_revision = absint( $expected_revision );
 		$current_revision = absint( $current['config_version'] );
 		if ( $expected_revision !== $current_revision ) {
 			return new \WP_Error( 'swi_stale_config', __( 'The configuration changed since you opened it. Reload before saving.', SWI_TEXT_DOMAIN ), array( 'status' => 409, 'current_revision' => $current_revision ) );
 		}
+
 		$next = self::sanitize( $input, $current );
 		$next['config_version'] = $current_revision + 1;
-		if ( ! update_option( self::OPTION, $next, false ) ) {
-			$after = self::get();
-			if ( $after !== $next ) { return new \WP_Error( 'swi_config_write_failed', __( 'The configuration could not be saved safely.', SWI_TEXT_DOMAIN ), array( 'status' => 500 ) ); }
+		$serialized_next = maybe_serialize( $next );
+		$updated = $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->options} SET option_value=%s WHERE option_id=%d AND option_name=%s AND option_value=%s",
+				$serialized_next,
+				absint( $row['option_id'] ),
+				self::OPTION,
+				(string) $row['option_value']
+			)
+		); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+		if ( 1 !== $updated ) {
+			wp_cache_delete( self::OPTION, 'options' );
+			return new \WP_Error( 'swi_stale_config', __( 'The configuration changed before your save completed. Reload before saving.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
+
+		wp_cache_delete( self::OPTION, 'options' );
 		self::append_audit( $current, $next, absint( $actor_id ) );
 		do_action( 'swi_intro_config_updated', $next, $current );
 		return $next;
