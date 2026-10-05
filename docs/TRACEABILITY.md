@@ -32,11 +32,14 @@ The final File 13 amendment supersedes the historical orange-primary and forced-
 
 ## Companion boundaries
 
+### File 01
+File 13 provides an explicit, authenticated File 01 registry synchronization path. It registers the canonical `file-13` manifest and `/welcome-intro-preview/` mapping through the real `SPF_Registry` API only when an authorized operator requests it; no silent activation-time cross-module mutation occurs.
+
 ### File 20
 Current repository code invokes File 13 through `sabri_shell_welcome_intro_invoke` with owner `file-20-shell-placement`, a semantic contract version, route eligibility, layout mode, and explicit preference ownership by File 13. File 13 rejects fabricated/non-File-20 invocation context.
 
 ### File 25
-File 13 consumes the same validated visual contract surface used by File 20. If File 25 is absent or invalid, only continuity fallback tokens are used; no second theme/design system is created.
+File 13 consumes the same validated visual contract surface used by File 20. Only the exact `file-25` owner contract with a compatible semantic version is consumed. If File 25 is absent, malformed or owned by another module, only continuity fallback tokens are used; no second theme/design system is created.
 
 ### File 00
 File 13 does not clone identity, roles or entitlement data. Administrative authorization is capability-based and exposes `swi_intro_authorization_decision` as the adapter point for a stricter File 00 provider.
