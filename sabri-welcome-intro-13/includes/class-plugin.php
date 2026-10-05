@@ -17,6 +17,7 @@ final class Plugin {
 		Renderer::register();
 		Rest::register();
 		Health::register();
+		Foundation::register();
 		Admin::register();
 		add_filter( 'plugin_action_links_' . plugin_basename( SWI_FILE ), array( $this, 'action_links' ) );
 	}
