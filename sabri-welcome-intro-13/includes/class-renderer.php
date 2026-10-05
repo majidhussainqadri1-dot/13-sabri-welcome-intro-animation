@@ -90,7 +90,7 @@ final class Renderer {
 	}
 
 	public static function visual_tokens() {
-		$fallback = array( 'primary' => '#087a4e', 'dark' => '#065c3b', 'light' => '#e7f5ee' );
+		$fallback = array( 'primary' => '#087a4e', 'dark' => '#171717', 'light' => '#e7f5ee' );
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
 		if ( ! is_array( $contract ) || empty( $contract['tokens'] ) || ! is_array( $contract['tokens'] ) ) { return $fallback; }
 		$owner = sanitize_key( (string) ( $contract['owner'] ?? '' ) );
@@ -103,8 +103,8 @@ final class Renderer {
 		$tokens = $contract['tokens'];
 		return array(
 			'primary' => self::hex( $tokens['primary_color'] ?? '', $fallback['primary'] ),
-			'dark' => self::hex( $tokens['primary_dark'] ?? '', $fallback['dark'] ),
-			'light' => self::hex( $tokens['primary_light'] ?? '', $fallback['light'] ),
+			'dark' => self::hex( $tokens['text'] ?? '', $fallback['dark'] ),
+			'light' => self::hex( $tokens['surface_strong'] ?? '', $fallback['light'] ),
 		);
 	}
 
