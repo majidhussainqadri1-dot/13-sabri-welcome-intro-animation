@@ -28,6 +28,7 @@ require_once SWI_PATH . 'includes/class-analytics.php';
 require_once SWI_PATH . 'includes/class-renderer.php';
 require_once SWI_PATH . 'includes/class-rest.php';
 require_once SWI_PATH . 'includes/class-health.php';
+require_once SWI_PATH . 'includes/class-foundation.php';
 require_once SWI_PATH . 'includes/class-admin.php';
 require_once SWI_PATH . 'includes/class-plugin.php';
 
