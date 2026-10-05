@@ -30,6 +30,7 @@ final class Health {
 		if ( empty( $foundation['available'] ) ) { $issues[] = 'file01_registry_unavailable'; }
 		elseif ( 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { $issues[] = 'file01_registry_unsynced'; }
 		if ( empty( $visual_contract['valid'] ) ) { $issues[] = 'file25_visual_contract_missing_or_invalid'; }
+		if ( false !== get_option( 'swi_intro_audit_gap', false ) ) { $issues[] = 'configuration_audit_gap'; }
 
 		return array(
 			'plugin_version' => SWI_VERSION,
