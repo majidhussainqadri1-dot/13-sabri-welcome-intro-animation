@@ -12,7 +12,8 @@ final class Admin {
 	}
 
 	public static function menu() {
-		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), 'manage_options', self::PAGE, array( __CLASS__, 'render' ) );
+		$capability = apply_filters( 'swi_intro_manage_capability', Authorization::DEFAULT_CAPABILITY, 'manage_intro' );
+		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), is_string( $capability ) ? $capability : Authorization::DEFAULT_CAPABILITY, self::PAGE, array( __CLASS__, 'render' ) );
 	}
 
 	public static function save() {
@@ -46,7 +47,7 @@ final class Admin {
 		echo '<div class="wrap"><h1>' . esc_html__( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ) . '</h1>';
 		if ( isset( $_GET['swi_saved'] ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'Configuration saved.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		if ( isset( $_GET['swi_error'] ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'Configuration was not saved. Reload and try again.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
-		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — File 20 hook: ' . esc_html( $health['file20_hook_present'] ? 'present' : 'missing' ) . '</p>';
+		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — File 20 hook: ' . esc_html( $health['file20_contract_present'] ? 'present' : 'missing' ) . '</p>';
 		echo '<p><a class="button" href="' . esc_url( $preview ) . '" target="_blank" rel="noopener">' . esc_html__( 'Preview', SWI_TEXT_DOMAIN ) . '</a> ';
 		echo '<a class="button" href="' . esc_url( add_query_arg( 'state', 'reduced', $preview ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Reduced-motion preview', SWI_TEXT_DOMAIN ) . '</a> ';
 		echo '<a class="button" href="' . esc_url( add_query_arg( 'state', 'error', $preview ) ) . '" target="_blank" rel="noopener">' . esc_html__( 'Failure preview', SWI_TEXT_DOMAIN ) . '</a></p>';
