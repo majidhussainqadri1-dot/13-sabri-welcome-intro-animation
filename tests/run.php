@@ -34,6 +34,7 @@ $checks = array(
 	$plugin . '/includes/class-settings.php' => array( "'enabled' => false", "'status' => 'disabled'", 'max( 30', 'config_version', 'eligible_paths', 'option_value=%s', 'swi_intro_audit_contention' ),
 	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'map_route', 'register_manifest' ),
 	$plugin . '/includes/class-analytics.php' => array( 'option_value=%s', 'analytics_contention', 'config_version' ),
+	$plugin . '/includes/class-authorization.php' => array( 'return $allowed && $institutional', 'swi_intro_authorization_decision' ),
 );
 foreach ( $checks as $file => $needles ) {
 	$body = is_file( $file ) ? file_get_contents( $file ) : '';
