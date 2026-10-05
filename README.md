@@ -6,7 +6,10 @@ Production-oriented source implementation for **File 13** of the Sabri Social Ho
 
 File 13 owns the accessible, non-blocking welcome intro and its privacy-minimal recurrence/session preference state. It does **not** own the global shell, navigation, theme, profile/timeline design system, authentication, clinical routes, or security assurance center.
 
+Public activation is **closed by default** and must be explicitly enabled after the required review/staging gate.
+
 Current governing integration:
+- File 01 registry integration is explicit/operator-triggered; it registers File 13 and its private preview route without silent companion mutation.
 - File 20 provides route/layout eligibility and invokes File 13 through `sabri_shell_welcome_intro_invoke`.
 - File 25 provides visual/design tokens; Sabri Green `#087A4E` is the canonical primary fallback.
 - File 13 fails open: if JavaScript, storage, dependencies, or configuration fail, ordinary page content remains available.
