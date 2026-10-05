@@ -187,7 +187,6 @@ final class Settings {
 			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			if ( 1 === $updated ) {
 				wp_cache_delete( self::AUDIT_OPTION, 'options' );
-				delete_option( 'swi_intro_audit_gap' );
 				return;
 			}
 		}
