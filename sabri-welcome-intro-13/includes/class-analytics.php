@@ -43,15 +43,50 @@ final class Analytics {
 	}
 
 	public static function record( $event, $version ) {
+		global $wpdb;
+
 		// Aggregate only: no IP, account, cookie ID, URL history, user-agent, or fingerprint is stored.
 		$key = self::OPTION_PREFIX . gmdate( 'Ymd' ) . '_v' . absint( $version );
-		$row = get_option( $key, array( 'shown' => 0, 'skipped' => 0, 'completed' => 0 ) );
-		$row = is_array( $row )
-			? array_replace( array( 'shown' => 0, 'skipped' => 0, 'completed' => 0 ), $row )
-			: array( 'shown' => 0, 'skipped' => 0, 'completed' => 0 );
+		$empty = array( 'shown' => 0, 'skipped' => 0, 'completed' => 0 );
+		if ( false === get_option( $key, false ) ) {
+			add_option( $key, $empty, '', false );
+		}
 
-		$row[ $event ] = min( PHP_INT_MAX, absint( $row[ $event ] ) + 1 );
-		update_option( $key, $row, false );
+		$recorded = false;
+		for ( $attempt = 0; $attempt < 3; $attempt++ ) {
+			$db_row = $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT option_id, option_value FROM {$wpdb->options} WHERE option_name=%s LIMIT 1",
+					$key
+				),
+				ARRAY_A
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+			if ( ! is_array( $db_row ) || ! array_key_exists( 'option_value', $db_row ) ) { continue; }
+			$row = maybe_unserialize( $db_row['option_value'] );
+			$row = is_array( $row ) ? array_replace( $empty, $row ) : $empty;
+			$row[ $event ] = min( PHP_INT_MAX, absint( $row[ $event ] ) + 1 );
+
+			$updated = $wpdb->query(
+				$wpdb->prepare(
+					"UPDATE {$wpdb->options} SET option_value=%s WHERE option_id=%d AND option_name=%s AND option_value=%s",
+					maybe_serialize( $row ),
+					absint( $db_row['option_id'] ),
+					$key,
+					(string) $db_row['option_value']
+				)
+			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
+
+			if ( 1 === $updated ) {
+				wp_cache_delete( $key, 'options' );
+				$recorded = true;
+				break;
+			}
+		}
+		if ( ! $recorded ) {
+			do_action( 'swi_intro_analytics_contention', $event, absint( $version ) );
+			return;
+		}
 
 		$event_name = array(
 			'shown' => 'WelcomeIntroShown.v1',
