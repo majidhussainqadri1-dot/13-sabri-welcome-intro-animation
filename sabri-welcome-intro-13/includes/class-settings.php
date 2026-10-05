@@ -14,8 +14,8 @@ final class Settings {
 
 	public static function defaults() {
 		return array(
-			'enabled' => true,
-			'status' => 'active',
+			'enabled' => false,
+			'status' => 'disabled',
 			'config_version' => 1,
 			'heading' => 'Sabri Homeopathy',
 			'claim' => 'The Tridimensional Healing System of Soul, Vital Force, and Matter',
