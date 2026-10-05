@@ -87,8 +87,8 @@ final class Renderer {
 		$tokens = $contract['tokens'];
 		return array(
 			'primary' => self::hex( $tokens['primary_color'] ?? '', $fallback['primary'] ),
-			'dark' => self::hex( $tokens['primary_dark'] ?? $tokens['text'] ?? '', $fallback['dark'] ),
-			'light' => self::hex( $tokens['primary_light'] ?? $tokens['surface_strong'] ?? '', $fallback['light'] ),
+			'dark' => self::hex( $tokens['primary_dark'] ?? '', $fallback['dark'] ),
+			'light' => self::hex( $tokens['primary_light'] ?? '', $fallback['light'] ),
 		);
 	}
 
