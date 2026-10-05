@@ -30,3 +30,17 @@ jobs:
           test -f sabri-welcome-intro-13/sabri-welcome-intro.php
           test -f docs/TWENTY-PASS-AUDIT.md
           test -f docs/TRACEABILITY.md
+      - name: Reproducible package build
+        run: |
+          SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-a
+          SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-b
+          cmp /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip /tmp/file13-dist-b/sabri-welcome-intro-13-1.0.0.zip
+          unzip -l /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip | grep 'sabri-welcome-intro-13/sabri-welcome-intro.php'
+      - name: Upload source package
+        uses: actions/upload-artifact@v4
+        with:
+          name: sabri-welcome-intro-13-php-${{ matrix.php }}
+          path: |
+            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip
+            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip.sha256
+          if-no-files-found: error
