@@ -10,7 +10,7 @@ final class Analytics {
 	public static function register() {
 		add_action( 'wp_ajax_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
 		add_action( 'wp_ajax_nopriv_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
-		add_action( self::CLEANUP_HOOK, array( __CLASS__, 'cleanup' ) );
+		add_action( self::CLEANUP_HOOK, array( __CLASS__, 'cleanup' ) );\n\t\tadd_action( 'init', array( __CLASS__, 'schedule_cleanup' ), 20 );
 	}
 
 	public static function schedule_cleanup() {
