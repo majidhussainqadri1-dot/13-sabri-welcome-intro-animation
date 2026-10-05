@@ -89,18 +89,32 @@ final class Renderer {
 			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
 	}
 
+	public static function visual_contract_status() {
+		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
+		$owner = is_array( $contract ) ? sanitize_key( (string) ( $contract['owner'] ?? '' ) ) : '';
+		$version = is_array( $contract ) ? sanitize_text_field( (string) ( $contract['version'] ?? '' ) ) : '';
+		$tokens = is_array( $contract ) && isset( $contract['tokens'] ) && is_array( $contract['tokens'] )
+			? $contract['tokens']
+			: array();
+		$valid = 'file-25' === $owner
+			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
+			&& version_compare( $version, '1.0.0', '>=' )
+			&& ! empty( $tokens );
+
+		return array(
+			'valid' => $valid,
+			'owner' => $owner,
+			'version' => $version,
+			'tokens' => $tokens,
+		);
+	}
+
 	public static function visual_tokens() {
 		$fallback = array( 'primary' => '#087a4e', 'dark' => '#171717', 'light' => '#e7f5ee' );
-		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
-		if ( ! is_array( $contract ) || empty( $contract['tokens'] ) || ! is_array( $contract['tokens'] ) ) { return $fallback; }
-		$owner = sanitize_key( (string) ( $contract['owner'] ?? '' ) );
-		$version = sanitize_text_field( (string) ( $contract['version'] ?? '' ) );
-		if ( 'file-25' !== $owner
-			|| 1 !== preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
-			|| version_compare( $version, '1.0.0', '<' ) ) {
-			return $fallback;
-		}
-		$tokens = $contract['tokens'];
+		$status = self::visual_contract_status();
+		if ( empty( $status['valid'] ) ) { return $fallback; }
+
+		$tokens = $status['tokens'];
 		return array(
 			'primary' => self::hex( $tokens['primary_color'] ?? '', $fallback['primary'] ),
 			'dark' => self::hex( $tokens['text'] ?? '', $fallback['dark'] ),
