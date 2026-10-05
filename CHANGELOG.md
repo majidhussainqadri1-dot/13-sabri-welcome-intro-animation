@@ -14,3 +14,6 @@
 - Hardened configuration and aggregate metrics with compare-and-swap concurrency control.
 - Validated the exact File 25 owner/version contract and canonical token keys.
 - Added deterministic ZIP/SHA-256 build verification and executable JavaScript behavior tests.
+
+- Prevented companion authorization adapters from widening the native WordPress privilege gate.
+- Kept configuration-audit gap evidence sticky and health-visible until explicit reconciliation.
