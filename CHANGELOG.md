@@ -8,3 +8,9 @@
 - Added fail-open behavior, admin preview, governed configuration, optimistic concurrency, audit history, optional aggregate analytics, health status and Safe Mode/kill switches.
 - Added migration, rollback, privacy, security, traceability, twenty-pass audit and CI/static contract tests.
 - Explicitly did not claim staging/live/operational completion.
+
+- Added explicit File 01 canonical registry/preview-route synchronization.
+- Changed fresh-install public activation to fail-closed.
+- Hardened configuration and aggregate metrics with compare-and-swap concurrency control.
+- Validated the exact File 25 owner/version contract and canonical token keys.
+- Added deterministic ZIP/SHA-256 build verification and executable JavaScript behavior tests.
