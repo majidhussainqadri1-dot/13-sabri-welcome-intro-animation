@@ -29,7 +29,7 @@ Each pass was treated as a separate defect-discovery lens. Defects were correcte
 
 ## Secondary defects caught during the twenty-pass cycle
 
-The review also caught and corrected: a false-positive File 20 health check, missing recurring cleanup scheduling, cron left behind on uninstall, permissive analytics origin handling, stale analytics event-version acceptance, File 25 token-key mismatch, overly broad File 25 owner aliases, and missing File 01 registry health visibility.
+The review also caught and corrected: a false-positive File 20 health check, missing recurring cleanup scheduling, cron left behind on uninstall, permissive analytics origin handling, stale analytics event-version acceptance, File 25 token-key mismatch, overly broad File 25 owner aliases, missing File 01 registry health visibility, a companion-authorization path that could otherwise widen native privilege, and audit-gap handling that now remains durably visible until explicit reconciliation.
 
 ## Final source verdict
 
