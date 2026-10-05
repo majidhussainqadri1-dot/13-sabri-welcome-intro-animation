@@ -60,10 +60,19 @@ final class Renderer {
 	}
 
 	private static function markup( array $config, $preview ) {
+		$copy = apply_filters(
+			'swi_intro_public_copy',
+			array( 'heading' => $config['heading'], 'claim' => $config['claim'] ),
+			function_exists( 'determine_locale' ) ? determine_locale() : get_locale(),
+			$config
+		);
+		$copy = is_array( $copy ) ? $copy : array();
+		$heading = sanitize_text_field( $copy['heading'] ?? $config['heading'] );
+		$claim = sanitize_textarea_field( $copy['claim'] ?? $config['claim'] );
 		$id = $preview ? 'swi-welcome-intro-preview' : 'swi-welcome-intro';
 		$html = '<aside id="' . esc_attr( $id ) . '" class="swi-intro" hidden data-swi-version="' . esc_attr( absint( $config['config_version'] ) ) . '" aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', SWI_TEXT_DOMAIN ) . '"><div class="swi-intro__panel">';
 		$html .= '<div class="swi-intro__logo" aria-hidden="true"><svg viewBox="0 0 72 72" width="72" height="72" focusable="false"><circle cx="36" cy="36" r="32"></circle><text x="36" y="42" text-anchor="middle">SH</text></svg></div>';
-		$html .= '<div class="swi-intro__copy" role="status" aria-live="polite" aria-atomic="true"><strong class="swi-intro__heading">' . esc_html( $config['heading'] ) . '</strong><span class="swi-intro__claim">' . esc_html( $config['claim'] ) . '</span><span class="swi-intro__line" aria-hidden="true"></span></div>';
+		$html .= '<div class="swi-intro__copy" role="status" aria-live="polite" aria-atomic="true"><strong class="swi-intro__heading">' . esc_html( $heading ) . '</strong><span class="swi-intro__claim">' . esc_html( $claim ) . '</span><span class="swi-intro__line" aria-hidden="true"></span></div>';
 		$html .= '<button type="button" class="swi-intro__skip">' . esc_html__( 'Skip intro', SWI_TEXT_DOMAIN ) . '</button></div></aside>';
 		return $html;
 	}
@@ -84,6 +93,13 @@ final class Renderer {
 		$fallback = array( 'primary' => '#087a4e', 'dark' => '#065c3b', 'light' => '#e7f5ee' );
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
 		if ( ! is_array( $contract ) || empty( $contract['tokens'] ) || ! is_array( $contract['tokens'] ) ) { return $fallback; }
+		$owner = sanitize_key( (string) ( $contract['owner'] ?? '' ) );
+		$version = sanitize_text_field( (string) ( $contract['version'] ?? '' ) );
+		if ( ! in_array( $owner, array( 'file-25', 'sabri-public-experience', 'sabri-unified-global-visual-experience' ), true )
+			|| 1 !== preg_match( '/^\d+\.\d+\.\d+$/', $version )
+			|| version_compare( $version, '1.0.0', '<' ) ) {
+			return $fallback;
+		}
 		$tokens = $contract['tokens'];
 		return array(
 			'primary' => self::hex( $tokens['primary_color'] ?? '', $fallback['primary'] ),
