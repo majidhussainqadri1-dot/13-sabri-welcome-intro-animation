@@ -1,6 +1,8 @@
 <?php
 if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) { exit; }
 
+wp_clear_scheduled_hook( 'swi_intro_cleanup_aggregates' );
+
 /**
  * Non-destructive by default. Destructive purge is allowed only when an operator
  * deliberately defines SWI_PURGE_ON_UNINSTALL=true before uninstalling.
