@@ -25,6 +25,8 @@ jobs:
         run: php tests/run.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
+      - name: JavaScript behavior
+        run: node tests/js-behavior.test.js
       - name: Package layout check
         run: |
           test -f sabri-welcome-intro-13/sabri-welcome-intro.php
