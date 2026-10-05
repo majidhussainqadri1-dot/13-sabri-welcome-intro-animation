@@ -9,6 +9,7 @@ final class Settings {
 
 	public static function register() {
 		add_filter( 'pre_update_option_' . self::OPTION, array( __CLASS__, 'guard_option_write' ), 99, 3 );
+		add_action( 'init', array( __CLASS__, 'maybe_upgrade' ), 2 );
 	}
 
 	public static function defaults() {
@@ -32,9 +33,19 @@ final class Settings {
 			add_option( self::OPTION, self::defaults(), '', false );
 		} else {
 			$current = get_option( self::OPTION, array() );
-			update_option( self::OPTION, self::sanitize( is_array( $current ) ? $current : array(), self::defaults() ), false );
+			$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
+			update_option( self::OPTION, self::sanitize( $current, $current ), false );
 		}
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
+	}
+
+	public static function maybe_upgrade() {
+		if ( SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' ) ) { return; }
+		$current = get_option( self::OPTION, array() );
+		$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
+		update_option( self::OPTION, self::sanitize( $current, $current ), false );
+		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
+		do_action( 'swi_intro_schema_upgraded', SWI_SCHEMA_VERSION );
 	}
 
 	public static function get() {
