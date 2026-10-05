@@ -31,7 +31,7 @@ $checks = array(
 	$plugin . '/includes/class-renderer.php' => array( 'sabri_shell_welcome_intro_invoke', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
 	$plugin . '/includes/class-eligibility.php' => array( 'file-20-shell-placement', 'SafeMode', 'SWI_DISABLE_INTRO' ),
 	$plugin . '/assets/js/welcome-intro.js' => array( 'swi.dismissed.until', 'Math.max(30', 'Escape', 'prefers-reduced-motion' ),
-	$plugin . '/includes/class-settings.php' => array( "'enabled' => false", "'status' => 'disabled'", 'max( 30', 'config_version', 'eligible_paths', 'option_value=%s' ),
+	$plugin . '/includes/class-settings.php' => array( "'enabled' => false", "'status' => 'disabled'", 'max( 30', 'config_version', 'eligible_paths', 'option_value=%s', 'swi_intro_audit_contention' ),
 	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'map_route', 'register_manifest' ),
 	$plugin . '/includes/class-analytics.php' => array( 'option_value=%s', 'analytics_contention', 'config_version' ),
 );
