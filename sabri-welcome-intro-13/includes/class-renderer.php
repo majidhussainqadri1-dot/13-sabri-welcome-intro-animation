@@ -95,8 +95,8 @@ final class Renderer {
 		if ( ! is_array( $contract ) || empty( $contract['tokens'] ) || ! is_array( $contract['tokens'] ) ) { return $fallback; }
 		$owner = sanitize_key( (string) ( $contract['owner'] ?? '' ) );
 		$version = sanitize_text_field( (string) ( $contract['version'] ?? '' ) );
-		if ( ! in_array( $owner, array( 'file-25', 'sabri-public-experience', 'sabri-unified-global-visual-experience' ), true )
-			|| 1 !== preg_match( '/^\d+\.\d+\.\d+$/', $version )
+		if ( 'file-25' !== $owner
+			|| 1 !== preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
 			|| version_compare( $version, '1.0.0', '<' ) ) {
 			return $fallback;
 		}
