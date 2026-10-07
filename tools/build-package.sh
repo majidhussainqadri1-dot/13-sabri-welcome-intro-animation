@@ -5,7 +5,7 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 PLUGIN="sabri-welcome-intro-13"
 DEST="${1:-$ROOT/dist}"
 SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-1791172800}"
-ZIP_NAME="sabri-welcome-intro-13-1.0.0.zip"
+ZIP_NAME="sabri-welcome-intro-13-1.0.1.zip"
 
 command -v zip >/dev/null 2>&1 || { echo "zip is required" >&2; exit 2; }
 command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required" >&2; exit 2; }

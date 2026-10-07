@@ -2,7 +2,7 @@ name: File 13 Quality
 
 on:
   push:
-    branches: ["main", "file13-complete-20-pass-audit"]
+    branches: ["main", "file13-complete-20-pass-audit", "file13-cross-contract-compatibility"]
   pull_request:
 
 permissions:
@@ -40,13 +40,13 @@ jobs:
         run: |
           SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-a
           SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-b
-          cmp /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip /tmp/file13-dist-b/sabri-welcome-intro-13-1.0.0.zip
-          unzip -l /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip | grep 'sabri-welcome-intro-13/sabri-welcome-intro.php'
+          cmp /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip /tmp/file13-dist-b/sabri-welcome-intro-13-1.0.1.zip
+          unzip -l /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip | grep 'sabri-welcome-intro-13/sabri-welcome-intro.php'
       - name: Upload source package
         uses: actions/upload-artifact@v4
         with:
           name: sabri-welcome-intro-13-php-${{ matrix.php }}
           path: |
-            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip
-            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.0.zip.sha256
+            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip
+            /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip.sha256
           if-no-files-found: error

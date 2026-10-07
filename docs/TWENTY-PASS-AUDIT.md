@@ -1,4 +1,6 @@
-# Twenty-Pass Repository Completion Audit
+# Historical Twenty-Pass Repository Completion Audit
+
+> Superseded for current ownership conclusions by `CROSS-CONTRACT-AUDIT-2026-10-07.md`. This file is retained as historical evidence of the 1.0.0 review and must not be read as current runtime truth.
 
 Audit basis: File 13 governing plan, consolidated central plan, the current File 01 registry API, the current File 20 shell/invocation contract, the current File 25 design-system contract, File 24 assurance boundaries, and repository release-truth rules.
 

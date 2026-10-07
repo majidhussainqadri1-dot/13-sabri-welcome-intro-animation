@@ -2,8 +2,8 @@
 /**
  * Plugin Name: Sabri Welcome Intro Animation
  * Plugin URI: https://github.com/majidhussainqadri1-dot/13-sabri-welcome-intro-animation
- * Description: Accessible, privacy-minimal, non-blocking welcome intro for the Sabri Social Homeopathy Platform.
- * Version: 1.0.0
+ * Description: Fail-closed compatibility and migration guard for the historical File 13 welcome intro.
+ * Version: 1.0.1
  * Author: Dr. Allamah Majid Hussain Sabri Muhaddith Mursheed
  * Text Domain: sabri-welcome-intro
  * Domain Path: /languages
@@ -14,8 +14,8 @@
  */
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
-define( 'SWI_VERSION', '1.0.0' );
-define( 'SWI_SCHEMA_VERSION', '1.0.0' );
+define( 'SWI_VERSION', '1.0.1' );
+define( 'SWI_SCHEMA_VERSION', '1.0.1' );
 define( 'SWI_FILE', __FILE__ );
 define( 'SWI_PATH', plugin_dir_path( __FILE__ ) );
 define( 'SWI_URL', plugin_dir_url( __FILE__ ) );

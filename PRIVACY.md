@@ -1,14 +1,9 @@
 # Privacy
 
-The public intro is deliberately privacy-minimal.
+File 13 version 1.0.1 has no public intro runtime and performs no public analytics or browser persistence.
 
-Browser preference state:
-- `sessionStorage`: a config-version seen flag for the current browser session;
-- `localStorage`: a single dismissal-until timestamp;
-- no random identifier, account identifier, health interest, browsing profile, device fingerprint, advertising identifier, or cross-site identifier is created.
+Historical browser keys are no longer read or written by File 13. File 20 is the current frequency owner and must govern any active session/cookie/localStorage behavior under its own privacy contract.
 
-Dismissal/completion suppresses reappearance for at least 30 days.
-
-Optional aggregate analytics is disabled by default. When enabled it accepts only three event names (shown, skipped, completed) and a configuration version. It stores daily aggregate counts only and automatically removes counters older than 90 days.
+Legacy aggregate options may remain for audit/rollback evidence, but no public endpoint records new File 13 events. Existing cleanup hooks are cleared during upgrade/activation.
 
 The plugin does not export File 00/File 24 rights by pretending to own them. Platform-wide export/erasure/legal-hold policy remains with the canonical owners.

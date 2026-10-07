@@ -12,8 +12,6 @@ final class Plugin {
 
 	public function register() {
 		Settings::register();
-		Eligibility::register();
-		Analytics::register();
 		Renderer::register();
 		Rest::register();
 		Health::register();
@@ -29,9 +27,9 @@ final class Plugin {
 
 	public static function activate() {
 		Settings::activate();
-		Eligibility::register_rewrite();
+		Renderer::register_rewrite();
 		flush_rewrite_rules( false );
-		Analytics::schedule_cleanup();
+		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
 	}
 
 	public static function deactivate() {
