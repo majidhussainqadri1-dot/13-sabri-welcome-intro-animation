@@ -1,6 +1,10 @@
-# File 13 Current-Head Cross-Contract Audit — 2026-10-07
+# File 13 Dated Cross-Contract Audit Baseline — 2026-10-07
 
-## Exact source evidence
+## Historical evidence boundary
+
+> This document is a dated audit baseline. Its recorded SHAs were current only when this audit was executed and MUST NOT be treated as current-head truth after any repository advances. Every later audit must re-freeze all relevant exact heads.
+
+## Exact source evidence at the time of this audit
 
 This audit did not reuse a prior report as current truth. It re-read the exact default-branch heads:
 
