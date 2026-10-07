@@ -10,8 +10,8 @@ final class Admin {
 	}
 
 	public static function menu() {
-		$capability = apply_filters( 'swi_intro_manage_capability', Authorization::DEFAULT_CAPABILITY, 'manage_intro' );
-		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), is_string( $capability ) ? $capability : Authorization::DEFAULT_CAPABILITY, self::PAGE, array( __CLASS__, 'render' ) );
+		// WordPress menu visibility must never use a filter-weakened capability.
+		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), Authorization::DEFAULT_CAPABILITY, self::PAGE, array( __CLASS__, 'render' ) );
 	}
 
 	public static function render() {
