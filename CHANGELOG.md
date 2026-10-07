@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.0.1 — cross-contract ownership correction
+
+- Reconciled File 13 with the current File 24 and File 25 contracts: File 13 is historical compatibility only; File 20 owns invocation/frequency and File 25 owns presentation.
+- Removed registration of the public File 13 renderer, eligibility resolver, analytics endpoints and configuration-write surfaces.
+- Forced all legacy activation and analytics state to disabled during reads, writes, activation and schema upgrade.
+- Added the File 24 `spcrc/file13_contract_state` assurance adapter, which blocks on any legacy public-runtime reactivation.
+- Converted the File 01 manifest to compatibility/migration scope and prevented existing active registry state from being silently preserved.
+- Retained an authenticated, non-persistent historical preview for migration inspection only.
+- Added exact-head cross-contract traceability and negative regression gates against reintroducing public rendering, browser persistence or analytics.
+- Staging, deployment, DB migration and live verification remain unverified.
+
 ## 1.0.0 — source completion candidate
 
 - Implemented File 20 exact welcome invocation contract.

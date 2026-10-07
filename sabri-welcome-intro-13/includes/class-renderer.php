@@ -3,35 +3,30 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
-	private static $rendered = false;
-
 	public static function register() {
-		add_action( 'sabri_shell_welcome_intro_invoke', array( __CLASS__, 'invoke' ), 10, 1 );
+		add_action( 'init', array( __CLASS__, 'register_rewrite' ) );
+		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
 		add_action( 'template_redirect', array( __CLASS__, 'maybe_preview' ), 1 );
 	}
 
-	public static function invoke( $context = array() ) {
-		if ( self::$rendered || ! is_array( $context ) || ! Eligibility::public_request_eligible( $context ) ) { return; }
-		self::$rendered = true;
-		$config = Settings::get();
-		$tokens = self::visual_tokens();
+	public static function register_rewrite() {
+		add_rewrite_rule( '^welcome-intro-preview/?$', 'index.php?swi_intro_preview=1', 'top' );
+	}
 
-		wp_enqueue_script( 'swi-welcome-intro', SWI_URL . 'assets/js/welcome-intro.js', array(), SWI_VERSION, true );
-		wp_localize_script( 'swi-welcome-intro', 'SWI_INTRO', array(
-			'version' => absint( $config['config_version'] ),
-			'durationMs' => absint( $config['duration_ms'] ),
-			'recurrenceDays' => absint( $config['recurrence_days'] ),
-			'analyticsEnabled' => ! empty( $config['analytics_enabled'] ),
-			'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-			'eventNonce' => wp_create_nonce( Analytics::NONCE_ACTION ),
-			'preview' => false,
-		) );
-		echo self::style_block( $tokens ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-		echo self::markup( $config, false ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	public static function query_vars( $vars ) {
+		$vars[] = 'swi_intro_preview';
+		return $vars;
+	}
+
+	public static function invoke( $context = array() ) {
+		unset( $context );
+		// Historical hook retained as a callable no-op for rollback compatibility.
+		// It is deliberately not registered: active ownership belongs to Files 20/25.
+		do_action( 'swi_intro_legacy_invocation_blocked', SWI_VERSION );
 	}
 
 	public static function maybe_preview() {
-		if ( ! get_query_var( Eligibility::PREVIEW_QUERY_VAR ) ) { return; }
+		if ( ! get_query_var( 'swi_intro_preview' ) ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
 		Authorization::require_manage( 'preview_intro' );
 		nocache_headers();

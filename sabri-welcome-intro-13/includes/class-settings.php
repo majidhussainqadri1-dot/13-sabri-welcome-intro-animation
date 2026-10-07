@@ -45,12 +45,17 @@ final class Settings {
 		$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
 		update_option( self::OPTION, self::sanitize( $current, $current ), false );
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
+		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
 		do_action( 'swi_intro_schema_upgraded', SWI_SCHEMA_VERSION );
 	}
 
 	public static function get() {
 		$stored = get_option( self::OPTION, array() );
-		return array_replace( self::defaults(), is_array( $stored ) ? $stored : array() );
+		$config = array_replace( self::defaults(), is_array( $stored ) ? $stored : array() );
+		$config['enabled'] = false;
+		$config['status'] = 'disabled';
+		$config['analytics_enabled'] = false;
+		return $config;
 	}
 
 	public static function sanitize( array $input, array $base = array() ) {
@@ -79,6 +84,15 @@ final class Settings {
 		foreach ( array( 'start_at', 'end_at' ) as $date_key ) {
 			if ( isset( $input[ $date_key ] ) ) { $out[ $date_key ] = self::sanitize_datetime( $input[ $date_key ] ); }
 		}
+		/*
+		 * Current cross-file governance classifies File 13 as historical
+		 * compatibility only. File 20 owns invocation/frequency and File 25 owns
+		 * presentation. Legacy public activation and analytics therefore remain
+		 * fail-closed even when stale callers submit old settings.
+		 */
+		$out['enabled'] = false;
+		$out['status'] = 'disabled';
+		$out['analytics_enabled'] = false;
 		$out['config_version'] = max( 1, absint( $base['config_version'] ?? 1 ) );
 		return $out;
 	}
@@ -197,14 +211,8 @@ final class Settings {
 	}
 
 	public static function active_now( array $config = null ) {
-		$config = $config ?: self::get();
-		if ( empty( $config['enabled'] ) || 'active' !== $config['status'] ) { return false; }
-		$now = time();
-		$start = self::timestamp( $config['start_at'] );
-		$end = self::timestamp( $config['end_at'] );
-		if ( $start && $now < $start ) { return false; }
-		if ( $end && $now > $end ) { return false; }
-		return true;
+		unset( $config );
+		return false;
 	}
 
 	public static function normalize_path( $path ) {

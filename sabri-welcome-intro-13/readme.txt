@@ -3,29 +3,33 @@ Contributors: sabrihomeopathy
 Tags: welcome, accessibility, rtl, performance
 Requires at least: 6.0
 Requires PHP: 8.1
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 
-Accessible, privacy-minimal and non-blocking Welcome Intro for the Sabri Social Homeopathy Platform.
+Historical File 13 compatibility and migration guard for the Sabri Social Homeopathy Platform.
 
 == Description ==
 
-File 13 owns the intro and recurrence preference only. File 20 owns shell placement and route eligibility; File 25 owns the visual token system.
+File 13 is compatibility-only. File 20 owns welcome invocation and frequency. File 25 owns active welcome presentation and accessibility.
 
-The intro is hidden until its tiny local JavaScript confirms eligibility. If JavaScript or storage fails, normal content remains available. Skip/Escape and reduced motion are built in. No sound, remote script, tracking identifier, fingerprint, or heavy media is used.
+The historical File 13 public runtime, analytics and settings writes are disabled. An authenticated, non-persistent preview remains for migration inspection. File 24 receives a fail-closed compatibility-state adapter.
 
 == Installation ==
 
 1. Install the plugin folder as sabri-welcome-intro-13.
-2. Activate with File 20 available.
-3. Review Settings > Sabri Welcome Intro.
-4. Verify preview, reduced-motion and failure states.
-5. Complete staging acceptance before production activation.
+2. Activate or upgrade to force historical File 13 runtime state disabled.
+3. Review Settings > Sabri Welcome Intro and sync the File 01 compatibility manifest.
+4. Verify File 24 contract state and the authenticated historical preview.
+5. Do not treat this module as the active welcome implementation.
 
 == Privacy ==
 
-The recurrence preference stores only a timestamp and config version in first-party browser storage. Optional analytics is aggregate-only and disabled by default.
+File 13 writes no public browser preference and registers no public analytics endpoint.
 
 == Changelog ==
+
+= 1.0.1 =
+* Reconciled current ownership: File 13 compatibility only, File 20 invocation/frequency, File 25 presentation.
+* Removed active public hooks, persistence, analytics and writable settings surfaces.
 
 = 1.0.0 =
 * First complete source implementation against File 13 plan, the consolidated governing plan, current File 20 invocation contract and File 25 green-token boundary.

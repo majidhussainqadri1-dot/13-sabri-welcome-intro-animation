@@ -28,12 +28,12 @@ foreach ( $required as $file ) {
 }
 
 $checks = array(
-	$plugin . '/includes/class-renderer.php' => array( 'sabri_shell_welcome_intro_invoke', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
-	$plugin . '/includes/class-eligibility.php' => array( 'file-20-shell-placement', 'SafeMode', 'SWI_DISABLE_INTRO' ),
-	$plugin . '/assets/js/welcome-intro.js' => array( 'swi.dismissed.until', 'Math.max(30', 'Escape', 'prefers-reduced-motion' ),
-	$plugin . '/includes/class-settings.php' => array( "'enabled' => false", "'status' => 'disabled'", 'max( 30', 'config_version', 'eligible_paths', 'option_value=%s', 'swi_intro_audit_contention' ),
-	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'map_route', 'register_manifest' ),
-	$plugin . '/includes/class-analytics.php' => array( 'option_value=%s', 'analytics_contention', 'config_version' ),
+	$plugin . '/includes/class-plugin.php' => array( 'Settings::register()', 'Renderer::register()', 'Rest::register()', 'Health::register()' ),
+	$plugin . '/includes/class-renderer.php' => array( 'swi_intro_legacy_invocation_blocked', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
+	$plugin . '/assets/js/welcome-intro.js' => array( 'cfg.preview', 'swi-welcome-intro-preview', 'Escape', 'prefers-reduced-motion' ),
+	$plugin . '/includes/class-settings.php' => array( '$out[\'enabled\'] = false', '$out[\'status\'] = \'disabled\'', '$out[\'analytics_enabled\'] = false', 'config_version', 'option_value=%s', 'swi_intro_audit_contention' ),
+	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'Welcome Intro Historical Compatibility', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'legacy-suppression', 'map_route', 'register_manifest' ),
+	$plugin . '/includes/class-health.php' => array( 'spcrc/file13_contract_state', 'legacy_public_disabled', 'invocation_frequency', 'legacy_public_renderer_registered', "? 'compatible'" ),
 	$plugin . '/includes/class-authorization.php' => array( 'return $allowed && $institutional', 'swi_intro_authorization_decision' ),
 );
 foreach ( $checks as $file => $needles ) {
@@ -49,6 +49,21 @@ foreach ( new RecursiveIteratorIterator( new RecursiveDirectoryIterator( $plugin
 }
 foreach ( array( 'http://fonts.', 'https://fonts.', '#ff8a1f' ) as $forbidden ) {
 	if ( false !== stripos( $all, $forbidden ) ) { $failures[] = 'forbidden-source-token:' . $forbidden; }
+}
+
+$plugin_bootstrap = file_get_contents( $plugin . '/includes/class-plugin.php' );
+$renderer = file_get_contents( $plugin . '/includes/class-renderer.php' );
+$rest = file_get_contents( $plugin . '/includes/class-rest.php' );
+$admin = file_get_contents( $plugin . '/includes/class-admin.php' );
+$javascript = file_get_contents( $plugin . '/assets/js/welcome-intro.js' );
+
+if ( false !== strpos( $plugin_bootstrap, 'Analytics::register()' ) ) { $failures[] = 'legacy-public-analytics-must-not-register'; }
+if ( false !== strpos( $plugin_bootstrap, 'Eligibility::register()' ) ) { $failures[] = 'legacy-public-eligibility-must-not-register'; }
+if ( false !== strpos( $renderer, "add_action( 'sabri_shell_welcome_intro_invoke'" ) ) { $failures[] = 'legacy-public-renderer-must-not-register'; }
+if ( false !== strpos( $rest, "'/config'" ) ) { $failures[] = 'legacy-config-rest-write-must-not-exist'; }
+if ( false !== strpos( $admin, 'swi_save_intro_config' ) ) { $failures[] = 'legacy-config-admin-write-must-not-exist'; }
+foreach ( array( 'localStorage', 'sessionStorage', 'fetch(', 'admin-ajax.php' ) as $forbidden ) {
+	if ( false !== strpos( $javascript, $forbidden ) ) { $failures[] = 'compatibility-preview-forbidden-token:' . $forbidden; }
 }
 
 if ( $failures ) {

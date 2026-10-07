@@ -1,21 +1,19 @@
 # File 13 — Sabri Welcome Intro Animation
 
-Production-oriented source implementation for **File 13** of the Sabri Social Homeopathy Platform.
+Compatibility and migration implementation for historical **File 13** of the Sabri Social Homeopathy Platform.
 
 ## Governing scope
 
-File 13 owns the accessible, non-blocking welcome intro and its privacy-minimal recurrence/session preference state. It does **not** own the global shell, navigation, theme, profile/timeline design system, authentication, clinical routes, or security assurance center.
+Current cross-file governance classifies File 13 as **historical compatibility only**. File 20 owns welcome invocation, route eligibility and recurrence/session/frequency state. File 25 owns the accessible green responsive presentation. File 13 owns neither active public rendering nor frequency state.
 
-Public activation is **closed by default** and must be explicitly enabled after the required review/staging gate.
+The historical public runtime is **permanently fail-closed**. Version 1.0.1 removes its public hook, public analytics endpoint, writable configuration surfaces and persistence behavior. An authenticated preview remains solely for migration inspection.
 
 Current governing integration:
-- File 01 registry integration is explicit/operator-triggered; it registers File 13 and its private preview route without silent companion mutation.
-- File 20 provides route/layout eligibility and invokes File 13 through `sabri_shell_welcome_intro_invoke`.
-- File 25 provides visual/design tokens; Sabri Green `#087A4E` is the canonical primary fallback.
-- File 13 fails open: if JavaScript, storage, dependencies, or configuration fail, ordinary page content remains available.
-- Skip/Escape and reduced-motion behavior are mandatory.
-- A skip/completion dismissal suppresses reappearance for at least 30 days.
-- The superseded orange-primary / forced-eight-second behavior is not implemented.
+- File 01 registry integration is explicit/operator-triggered and records File 13 as compatibility/migration scope only.
+- File 24 receives `spcrc/file13_contract_state`; compatibility is reported only while the legacy renderer, legacy analytics and activation state are all disabled.
+- File 20 must implement invocation/frequency under its own current contract; File 13 no longer registers `sabri_shell_welcome_intro_invoke`.
+- File 25 remains the only owner of active welcome presentation and accessibility.
+- Historical orange-primary, forced-eight-second, File-13 frequency storage and File-13 public rendering are inactive.
 
 ## Status
 
@@ -23,10 +21,11 @@ This repository represents source-code implementation only. It is not, by itself
 
 ## Package
 
-Canonical plugin folder: `sabri-welcome-intro-13`
+Canonical plugin folder: `sabri-welcome-intro-13` (compatibility-only release `1.0.1`)
 
 See:
 - `docs/TRACEABILITY.md`
 - `docs/TWENTY-PASS-AUDIT.md`
+- `docs/CROSS-CONTRACT-AUDIT-2026-10-07.md`
 - `docs/MIGRATION.md`
 - `docs/ROLLBACK.md`

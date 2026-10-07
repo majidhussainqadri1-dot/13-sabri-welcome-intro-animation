@@ -1,14 +1,13 @@
 # Migration
 
-File 13 migration is intentionally small and non-destructive.
+File 13 migration is intentionally small, non-destructive and suppressive.
 
 1. Inventory any old theme-injected splash/intro, option keys, cookies/localStorage keys, and route hooks.
-2. Disable duplicate theme injection before File 13 public activation.
-3. Activate File 13 with File 20 present; the official integration is the File 20 welcome invocation hook.
-4. Old browser keys may expire harmlessly. Do not import identifiers or tracking cookies into File 13.
-5. Confirm Sabri Green token output and that no legacy orange-primary styling remains active.
-6. Verify authenticated/task/clinical/emergency/recovery routes are suppressed by File 20 and rejected by File 13 if context is invalid.
-7. Run preview, reduced-motion, JavaScript-disabled, storage-denied and slow-network checks.
-8. Keep the feature flag/kill switch available throughout the observation window.
+2. Upgrade to 1.0.1; the schema migration forces File 13 activation and analytics state to disabled and clears its historical cleanup schedule.
+3. Sync the File 01 manifest so File 13 is recorded as compatibility/migration scope. Existing active records are downgraded to `degraded`, never preserved as active.
+4. Confirm File 24 evaluates `spcrc/file13_contract_state` as `compatible` only while no legacy public hook is registered.
+5. Allow old File 13 browser keys to expire harmlessly; do not import them into another owner without a separately reviewed migration.
+6. Implement and validate the active welcome experience in File 20 (invocation/frequency) and File 25 (presentation) before any production claim.
+7. Use File 13 preview only to inspect historical copy during migration; it stores no preference or analytics state.
 
-No companion table or profile/content data is mutated.
+No companion table, profile/content data, File 20 state or File 25 state is mutated.

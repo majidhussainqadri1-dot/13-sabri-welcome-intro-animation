@@ -21,22 +21,21 @@ final class Foundation {
 		return array(
 			'module_key' => self::MODULE_KEY,
 			'owner_file' => '13',
-			'owner_name' => 'Sabri Welcome Intro Animation',
+			'owner_name' => 'Sabri Welcome Intro Historical Compatibility',
 			'slug' => 'sabri-welcome-intro',
 			'namespace_prefix' => 'Sabri\\WelcomeIntro',
 			'software_version' => SWI_VERSION,
-			'contract_version' => '1.0.0',
+			'contract_version' => '1.1.0',
 			'state' => 'compatible',
-			'required' => array(
+			'required' => array(),
+			'optional' => array(
 				array(
 					'module_key' => 'file-20',
-					'minimum_version' => '1.2.0',
+					'minimum_version' => '1.4.12',
 					'maximum_version' => '',
-					'purpose' => 'Canonical shell placement and route eligibility context.',
-					'fail_mode' => 'Intro suppressed; ordinary content remains available.',
+					'purpose' => 'Canonical owner of welcome invocation and frequency.',
+					'fail_mode' => 'Legacy File 13 intro remains disabled.',
 				),
-			),
-			'optional' => array(
 				array(
 					'module_key' => 'file-00',
 					'minimum_version' => '1.1.2',
@@ -55,45 +54,40 @@ final class Foundation {
 					'module_key' => 'file-25',
 					'minimum_version' => '1.0.0',
 					'maximum_version' => '',
-					'purpose' => 'Canonical public visual token contract.',
-					'fail_mode' => 'Continuity-safe governed green fallback tokens.',
+					'purpose' => 'Canonical owner of welcome presentation and accessibility.',
+					'fail_mode' => 'Legacy File 13 intro remains disabled.',
 				),
 			),
 			'capabilities' => array(
-				'manage-welcome-intro',
-				'preview-welcome-intro',
-				'render-welcome-intro',
+				'inspect-legacy-welcome-intro',
+				'migrate-legacy-welcome-intro',
 			),
 			'commands' => array(
-				'SetIntroConfig.v1',
-				'DisableWelcomeIntro.v1',
-				'DismissWelcomeIntro.v1',
+				'DisableLegacyWelcomeIntro.v1',
+				'SyncLegacyCompatibilityRegistry.v1',
 			),
 			'queries' => array(
-				'GetWelcomeIntroEligibility.v1',
-				'GetWelcomeIntroStatus.v1',
+				'GetLegacyWelcomeIntroStatus.v1',
 			),
 			'events' => array(
-				'WelcomeIntroShown.v1',
-				'WelcomeIntroSkipped.v1',
-				'WelcomeIntroCompleted.v1',
+				'LegacyWelcomeIntroSuppressed.v1',
+				'LegacyWelcomeIntroRegistrySynced.v1',
 			),
 			'routes' => array( '/welcome-intro-preview/' ),
 			'data_classes' => array(
-				'intro-config',
-				'intro-session-state',
-				'intro-event-aggregate',
+				'legacy-intro-config',
+				'legacy-intro-audit',
 			),
 			'health' => array(
 				'filter' => 'swi_intro_health_status',
-				'fail_mode' => 'intro-suppressed',
+				'fail_mode' => 'legacy-intro-disabled',
 			),
-			'canonical_entities' => array( 'intro-config' ),
+			'canonical_entities' => array(),
 			'writes' => array(
 				array(
 					'owner_module' => self::MODULE_KEY,
-					'operation' => 'config-write',
-					'purpose' => 'File 13 owned intro configuration only.',
+					'operation' => 'legacy-suppression',
+					'purpose' => 'Disable historical File 13 runtime during compatibility migration.',
 				),
 			),
 			'global_shell_owner' => false,
@@ -170,7 +164,9 @@ final class Foundation {
 		$manifest = self::manifest();
 		if ( is_array( $existing ) ) {
 			$current_state = (string) ( $existing['state'] ?? '' );
-			$manifest['state'] = in_array( $current_state, array( 'active', 'compatible' ), true ) ? $current_state : 'compatible';
+			// File 01 does not allow active -> compatible directly. Preserve a
+			// truthful degraded compatibility record instead of retaining active.
+			$manifest['state'] = in_array( $current_state, array( 'active', 'degraded' ), true ) ? 'degraded' : 'compatible';
 		}
 		$context = array( 'purpose' => 'file13_registry_sync' );
 		if ( is_array( $existing ) ) {

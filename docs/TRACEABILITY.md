@@ -8,44 +8,39 @@
 4. Current verified companion repository contracts.
 5. Historical package/notes only as evidence, never as present runtime truth.
 
-The final File 13 amendment supersedes the historical orange-primary and forced-eight-second wording. The active implementation therefore uses Sabri Green and does not enforce an eight-second animation.
+The latest verified companion contracts supersede File 13 active ownership. File 24 classifies File 13 as historical compatibility only; File 20 owns invocation/frequency and File 25 owns presentation. The 1.0.1 implementation therefore suppresses the legacy public runtime.
 
 ## Requirement-to-code map
 
 | Requirement | Implementation |
 |---|---|
-| F13-FR-001 eligibility resolver | `Eligibility::public_request_eligible()` |
-| F13-FR-002 recurrence/session state | `assets/js/welcome-intro.js` |
-| F13-FR-003 restrained sequence | `Renderer::markup()` + CSS/JS |
-| F13-FR-004 Skip/Escape | JS click + keydown handlers |
-| F13-FR-005 reduced motion | media query + JS reduced path |
-| F13-FR-006 screen reader/focus | status region, no focus stealing, semantic button |
-| F13-FR-007 no sound | no audio capability exists |
-| F13-FR-008 tiny/local assets | inline critical CSS/SVG + local footer JS |
-| F13-FR-009 File 20 shell integration | exact `sabri_shell_welcome_intro_invoke` hook |
-| F13-FR-010 File 25 tokens | `sabri_shell_file25_visual_contract` + governed green fallback |
+| F13-COMPAT-001 public runtime suppression | no public renderer/eligibility registration; `Settings::active_now()` is always false |
+| F13-COMPAT-002 frequency ownership | no File 13 session/localStorage/cookie or analytics behavior |
+| F13-COMPAT-003 presentation ownership | no active File 13 visual output; File 25 owns presentation |
+| F13-COMPAT-004 historical preview | authenticated, no-store, non-persistent migration inspection only |
+| F13-COMPAT-005 File 24 assurance | `spcrc/file13_contract_state` returns compatible only when legacy runtime remains disabled |
+| F13-COMPAT-006 File 20 boundary | File 13 does not register `sabri_shell_welcome_intro_invoke` |
 | F13-FR-011 admin preview | authenticated `/welcome-intro-preview/` states |
-| F13-FR-012 config governance | Settings validation, revision lock, bounded audit |
-| F13-FR-013 failure behavior | hidden-by-default + JS fail-open |
-| F13-FR-014 aggregate analytics | `Analytics`, off by default, no identifiers |
-| F13-FR-015 kill switch | File 20 SafeMode + `SWI_DISABLE_INTRO` + assurance filter |
+| F13-COMPAT-007 configuration migration | legacy values are preserved for audit but activation/analytics sanitize to disabled |
+| F13-COMPAT-008 registry | File 01 manifest declares compatibility/migration scope and no active-render capability |
+| F13-COMPAT-009 release truth | source, CI, package, staging and live states remain separately reported |
 
 ## Companion boundaries
 
 ### File 01
-File 13 provides an explicit, authenticated File 01 registry synchronization path. It registers the canonical `file-13` manifest and `/welcome-intro-preview/` mapping through the real `SPF_Registry` API only when an authorized operator requests it; no silent activation-time cross-module mutation occurs.
+File 13 provides an explicit, authenticated File 01 registry synchronization path. It registers compatibility/migration scope and the private preview route only. An existing active registry record is downgraded truthfully to `degraded`; it is never silently retained as active.
 
 ### File 20
-Current repository code invokes File 13 through `sabri_shell_welcome_intro_invoke` with owner `file-20-shell-placement`, a semantic contract version, route eligibility, layout mode, and explicit preference ownership by File 13. File 13 rejects fabricated/non-File-20 invocation context.
+Current File 20 source still contains a historical handoff that names File 13 as preference owner. File 13 no longer registers that hook. This fail-closed gap must be corrected in File 20 before the active welcome experience can be claimed complete.
 
 ### File 25
-File 13 consumes the same validated visual contract surface used by File 20. Only the exact `file-25` owner contract with a compatible semantic version is consumed. If File 25 is absent, malformed or owned by another module, only continuity fallback tokens are used; no second theme/design system is created.
+File 25 is the canonical active presentation owner. File 13 may read its tokens only inside the authenticated historical preview; it produces no public presentation.
 
 ### File 00
 File 13 does not clone identity, roles or entitlement data. Administrative authorization is capability-based and exposes `swi_intro_authorization_decision` as the adapter point for a stricter File 00 provider.
 
 ### File 24
-File 13 retains native security controls and exposes `swi_intro_safe_mode_active` for assurance-level suppression. It never creates a second incident/security center.
+File 13 publishes the exact `spcrc/file13_contract_state` filter required by File 24. Any re-registration of legacy public rendering or analytics changes the state to `blocked`.
 
 ## Status law
 
