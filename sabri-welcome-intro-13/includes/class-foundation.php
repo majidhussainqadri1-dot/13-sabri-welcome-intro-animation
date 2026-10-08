@@ -45,14 +45,14 @@ final class Foundation {
 				),
 				array(
 					'module_key' => 'file-24',
-					'minimum_version' => '1.0.0',
+					'minimum_version' => '0.99.0',
 					'maximum_version' => '',
 					'purpose' => 'Cross-cutting security and resilience assurance without native-control takeover.',
 					'fail_mode' => 'File 13 native validation, authorization and fail-open-to-content controls remain active.',
 				),
 				array(
 					'module_key' => 'file-25',
-					'minimum_version' => '1.0.0',
+					'minimum_version' => '0.15.0',
 					'maximum_version' => '',
 					'purpose' => 'Canonical owner of welcome presentation and accessibility.',
 					'fail_mode' => 'Legacy File 13 intro remains disabled.',

@@ -36,6 +36,18 @@ foreach ( array( 'required', 'optional' ) as $field ) {
         return strcmp( $a['module_key'], $b['module_key'] );
     } );
 }
+// File 01 compares dependency.minimum_version against installed software_version,
+// not against a companion's independent contract_version. These are the exact
+// File 24 and File 25 main plugin versions verified on 2026-10-08.
+$verified_companion_versions = array( 'file-24' => '0.99.0', 'file-25' => '0.15.0' );
+foreach ( $expected['optional'] as $dependency ) {
+    $key = $dependency['module_key'];
+    if ( isset( $verified_companion_versions[ $key ] )
+        && version_compare( $verified_companion_versions[ $key ], $dependency['minimum_version'], '<' ) ) {
+        fwrite( STDERR, "Companion $key software version excluded by File 13 optional dependency.\\n" );
+        exit( 1 );
+    }
+}
 $expected['record_version'] = 1;
 $route = Foundation::route();
 $route['record_version'] = 1;
