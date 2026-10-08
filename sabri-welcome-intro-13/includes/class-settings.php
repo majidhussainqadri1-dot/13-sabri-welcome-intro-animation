@@ -29,24 +29,41 @@ final class Settings {
 	}
 
 	public static function activate() {
-		if ( false === get_option( self::OPTION, false ) ) {
-			add_option( self::OPTION, self::defaults(), '', false );
-		} else {
-			$current = get_option( self::OPTION, array() );
-			$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
-			update_option( self::OPTION, self::sanitize( $current, $current ), false );
-		}
+		// Never advertise a migrated schema if the suppressive config write
+		// failed or a competing filter changed the persisted result.
+		if ( ! self::persist_suppressed_config() ) { return; }
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
 	}
 
 	public static function maybe_upgrade() {
 		if ( SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' ) ) { return; }
-		$current = get_option( self::OPTION, array() );
-		$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
-		update_option( self::OPTION, self::sanitize( $current, $current ), false );
+		if ( ! self::persist_suppressed_config() ) {
+			do_action( 'swi_intro_schema_upgrade_blocked', SWI_SCHEMA_VERSION );
+			return;
+		}
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
 		// Retention remains active while public analytics collection stays disabled.
 		do_action( 'swi_intro_schema_upgraded', SWI_SCHEMA_VERSION );
+	}
+
+	/**
+	 * Persist and read back the exact disabled compatibility configuration.
+	 *
+	 * update_option() returns false for both no-op and failure. Therefore
+	 * success is determined by the stored value, not the write return value.
+	 * Never promote the schema while an old enabled/analytics row survives.
+	 */
+	private static function persist_suppressed_config() {
+		$existing = get_option( self::OPTION, false );
+		$current = is_array( $existing ) ? array_replace( self::defaults(), $existing ) : self::defaults();
+		$expected = self::sanitize( $current, $current );
+		if ( false === $existing ) {
+			add_option( self::OPTION, $expected, '', false );
+		} else {
+			update_option( self::OPTION, $expected, false );
+		}
+		$persisted = get_option( self::OPTION, false );
+		return is_array( $persisted ) && $persisted === $expected;
 	}
 
 	public static function stored() {
