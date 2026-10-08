@@ -32,6 +32,7 @@ final class Health {
 
 		if ( version_compare( PHP_VERSION, '8.1', '<' ) ) { $issues[] = 'php_below_declared_minimum'; }
 		if ( version_compare( get_bloginfo( 'version' ), '6.0', '<' ) ) { $issues[] = 'wordpress_below_declared_minimum'; }
+		if ( SWI_SCHEMA_VERSION !== (string) get_option( Settings::SCHEMA_OPTION, '' ) ) { $issues[] = 'schema_migration_pending'; }
 		if ( ! empty( $config['enabled'] ) || 'disabled' !== (string) $config['status'] || ! empty( $config['analytics_enabled'] ) ) { $issues[] = 'legacy_runtime_not_disabled'; }
 		if ( ! empty( $stored['enabled'] ) || 'disabled' !== (string) $stored['status'] || ! empty( $stored['analytics_enabled'] ) ) { $issues[] = 'legacy_stored_activation_detected'; }
 		if ( $legacy_renderer ) { $issues[] = 'legacy_public_renderer_registered'; }

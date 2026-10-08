@@ -31,17 +31,17 @@ final class Settings {
 	public static function activate() {
 		// Never advertise a migrated schema if the suppressive config write
 		// failed or a competing filter changed the persisted result.
-		if ( ! self::persist_suppressed_config() ) { return; }
-		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
+		if ( ! self::persist_suppressed_config() || ! self::persist_schema_version() ) {
+			do_action( 'swi_intro_schema_upgrade_blocked', SWI_SCHEMA_VERSION );
+		}
 	}
 
 	public static function maybe_upgrade() {
 		if ( SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' ) ) { return; }
-		if ( ! self::persist_suppressed_config() ) {
+		if ( ! self::persist_suppressed_config() || ! self::persist_schema_version() ) {
 			do_action( 'swi_intro_schema_upgrade_blocked', SWI_SCHEMA_VERSION );
 			return;
 		}
-		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
 		// Retention remains active while public analytics collection stays disabled.
 		do_action( 'swi_intro_schema_upgraded', SWI_SCHEMA_VERSION );
 	}
@@ -64,6 +64,12 @@ final class Settings {
 		}
 		$persisted = get_option( self::OPTION, false );
 		return is_array( $persisted ) && $persisted === $expected;
+	}
+
+	/** Verify the persisted schema row before claiming migration success. */
+	private static function persist_schema_version() {
+		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
+		return SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' );
 	}
 
 	public static function stored() {

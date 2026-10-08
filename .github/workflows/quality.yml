@@ -33,6 +33,8 @@ jobs:
         run: php tests/health-contract.php
       - name: Fail-closed schema migration persistence regression
         run: php tests/settings-migration.php
+      - name: Schema write read-back failure regression
+        run: php tests/schema-write-failure.php
       - name: Preview rewrite deactivation regression
         run: php tests/rewrite-lifecycle.php
       - name: File 25 visual-token contract regression
