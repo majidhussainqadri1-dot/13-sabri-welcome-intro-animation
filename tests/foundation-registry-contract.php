@@ -47,6 +47,28 @@ $assert_status = static function ( $module, $want, $label ) {
     }
 };
 $assert_status( $expected, 'synced', 'canonical File 01 normalized DTO' );
+// Exact repeated sync is a true no-op, including record versions and audit writes.
+SPF_Registry::$module = $expected;
+$already = Foundation::sync();
+if ( ! is_array( $already ) || empty( $already['already_synced'] )
+    || 1 !== $already['module']['record_version']
+    || 1 !== $already['route']['record_version']
+    || SPF_Registry::$module_writes || SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Already-synced registry caused duplicate writes or lost its version.\\n" );
+    exit( 1 );
+}
+// A degraded-but-contract-matching compatibility record must also be idempotent.
+$degraded = $expected;
+$degraded['state'] = 'degraded';
+SPF_Registry::$module = $degraded;
+$again = Foundation::sync();
+if ( ! is_array( $again ) || empty( $again['already_synced'] )
+    || 'degraded' !== $again['module']['state']
+    || SPF_Registry::$module_writes || SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Degraded compatible registry unexpectedly mutated.\\n" );
+    exit( 1 );
+}
+SPF_Registry::$module = $expected;
 foreach ( array( 'required', 'optional', 'health' ) as $field ) {
     $drift = $expected;
     if ( 'optional' === $field ) {

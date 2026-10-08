@@ -169,6 +169,25 @@ final class Foundation {
 		if ( ! class_exists( 'SPF_Registry' ) ) {
 			return new \WP_Error( 'swi_foundation_unavailable', __( 'File 01 registry is not available.', SWI_TEXT_DOMAIN ), array( 'status' => 503 ) );
 		}
+		// An exact, complete registry contract is already synchronized. File 01
+		// increments record versions and emits audit events on every write, so
+		// avoid duplicate registration when both module and route match.
+		$current_status = self::status();
+		if ( 'synced' === (string) ( $current_status['state'] ?? '' ) ) {
+			return array(
+				'already_synced' => true,
+				'module' => array(
+					'module_key' => self::MODULE_KEY,
+					'record_version' => $current_status['module_record_version'],
+					'state' => $current_status['module_state'],
+				),
+				'route' => array(
+					'route_key' => self::ROUTE_KEY,
+					'record_version' => $current_status['route_record_version'],
+					'status' => 'active',
+				),
+			);
+		}
 		$existing = \SPF_Registry::get_module( self::MODULE_KEY );
 		$existing_state = is_array( $existing ) ? (string) ( $existing['state'] ?? '' ) : '';
 		if ( in_array( $existing_state, array( 'retired', 'suspended' ), true ) ) {
