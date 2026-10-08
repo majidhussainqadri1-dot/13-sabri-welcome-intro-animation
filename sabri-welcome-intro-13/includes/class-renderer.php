@@ -12,15 +12,6 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		// WordPress stores top-priority rules by regex key. Never overwrite a
-		// foreign owner of the historical preview route during init/activation.
-		global $wp_rewrite;
-		if ( is_object( $wp_rewrite ) && isset( $wp_rewrite->extra_rules_top )
-			&& is_array( $wp_rewrite->extra_rules_top )
-			&& array_key_exists( self::PREVIEW_REWRITE_PATTERN, $wp_rewrite->extra_rules_top )
-			&& self::PREVIEW_REWRITE_TARGET !== $wp_rewrite->extra_rules_top[ self::PREVIEW_REWRITE_PATTERN ] ) {
-			return;
-		}
 		add_rewrite_rule( self::PREVIEW_REWRITE_PATTERN, self::PREVIEW_REWRITE_TARGET, 'top' );
 	}
 
