@@ -45,3 +45,7 @@ File 13 publishes the exact `spcrc/file13_contract_state` filter required by Fil
 ## Status law
 
 Source implementation is not proof of packaging, CI, staging, production deployment, or operational readiness. Those statuses require their own evidence.
+
+## Preview rewrite hardening (source-only correction)
+
+The historical admin preview is accepted only when WordPress matched the exact File 13 rewrite rule, the request path equals the canonical site-relative preview path, the registered mapping remains File 13's expected target, and the preview query variable is present. Arbitrary public query-string parameters must not trigger administrator redirects. A foreign rewrite collision fails closed. This is source-level behavior, not staging/live verification.

@@ -3,6 +3,8 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
+	/** Request-local proof that the canonical preview rewrite was registered without collision. */
+	private static $preview_route_registered = false;
 	const PREVIEW_REWRITE_PATTERN = '^welcome-intro-preview/?$';
 	const PREVIEW_REWRITE_TARGET = 'index.php?swi_intro_preview=1';
 	public static function register() {
@@ -12,6 +14,7 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
+		self::$preview_route_registered = false;
 		// Fail closed when another module owns the exact preview route.
 		global $wp_rewrite;
 		$pattern = self::PREVIEW_REWRITE_PATTERN;
@@ -32,6 +35,7 @@ final class Renderer {
 			return false;
 		}
 		add_rewrite_rule( $pattern, $target, 'top' );
+		self::$preview_route_registered = true;
 		return true;
 	}
 
@@ -47,8 +51,27 @@ final class Renderer {
 		do_action( 'swi_intro_legacy_invocation_blocked', SWI_VERSION );
 	}
 
+	/**
+	 * Fail closed unless WordPress actually matched our canonical rewrite.
+	 * A public ?swi_intro_preview=1 query string is not proof of route ownership.
+	 */
+	public static function is_preview_request() {
+		if ( ! self::$preview_route_registered || ! get_query_var( 'swi_intro_preview' ) ) { return false; }
+		global $wp, $wp_rewrite;
+		if ( ! is_object( $wp ) || ! isset( $wp->matched_rule ) || self::PREVIEW_REWRITE_PATTERN !== $wp->matched_rule ) { return false; }
+		if ( ! is_object( $wp_rewrite ) || ! isset( $wp_rewrite->extra_rules_top )
+			|| ! is_array( $wp_rewrite->extra_rules_top )
+			|| self::PREVIEW_REWRITE_TARGET !== ( $wp_rewrite->extra_rules_top[ self::PREVIEW_REWRITE_PATTERN ] ?? null ) ) { return false; }
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		if ( ! is_string( $request_uri ) || '' === $request_uri ) { return false; }
+		$requested = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$canonical = wp_parse_url( home_url( '/welcome-intro-preview/' ), PHP_URL_PATH );
+		return is_string( $requested ) && is_string( $canonical )
+			&& untrailingslashit( $requested ) === untrailingslashit( $canonical );
+	}
+
 	public static function maybe_preview() {
-		if ( ! get_query_var( 'swi_intro_preview' ) ) { return; }
+		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
 		Authorization::require_manage( 'preview_intro' );
 		nocache_headers();

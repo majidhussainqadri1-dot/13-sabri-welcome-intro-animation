@@ -98,4 +98,41 @@ Plugin::activate();
 file13_check( $flush_before + 1 === $GLOBALS['flush_count'], 'Clean activation did not flush.' );
 file13_check( $target === ( $GLOBALS['flushed_rules'][ $pattern ] ?? '' ), 'Clean activation missing own route.' );
 file13_check( empty( $GLOBALS['rewrite_conflicts'] ), 'False collision on clean activation.' );
+
+// Preview must be bound to the actual canonical rewrite, not a query parameter.
+function get_query_var( $key ) { return 'swi_intro_preview' === $key ? ( $GLOBALS['preview_query_var'] ?? 0 ) : 0; }
+function home_url( $path = '/' ) { return 'https://example.test/subsite' . $path; }
+function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
+function wp_unslash( $value ) { return stripslashes( $value ); }
+function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
+$GLOBALS['preview_query_var'] = 1;
+$GLOBALS['wp'] = (object) array( 'matched_rule' => $pattern );
+$_SERVER['REQUEST_URI'] = '/subsite/?swi_intro_preview=1';
+file13_check( false === Renderer::is_preview_request(), 'Public home query spoof reached admin preview.' );
+$_SERVER['REQUEST_URI'] = '/subsite/account/?swi_intro_preview=1';
+file13_check( false === Renderer::is_preview_request(), 'Public account query spoof reached admin preview.' );
+$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/?state=reduced';
+file13_check( true === Renderer::is_preview_request(), 'Canonical subdirectory preview was rejected.' );
+$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview';
+file13_check( true === Renderer::is_preview_request(), 'Canonical preview without trailing slash was rejected.' );
+$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview-other/?swi_intro_preview=1';
+file13_check( false === Renderer::is_preview_request(), 'Lookalike route reached admin preview.' );
+$GLOBALS['preview_query_var'] = 0;
+$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
+file13_check( false === Renderer::is_preview_request(), 'Missing rewrite query var was accepted.' );
+$GLOBALS['preview_query_var'] = 1;
+$GLOBALS['wp']->matched_rule = '^other/?
+;
+file13_check( false === Renderer::is_preview_request(), 'GET spoof on canonical path bypassed matched-rule ownership.' );
+$GLOBALS['wp']->matched_rule = $pattern;
+unset( $_SERVER['REQUEST_URI'] );
+file13_check( false === Renderer::is_preview_request(), 'Missing request URI was accepted.' );
+$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
+file13_reset_rewrite_state();
+$GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = 'index.php?foreign=1';
+file13_check( false === Renderer::register_rewrite(), 'Foreign preview route was accepted.' );
+file13_check( false === Renderer::is_preview_request(), 'Foreign-owned route with query spoof reached admin preview.' );
+file13_reset_rewrite_state();
+file13_check( true === Renderer::register_rewrite(), 'Clean route registration rejected after collision.' );
+file13_check( true === Renderer::is_preview_request(), 'Clean route registration did not restore canonical preview.' );
 echo "File 13 preview rewrite ownership and deactivation: PASS\n";
