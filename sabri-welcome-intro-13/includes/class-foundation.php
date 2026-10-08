@@ -113,8 +113,12 @@ final class Foundation {
 			return array( 'available' => false, 'module_registered' => false, 'route_registered' => false, 'state' => 'unavailable' );
 		}
 		$module = \SPF_Registry::get_module( self::MODULE_KEY );
+		$routes = \SPF_Registry::list_routes();
+		// File 01 list_routes() is capped at 200 with no paging or exact-key read.
+		// A full page cannot prove there are no later collisions: fail closed.
+		$route_inventory_complete = is_array( $routes ) && count( $routes ) < 200;
 		$route = null;
-		foreach ( (array) \SPF_Registry::list_routes() as $candidate ) {
+		foreach ( $route_inventory_complete ? $routes : array() as $candidate ) {
 			if ( is_array( $candidate ) && self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) { $route = $candidate; break; }
 		}
 		$manifest = self::manifest();
@@ -132,7 +136,7 @@ final class Foundation {
 			}
 		}
 		$expected_route = self::route();
-		$route_ok = is_array( $route );
+		$route_ok = $route_inventory_complete && is_array( $route );
 		if ( $route_ok ) {
 			foreach ( array( 'route_key', 'route_path', 'owner_module', 'page_id', 'layout_context', 'status', 'destination', 'redirects' ) as $field ) {
 				if ( ! array_key_exists( $field, $route ) || $route[ $field ] != $expected_route[ $field ] ) { $route_ok = false; break; }
@@ -140,6 +144,7 @@ final class Foundation {
 		}
 		return array(
 			'available' => true, 'module_registered' => $module_ok, 'route_registered' => $route_ok,
+			'route_inventory_complete' => $route_inventory_complete,
 			'state' => $module_ok && $route_ok ? 'synced' : 'unsynced',
 			'module_state' => is_array( $module ) ? (string) ( $module['state'] ?? '' ) : '',
 			'module_record_version' => is_array( $module ) ? absint( $module['record_version'] ?? 0 ) : 0,
@@ -173,8 +178,12 @@ final class Foundation {
 			return new \WP_Error( 'swi_foundation_owner_conflict', __( 'The existing registry module has a different owner.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
 		// Preflight route BEFORE module mutation. File 01 offers separate writes.
+		$routes = \SPF_Registry::list_routes();
+		if ( ! is_array( $routes ) || count( $routes ) >= 200 ) {
+			return new \WP_Error( 'swi_foundation_route_inventory_incomplete', __( 'File 01 route inventory is bounded or unavailable; no registry writes were attempted.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
+		}
 		$current_route = null;
-		foreach ( (array) \SPF_Registry::list_routes() as $candidate ) {
+		foreach ( $routes as $candidate ) {
 			if ( ! is_array( $candidate ) ) { continue; }
 			if ( self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
 				$current_route = $candidate;

@@ -29,6 +29,8 @@ jobs:
         run: php tests/run.php
       - name: File 01 registry runtime contract regression
         run: php tests/foundation-registry-contract.php
+      - name: Legacy health reporting regression
+        run: php tests/health-contract.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
       - name: JavaScript behavior

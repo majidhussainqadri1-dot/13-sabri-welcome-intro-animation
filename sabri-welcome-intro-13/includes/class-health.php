@@ -20,6 +20,11 @@ final class Health {
 		$legacy_renderer = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$legacy_analytics = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
+		$legacy_public_disabled = empty( $config['enabled'] )
+			&& 'disabled' === (string) $config['status']
+			&& empty( $config['analytics_enabled'] )
+			&& ! $legacy_renderer
+			&& ! $legacy_analytics;
 		$visual = Renderer::visual_tokens();
 		$visual_contract = Renderer::visual_contract_status();
 		$foundation = Foundation::status();
@@ -40,7 +45,7 @@ final class Health {
 			'schema_version' => (string) get_option( Settings::SCHEMA_OPTION, '' ),
 			'config_version' => absint( $config['config_version'] ),
 			'configured_active' => ! empty( $stored['enabled'] ) || 'active' === (string) $stored['status'],
-			'legacy_public_disabled' => true,
+			'legacy_public_disabled' => $legacy_public_disabled,
 			'safe_mode' => Eligibility::safe_mode_active(),
 			'file20_available' => (bool) $file20_available,
 			'file20_version' => defined( 'SABRI_SHELL_VERSION' ) ? (string) SABRI_SHELL_VERSION : '',

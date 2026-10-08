@@ -5,10 +5,21 @@
  */
 define( 'ABSPATH', __DIR__ );
 define( 'SWI_VERSION', '1.0.1' );
+define( 'SWI_TEXT_DOMAIN', 'sabri-welcome-intro' );
+function __( $message, $domain = '' ) { return $message; }
+class WP_Error {
+    private $code;
+    public function __construct( $code, $message = '', $data = array() ) { $this->code = $code; }
+    public function get_error_code() { return $this->code; }
+}
 function absint( $value ) { return abs( (int) $value ); }
 final class SPF_Registry {
     public static $module;
     public static $routes = array();
+    public static $module_writes = 0;
+    public static $route_writes = 0;
+    public static function register_manifest( $manifest, $context = array() ) { self::$module_writes++; return array( 'record_version' => 2 ); }
+    public static function map_route( $route, $context = array() ) { self::$route_writes++; return array( 'record_version' => 2 ); }
     public static function get_module( $key ) { return 'file-13' === $key ? self::$module : null; }
     public static function list_routes() { return self::$routes; }
 }
@@ -50,4 +61,17 @@ foreach ( array( 'required', 'optional', 'health' ) as $field ) {
 $missing = $expected;
 unset( $missing['health'] );
 $assert_status( $missing, 'unsynced', 'missing health' );
-echo "File 13 / File 01 runtime registry DTO contract: PASS\n";
+// The File 01 route API returns at most 200 entries, with no pagination.
+// Never infer completeness from a full page or mutate the module first.
+SPF_Registry::$routes = array();
+for ( $i = 0; $i < 200; $i++ ) {
+    SPF_Registry::$routes[] = array( 'route_key' => 'unrelated-' . $i, 'route_path' => '/unrelated-' . $i . '/' );
+}
+$assert_status( $expected, 'unsynced', 'bounded route inventory' );
+if ( true === Foundation::status()['route_inventory_complete'] ) { fwrite( STDERR, "full route page marked complete\n" ); exit( 1 ); }
+$sync = Foundation::sync();
+if ( ! ( $sync instanceof WP_Error ) || 'swi_foundation_route_inventory_incomplete' !== $sync->get_error_code()
+    || SPF_Registry::$module_writes || SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "bounded route inventory did not fail before writes\n" ); exit( 1 );
+}
+echo "File 13 / File 01 runtime registry DTO and bounded-route contract: PASS\n";
