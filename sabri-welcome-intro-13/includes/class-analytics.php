@@ -7,9 +7,7 @@ final class Analytics {
 	const OPTION_PREFIX = 'swi_intro_agg_';
 	const CLEANUP_HOOK = 'swi_intro_cleanup_aggregates';
 
-	public static function register() {
-		add_action( 'wp_ajax_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
-		add_action( 'wp_ajax_nopriv_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
+	public static function register_retention() {
 		add_action( self::CLEANUP_HOOK, array( __CLASS__, 'cleanup' ) );
 		add_action( 'init', array( __CLASS__, 'schedule_cleanup' ), 20 );
 	}
@@ -99,14 +97,22 @@ final class Analytics {
 	public static function cleanup() {
 		global $wpdb;
 		$like = $wpdb->esc_like( self::OPTION_PREFIX ) . '%';
-		$names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s LIMIT 500", $like ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$cutoff = (int) gmdate( 'Ymd', time() - ( 90 * DAY_IN_SECONDS ) );
-		foreach ( (array) $names as $name ) {
-			if ( preg_match( '/^' . preg_quote( self::OPTION_PREFIX, '/' ) . '(\d{8})_v\d+$/', (string) $name, $m )
-				&& absint( $m[1] ) < $cutoff ) {
-				delete_option( $name );
+		$cursor = 0;
+		do {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare( "SELECT option_id, option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_id > %d ORDER BY option_id ASC LIMIT 500", $like, $cursor ),
+				ARRAY_A
+			);
+			if ( ! is_array( $rows ) || ! $rows ) { break; }
+			foreach ( $rows as $row ) {
+				$cursor = max( $cursor, absint( $row['option_id'] ) );
+				$name = (string) $row['option_name'];
+				if ( preg_match( '/^' . preg_quote( self::OPTION_PREFIX, '/' ) . '(\\d{8})_v\\d+$/', $name, $m ) && absint( $m[1] ) < $cutoff ) {
+					delete_option( $name );
+				}
 			}
-		}
+		} while ( count( $rows ) === 500 );
 	}
 
 	private static function same_origin_request() {

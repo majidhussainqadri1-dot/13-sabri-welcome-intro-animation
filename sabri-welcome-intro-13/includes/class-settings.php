@@ -45,13 +45,17 @@ final class Settings {
 		$current = is_array( $current ) ? array_replace( self::defaults(), $current ) : self::defaults();
 		update_option( self::OPTION, self::sanitize( $current, $current ), false );
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
-		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
+		// Retention remains active while public analytics collection stays disabled.
 		do_action( 'swi_intro_schema_upgraded', SWI_SCHEMA_VERSION );
 	}
 
-	public static function get() {
+	public static function stored() {
 		$stored = get_option( self::OPTION, array() );
-		$config = array_replace( self::defaults(), is_array( $stored ) ? $stored : array() );
+		return array_replace( self::defaults(), is_array( $stored ) ? $stored : array() );
+	}
+
+	public static function get() {
+		$config = self::stored();
 		$config['enabled'] = false;
 		$config['status'] = 'disabled';
 		$config['analytics_enabled'] = false;

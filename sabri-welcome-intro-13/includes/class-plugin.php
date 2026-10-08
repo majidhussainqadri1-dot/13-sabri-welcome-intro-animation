@@ -12,6 +12,7 @@ final class Plugin {
 
 	public function register() {
 		Settings::register();
+		Analytics::register_retention(); // Cron only, no public analytics endpoints.
 		Renderer::register();
 		Rest::register();
 		Health::register();
@@ -29,7 +30,7 @@ final class Plugin {
 		Settings::activate();
 		Renderer::register_rewrite();
 		flush_rewrite_rules( false );
-		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
+		Analytics::schedule_cleanup();
 	}
 
 	public static function deactivate() {

@@ -32,9 +32,12 @@ $checks = array(
 	$plugin . '/includes/class-renderer.php' => array( 'swi_intro_legacy_invocation_blocked', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
 	$plugin . '/assets/js/welcome-intro.js' => array( 'cfg.preview', 'swi-welcome-intro-preview', 'Escape', 'prefers-reduced-motion' ),
 	$plugin . '/includes/class-settings.php' => array( '$out[\'enabled\'] = false', '$out[\'status\'] = \'disabled\'', '$out[\'analytics_enabled\'] = false', 'config_version', 'option_value=%s', 'swi_intro_audit_contention' ),
-	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'Welcome Intro Historical Compatibility', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'legacy-suppression', 'map_route', 'register_manifest' ),
-	$plugin . '/includes/class-health.php' => array( 'spcrc/file13_contract_state', 'legacy_public_disabled', 'invocation_frequency', 'legacy_public_renderer_registered', "? 'compatible'" ),
-	$plugin . '/includes/class-authorization.php' => array( 'return $allowed && $institutional', 'swi_intro_authorization_decision' ),
+	$plugin . '/includes/class-foundation.php' => array( 'SPF_Registry', 'Welcome Intro Historical Compatibility', 'file13-welcome-intro-preview', 'file-20', 'file-25', 'legacy-suppression', 'map_route', 'register_manifest', 'swi_foundation_partial_sync', 'swi_foundation_module_protected' ),
+	$plugin . '/includes/class-health.php' => array( 'spcrc/file13_contract_state', 'legacy_public_disabled', 'invocation_frequency', 'legacy_public_renderer_registered', "? 'compatible'", 'Settings::stored()', 'legacy_stored_activation_detected' ),
+	$plugin . '/includes/class-authorization.php' => array( 'current_user_can( self::DEFAULT_CAPABILITY )', 'return $allowed && $institutional', 'swi_intro_authorization_decision' ),
+	$plugin . '/includes/class-analytics.php' => array( 'register_retention', 'option_id > %d', 'ORDER BY option_id ASC' ),
+	$plugin . '/uninstall.php' => array( 'swi_intro_audit_gap', 'option_id > %d', 'SWI_PURGE_ON_UNINSTALL' ),
+	$root . '/tools/build-package.sh' => array( 'python3', 'os.replace', 'NamedTemporaryFile' ),
 );
 foreach ( $checks as $file => $needles ) {
 	$body = is_file( $file ) ? file_get_contents( $file ) : '';
@@ -58,6 +61,7 @@ $admin = file_get_contents( $plugin . '/includes/class-admin.php' );
 $javascript = file_get_contents( $plugin . '/assets/js/welcome-intro.js' );
 
 if ( false !== strpos( $plugin_bootstrap, 'Analytics::register()' ) ) { $failures[] = 'legacy-public-analytics-must-not-register'; }
+if ( false === strpos( $plugin_bootstrap, 'Analytics::register_retention()' ) ) { $failures[] = 'legacy-retention-cron-must-register'; }
 if ( false !== strpos( $plugin_bootstrap, 'Eligibility::register()' ) ) { $failures[] = 'legacy-public-eligibility-must-not-register'; }
 if ( false !== strpos( $renderer, "add_action( 'sabri_shell_welcome_intro_invoke'" ) ) { $failures[] = 'legacy-public-renderer-must-not-register'; }
 if ( false !== strpos( $rest, "'/config'" ) ) { $failures[] = 'legacy-config-rest-write-must-not-exist'; }

@@ -2,26 +2,40 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-PLUGIN="sabri-welcome-intro-13"
 DEST="${1:-$ROOT/dist}"
 SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-1791172800}"
-ZIP_NAME="sabri-welcome-intro-13-1.0.1.zip"
+command -v python3 >/dev/null 2>&1 || { echo "python3 is required" >&2; exit 2; }
 
-command -v zip >/dev/null 2>&1 || { echo "zip is required" >&2; exit 2; }
-command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required" >&2; exit 2; }
+python3 - "$ROOT" "$DEST" "$SOURCE_DATE_EPOCH" <<'PY'
+import hashlib
+import os
+from pathlib import Path
+import sys
+import tempfile
+import time
+import zipfile
 
-rm -rf "$DEST"
-mkdir -p "$DEST/work"
-cp -R "$ROOT/$PLUGIN" "$DEST/work/$PLUGIN"
-
-find "$DEST/work/$PLUGIN" -exec touch -h -d "@$SOURCE_DATE_EPOCH" {} +
-(
-  cd "$DEST/work"
-  find "$PLUGIN" -type f -print | LC_ALL=C sort | zip -X -q "$DEST/$ZIP_NAME" -@
-)
-
-sha256sum "$DEST/$ZIP_NAME" > "$DEST/$ZIP_NAME.sha256"
-rm -rf "$DEST/work"
-
-echo "$DEST/$ZIP_NAME"
-cat "$DEST/$ZIP_NAME.sha256"
+root, dest, epoch = Path(sys.argv[1]), Path(sys.argv[2]), int(sys.argv[3])
+plugin = root / "sabri-welcome-intro-13"
+name = "sabri-welcome-intro-13-1.0.1.zip"
+dest.mkdir(parents=True, exist_ok=True)
+timestamp = time.gmtime(max(epoch, 315532800))[:6]
+with tempfile.NamedTemporaryFile(prefix=".swi-", suffix=".zip", dir=dest, delete=False) as tmp:
+    temporary = Path(tmp.name)
+try:
+    with zipfile.ZipFile(temporary, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
+        for source in sorted(plugin.rglob("*")):
+            if not source.is_file():
+                continue
+            member = zipfile.ZipInfo(str(source.relative_to(root)).replace(os.sep, "/"), timestamp)
+            member.compress_type = zipfile.ZIP_DEFLATED
+            member.external_attr = 0o100644 << 16
+            archive.writestr(member, source.read_bytes(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+    os.replace(temporary, dest / name)
+finally:
+    temporary.unlink(missing_ok=True)
+digest = hashlib.sha256((dest / name).read_bytes()).hexdigest()
+(dest / (name + ".sha256")).write_text(digest + "  " + str(dest / name) + "\n")
+print(dest / name)
+print(digest)
+PY

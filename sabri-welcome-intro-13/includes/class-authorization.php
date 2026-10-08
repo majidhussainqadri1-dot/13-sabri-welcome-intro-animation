@@ -7,7 +7,7 @@ final class Authorization {
 
 	public static function can_manage( $action = 'manage' ) {
 		$capability = apply_filters( 'swi_intro_manage_capability', self::DEFAULT_CAPABILITY, $action );
-		$allowed = is_string( $capability ) && '' !== $capability && current_user_can( $capability );
+		$allowed = current_user_can( self::DEFAULT_CAPABILITY ) && is_string( $capability ) && '' !== $capability && current_user_can( $capability );
 		$institutional = (bool) apply_filters( 'swi_intro_authorization_decision', $allowed, $action, get_current_user_id() );
 		// Companion policy may make authorization stricter, never weaker than the native capability gate.
 		return $allowed && $institutional;
