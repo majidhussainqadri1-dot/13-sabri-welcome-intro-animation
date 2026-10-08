@@ -13,13 +13,16 @@ class WP_Error {
     public function get_error_code() { return $this->code; }
 }
 function absint( $value ) { return abs( (int) $value ); }
+function is_wp_error( $value ) { return $value instanceof WP_Error; }
+function do_action( $hook, ...$args ) { /* Standalone event stub. */ }
 final class SPF_Registry {
     public static $module;
     public static $routes = array();
     public static $module_writes = 0;
     public static $route_writes = 0;
+    public static $route_error = false;
     public static function register_manifest( $manifest, $context = array() ) { self::$module_writes++; return array( 'record_version' => 2 ); }
-    public static function map_route( $route, $context = array() ) { self::$route_writes++; return array( 'record_version' => 2 ); }
+    public static function map_route( $route, $context = array() ) { self::$route_writes++; return self::$route_error ? new WP_Error( 'spf_route_failed' ) : array( 'record_version' => 2 ); }
     public static function get_module( $key ) { return 'file-13' === $key ? self::$module : null; }
     public static function list_routes() { return self::$routes; }
 }
@@ -68,6 +71,51 @@ if ( ! is_array( $again ) || empty( $again['already_synced'] )
     fwrite( STDERR, "Degraded compatible registry unexpectedly mutated.\\n" );
     exit( 1 );
 }
+// Repair a stale route without rewriting a matching module.
+SPF_Registry::$module = $expected;
+$route_drift = $route;
+$route_drift['layout_context'] = 'shell';
+SPF_Registry::$routes = array( $route_drift );
+SPF_Registry::$module_writes = SPF_Registry::$route_writes = 0;
+$route_only = Foundation::sync();
+if ( ! is_array( $route_only ) || 0 !== SPF_Registry::$module_writes
+    || 1 !== SPF_Registry::$route_writes || 1 !== $route_only['module']['record_version'] ) {
+    fwrite( STDERR, "Route-only repair rewrote a matching module.\n" ); exit( 1 );
+}
+// Report the underlying route error if no module mutation occurred.
+SPF_Registry::$module_writes = SPF_Registry::$route_writes = 0;
+SPF_Registry::$route_error = true;
+$route_failure = Foundation::sync();
+if ( ! ( $route_failure instanceof WP_Error ) || 'spf_route_failed' !== $route_failure->get_error_code()
+    || 0 !== SPF_Registry::$module_writes || 1 !== SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Route-only failure misreported or mutated module.\n" ); exit( 1 );
+}
+SPF_Registry::$route_error = false;
+// Repair a stale module without rewriting a matching route.
+$module_drift = $expected;
+$module_drift['owner_name'] = 'Old historical label';
+SPF_Registry::$module = $module_drift;
+SPF_Registry::$routes = array( $route );
+SPF_Registry::$module_writes = SPF_Registry::$route_writes = 0;
+$module_only = Foundation::sync();
+if ( ! is_array( $module_only ) || 1 !== SPF_Registry::$module_writes
+    || 0 !== SPF_Registry::$route_writes || 1 !== $module_only['route']['record_version'] ) {
+    fwrite( STDERR, "Module-only repair rewrote a matching route.\n" ); exit( 1 );
+}
+// Two-resource drift plus route failure must report a genuine partial update.
+SPF_Registry::$module = $module_drift;
+SPF_Registry::$routes = array( $route_drift );
+SPF_Registry::$module_writes = SPF_Registry::$route_writes = 0;
+SPF_Registry::$route_error = true;
+$partial = Foundation::sync();
+if ( ! ( $partial instanceof WP_Error ) || 'swi_foundation_partial_sync' !== $partial->get_error_code()
+    || 1 !== SPF_Registry::$module_writes || 1 !== SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Two-resource partial failure not reported correctly.\n" ); exit( 1 );
+}
+SPF_Registry::$route_error = false;
+SPF_Registry::$module_writes = SPF_Registry::$route_writes = 0;
+SPF_Registry::$routes = array( $route );
+
 SPF_Registry::$module = $expected;
 foreach ( array( 'required', 'optional', 'health' ) as $field ) {
     $drift = $expected;

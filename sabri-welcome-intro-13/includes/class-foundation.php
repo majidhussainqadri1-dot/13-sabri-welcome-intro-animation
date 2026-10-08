@@ -222,13 +222,32 @@ final class Foundation {
 		}
 		$context = array( 'purpose' => 'file13_registry_sync' );
 		if ( is_array( $existing ) ) { $context['expected_version'] = absint( $existing['record_version'] ?? 0 ); }
-		$registered = \SPF_Registry::register_manifest( $manifest, $context );
-		if ( is_wp_error( $registered ) ) { return $registered; }
-		$route_context = array( 'purpose' => 'file13_preview_route_sync' );
-		if ( is_array( $current_route ) ) { $route_context['expected_version'] = absint( $current_route['record_version'] ?? 0 ); }
-		$mapped = \SPF_Registry::map_route( self::route(), $route_context );
-		if ( is_wp_error( $mapped ) ) {
-			return new \WP_Error( 'swi_foundation_partial_sync', __( 'Module updated but route mapping failed. Reconcile registry before retrying.', SWI_TEXT_DOMAIN ), array( 'status' => 409, 'route_error' => $mapped->get_error_code(), 'module_record_version' => $registered['record_version'] ?? 0 ) );
+		// File 01 writes increment versions and emit audit/events. Repair only drift.
+		$module_needs_write = empty( $current_status['module_registered'] );
+		$route_needs_write = empty( $current_status['route_registered'] );
+		$registered = array(
+			'module_key' => self::MODULE_KEY,
+			'record_version' => $current_status['module_record_version'],
+			'state' => $current_status['module_state'],
+		);
+		if ( $module_needs_write ) {
+			$registered = \SPF_Registry::register_manifest( $manifest, $context );
+			if ( is_wp_error( $registered ) ) { return $registered; }
+		}
+		$mapped = array(
+			'route_key' => self::ROUTE_KEY,
+			'record_version' => $current_status['route_record_version'],
+			'status' => 'active',
+		);
+		if ( $route_needs_write ) {
+			$route_context = array( 'purpose' => 'file13_preview_route_sync' );
+			if ( is_array( $current_route ) ) { $route_context['expected_version'] = absint( $current_route['record_version'] ?? 0 ); }
+			$mapped = \SPF_Registry::map_route( self::route(), $route_context );
+			if ( is_wp_error( $mapped ) ) {
+				// A route-only failure did not modify the module.
+				if ( ! $module_needs_write ) { return $mapped; }
+				return new \WP_Error( 'swi_foundation_partial_sync', __( 'Module updated but route mapping failed. Reconcile registry before retrying.', SWI_TEXT_DOMAIN ), array( 'status' => 409, 'route_error' => $mapped->get_error_code(), 'module_record_version' => $registered['record_version'] ?? 0 ) );
+			}
 		}
 		do_action( 'swi_intro_foundation_registry_synced', $registered, $mapped );
 		return array( 'module' => $registered, 'route' => $mapped );
