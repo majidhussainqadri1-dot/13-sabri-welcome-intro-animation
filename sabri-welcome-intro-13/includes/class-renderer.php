@@ -12,7 +12,27 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( self::PREVIEW_REWRITE_PATTERN, self::PREVIEW_REWRITE_TARGET, 'top' );
+		// Fail closed when another module owns the exact preview route.
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		if ( is_object( $wp_rewrite ) ) {
+			foreach ( array( 'extra_rules_top', 'extra_rules' ) as $bucket ) {
+				$rules = isset( $wp_rewrite->{$bucket} ) ? $wp_rewrite->{$bucket} : array();
+				if ( is_array( $rules ) && array_key_exists( $pattern, $rules ) && $target !== $rules[ $pattern ] ) {
+					do_action( 'swi_intro_preview_rewrite_conflict', $pattern, $bucket );
+					return false;
+				}
+			}
+		}
+		// Persisted rules can predate this request's init registrations.
+		$persisted = get_option( 'rewrite_rules', array() );
+		if ( is_array( $persisted ) && array_key_exists( $pattern, $persisted ) && $target !== $persisted[ $pattern ] ) {
+			do_action( 'swi_intro_preview_rewrite_conflict', $pattern, 'persisted' );
+			return false;
+		}
+		add_rewrite_rule( $pattern, $target, 'top' );
+		return true;
 	}
 
 	public static function query_vars( $vars ) {

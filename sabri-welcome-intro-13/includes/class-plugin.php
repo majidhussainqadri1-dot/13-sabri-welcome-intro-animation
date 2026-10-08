@@ -28,8 +28,10 @@ final class Plugin {
 
 	public static function activate() {
 		Settings::activate();
-		Renderer::register_rewrite();
-		flush_rewrite_rules( false );
+		// Never flush a persisted foreign route during activation.
+		if ( Renderer::register_rewrite() ) {
+			flush_rewrite_rules( false );
+		}
 		Analytics::schedule_cleanup();
 	}
 
