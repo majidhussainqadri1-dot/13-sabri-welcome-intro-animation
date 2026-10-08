@@ -2,7 +2,7 @@ name: File 13 Quality
 
 on:
   push:
-    branches: ["main", "file13-complete-20-pass-audit", "file13-cross-contract-compatibility"]
+    branches: ["main", "file13-**", "audit/file13-**"]
   pull_request:
 
 permissions:
@@ -27,6 +27,18 @@ jobs:
         run: find sabri-welcome-intro-13 tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Governed contract tests
         run: php tests/run.php
+      - name: File 01 registry runtime contract regression
+        run: php tests/foundation-registry-contract.php
+      - name: Legacy health reporting regression
+        run: php tests/health-contract.php
+      - name: Fail-closed schema migration persistence regression
+        run: php tests/settings-migration.php
+      - name: Schema write read-back failure regression
+        run: php tests/schema-write-failure.php
+      - name: Preview rewrite deactivation regression
+        run: php tests/rewrite-lifecycle.php
+      - name: File 25 visual-token contract regression
+        run: php tests/visual-contract.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
       - name: JavaScript behavior
@@ -42,6 +54,8 @@ jobs:
           SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-b
           cmp /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip /tmp/file13-dist-b/sabri-welcome-intro-13-1.0.1.zip
           unzip -l /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip | grep 'sabri-welcome-intro-13/sabri-welcome-intro.php'
+      - name: Package symlink and checksum portability regression
+        run: bash tests/package-integrity.sh
       - name: Upload source package
         uses: actions/upload-artifact@v4
         with:

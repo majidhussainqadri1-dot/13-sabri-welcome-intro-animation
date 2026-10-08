@@ -3,6 +3,10 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
+	/** Request-local proof that the canonical preview rewrite was registered without collision. */
+	private static $preview_route_registered = false;
+	const PREVIEW_REWRITE_PATTERN = '^welcome-intro-preview/?$';
+	const PREVIEW_REWRITE_TARGET = 'index.php?swi_intro_preview=1';
 	public static function register() {
 		add_action( 'init', array( __CLASS__, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
@@ -10,7 +14,29 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( '^welcome-intro-preview/?$', 'index.php?swi_intro_preview=1', 'top' );
+		self::$preview_route_registered = false;
+		// Fail closed when another module owns the exact preview route.
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		if ( is_object( $wp_rewrite ) ) {
+			foreach ( array( 'extra_rules_top', 'extra_rules' ) as $bucket ) {
+				$rules = isset( $wp_rewrite->{$bucket} ) ? $wp_rewrite->{$bucket} : array();
+				if ( is_array( $rules ) && array_key_exists( $pattern, $rules ) && $target !== $rules[ $pattern ] ) {
+					do_action( 'swi_intro_preview_rewrite_conflict', $pattern, $bucket );
+					return false;
+				}
+			}
+		}
+		// Persisted rules can predate this request's init registrations.
+		$persisted = get_option( 'rewrite_rules', array() );
+		if ( is_array( $persisted ) && array_key_exists( $pattern, $persisted ) && $target !== $persisted[ $pattern ] ) {
+			do_action( 'swi_intro_preview_rewrite_conflict', $pattern, 'persisted' );
+			return false;
+		}
+		add_rewrite_rule( $pattern, $target, 'top' );
+		self::$preview_route_registered = true;
+		return true;
 	}
 
 	public static function query_vars( $vars ) {
@@ -25,8 +51,27 @@ final class Renderer {
 		do_action( 'swi_intro_legacy_invocation_blocked', SWI_VERSION );
 	}
 
+	/**
+	 * Fail closed unless WordPress actually matched our canonical rewrite.
+	 * A public ?swi_intro_preview=1 query string is not proof of route ownership.
+	 */
+	public static function is_preview_request() {
+		if ( ! self::$preview_route_registered || ! get_query_var( 'swi_intro_preview' ) ) { return false; }
+		global $wp, $wp_rewrite;
+		if ( ! is_object( $wp ) || ! isset( $wp->matched_rule ) || self::PREVIEW_REWRITE_PATTERN !== $wp->matched_rule ) { return false; }
+		if ( ! is_object( $wp_rewrite ) || ! isset( $wp_rewrite->extra_rules_top )
+			|| ! is_array( $wp_rewrite->extra_rules_top )
+			|| self::PREVIEW_REWRITE_TARGET !== ( $wp_rewrite->extra_rules_top[ self::PREVIEW_REWRITE_PATTERN ] ?? null ) ) { return false; }
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		if ( ! is_string( $request_uri ) || '' === $request_uri ) { return false; }
+		$requested = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$canonical = wp_parse_url( home_url( '/welcome-intro-preview/' ), PHP_URL_PATH );
+		return is_string( $requested ) && is_string( $canonical )
+			&& untrailingslashit( $requested ) === untrailingslashit( $canonical );
+	}
+
 	public static function maybe_preview() {
-		if ( ! get_query_var( 'swi_intro_preview' ) ) { return; }
+		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
 		Authorization::require_manage( 'preview_intro' );
 		nocache_headers();
@@ -94,7 +139,13 @@ final class Renderer {
 		$valid = 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
 			&& version_compare( $version, '1.0.0', '>=' )
-			&& ! empty( $tokens );
+			&& isset( $tokens['primary_color'], $tokens['text'], $tokens['surface_strong'] )
+			&& is_string( $tokens['primary_color'] )
+			&& is_string( $tokens['text'] )
+			&& is_string( $tokens['surface_strong'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['primary_color'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['text'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['surface_strong'] );
 
 		return array(
 			'valid' => $valid,

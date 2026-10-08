@@ -12,6 +12,7 @@ final class Plugin {
 
 	public function register() {
 		Settings::register();
+		Analytics::register_retention(); // Cron only, no public analytics endpoints.
 		Renderer::register();
 		Rest::register();
 		Health::register();
@@ -27,13 +28,26 @@ final class Plugin {
 
 	public static function activate() {
 		Settings::activate();
-		Renderer::register_rewrite();
-		flush_rewrite_rules( false );
-		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
+		// Never flush a persisted foreign route during activation.
+		if ( Renderer::register_rewrite() ) {
+			flush_rewrite_rules( false );
+		}
+		Analytics::schedule_cleanup();
 	}
 
 	public static function deactivate() {
 		wp_clear_scheduled_hook( Analytics::CLEANUP_HOOK );
+		// WordPress fires deactivation after init: the rule may already be in
+		// extra_rules_top. Remove only our exact rule before flushing, or it
+		// would survive deactivation in the persisted rewrite_rules option.
+		global $wp_rewrite;
+		if ( is_object( $wp_rewrite )
+			&& isset( $wp_rewrite->extra_rules_top )
+			&& is_array( $wp_rewrite->extra_rules_top )
+			&& isset( $wp_rewrite->extra_rules_top[ Renderer::PREVIEW_REWRITE_PATTERN ] )
+			&& Renderer::PREVIEW_REWRITE_TARGET === $wp_rewrite->extra_rules_top[ Renderer::PREVIEW_REWRITE_PATTERN ] ) {
+			unset( $wp_rewrite->extra_rules_top[ Renderer::PREVIEW_REWRITE_PATTERN ] );
+		}
 		flush_rewrite_rules( false );
 	}
 }
