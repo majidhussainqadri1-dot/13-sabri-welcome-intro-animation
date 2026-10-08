@@ -31,6 +31,8 @@ jobs:
         run: php tests/foundation-registry-contract.php
       - name: Legacy health reporting regression
         run: php tests/health-contract.php
+      - name: Preview rewrite deactivation regression
+        run: php tests/rewrite-lifecycle.php
       - name: File 25 visual-token contract regression
         run: php tests/visual-contract.php
       - name: JavaScript syntax

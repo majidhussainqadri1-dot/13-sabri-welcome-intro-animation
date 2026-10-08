@@ -3,6 +3,8 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
+	const PREVIEW_REWRITE_PATTERN = '^welcome-intro-preview/?$';
+	const PREVIEW_REWRITE_TARGET = 'index.php?swi_intro_preview=1';
 	public static function register() {
 		add_action( 'init', array( __CLASS__, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
@@ -10,7 +12,7 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( '^welcome-intro-preview/?$', 'index.php?swi_intro_preview=1', 'top' );
+		add_rewrite_rule( self::PREVIEW_REWRITE_PATTERN, self::PREVIEW_REWRITE_TARGET, 'top' );
 	}
 
 	public static function query_vars( $vars ) {
