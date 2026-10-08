@@ -118,9 +118,16 @@ final class Foundation {
 			if ( is_array( $candidate ) && self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) { $route = $candidate; break; }
 		}
 		$manifest = self::manifest();
+		// File 01 normalizes dependency order before persistence; compare the same
+		// canonical order, while checking all dependencies and the health contract.
+		foreach ( array( 'required', 'optional' ) as $dependency_field ) {
+			usort( $manifest[ $dependency_field ], static function ( $a, $b ) {
+				return strcmp( $a['module_key'], $b['module_key'] );
+			} );
+		}
 		$module_ok = is_array( $module ) && in_array( (string) ( $module['state'] ?? '' ), array( 'compatible', 'degraded' ), true );
 		if ( $module_ok ) {
-			foreach ( array( 'module_key', 'owner_file', 'owner_name', 'slug', 'namespace_prefix', 'software_version', 'contract_version', 'capabilities', 'commands', 'queries', 'events', 'routes', 'data_classes', 'canonical_entities', 'writes', 'global_shell_owner', 'application_shell_owner' ) as $field ) {
+			foreach ( array( 'module_key', 'owner_file', 'owner_name', 'slug', 'namespace_prefix', 'software_version', 'contract_version', 'required', 'optional', 'health', 'capabilities', 'commands', 'queries', 'events', 'routes', 'data_classes', 'canonical_entities', 'writes', 'global_shell_owner', 'application_shell_owner' ) as $field ) {
 				if ( ! array_key_exists( $field, $module ) || $module[ $field ] != $manifest[ $field ] ) { $module_ok = false; break; }
 			}
 		}

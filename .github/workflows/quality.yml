@@ -2,7 +2,7 @@ name: File 13 Quality
 
 on:
   push:
-    branches: ["main", "file13-complete-20-pass-audit", "file13-cross-contract-compatibility"]
+    branches: ["main", "file13-**", "audit/file13-**"]
   pull_request:
 
 permissions:
@@ -27,6 +27,8 @@ jobs:
         run: find sabri-welcome-intro-13 tests -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Governed contract tests
         run: php tests/run.php
+      - name: File 01 registry runtime contract regression
+        run: php tests/foundation-registry-contract.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
       - name: JavaScript behavior
