@@ -50,6 +50,8 @@ jobs:
           SOURCE_DATE_EPOCH=1791172800 bash tools/build-package.sh /tmp/file13-dist-b
           cmp /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip /tmp/file13-dist-b/sabri-welcome-intro-13-1.0.1.zip
           unzip -l /tmp/file13-dist-a/sabri-welcome-intro-13-1.0.1.zip | grep 'sabri-welcome-intro-13/sabri-welcome-intro.php'
+      - name: Package symlink and checksum portability regression
+        run: bash tests/package-integrity.sh
       - name: Upload source package
         uses: actions/upload-artifact@v4
         with:
