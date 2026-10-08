@@ -31,6 +31,8 @@ jobs:
         run: php tests/foundation-registry-contract.php
       - name: Legacy health reporting regression
         run: php tests/health-contract.php
+      - name: File 25 visual-token contract regression
+        run: php tests/visual-contract.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
       - name: JavaScript behavior

@@ -94,7 +94,13 @@ final class Renderer {
 		$valid = 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
 			&& version_compare( $version, '1.0.0', '>=' )
-			&& ! empty( $tokens );
+			&& isset( $tokens['primary_color'], $tokens['text'], $tokens['surface_strong'] )
+			&& is_string( $tokens['primary_color'] )
+			&& is_string( $tokens['text'] )
+			&& is_string( $tokens['surface_strong'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['primary_color'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['text'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['surface_strong'] );
 
 		return array(
 			'valid' => $valid,
