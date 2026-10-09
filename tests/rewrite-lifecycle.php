@@ -134,4 +134,17 @@ file13_check( false === Renderer::is_preview_request(), 'Foreign-owned route wit
 file13_reset_rewrite_state();
 file13_check( true === Renderer::register_rewrite(), 'Clean route registration rejected after collision.' );
 file13_check( true === Renderer::is_preview_request(), 'Clean route registration did not restore canonical preview.' );
+// PHP 8 rejects arrays passed to sanitize_key(); the preview must not fatal.
+function sanitize_key( $value ) {
+    if ( ! is_string( $value ) ) { throw new TypeError( 'Expected string preview state.' ); }
+    return strtolower( preg_replace( '/[^a-z0-9_-]/', '', $value ) );
+}
+$_GET['state'] = array( 'reduced' );
+file13_check( 'default' === Renderer::normalized_preview_state(), 'Array state caused an unsafe preview parse.' );
+$_GET['state'] = 'reduced';
+file13_check( 'reduced' === Renderer::normalized_preview_state(), 'Valid reduced state was rejected.' );
+$_GET['state'] = 'unknown';
+file13_check( 'default' === Renderer::normalized_preview_state(), 'Unknown state did not fail closed.' );
+unset( $_GET['state'] );
+file13_check( 'default' === Renderer::normalized_preview_state(), 'Missing state did not use safe default.' );
 echo "File 13 preview rewrite ownership and deactivation: PASS\n";

@@ -70,6 +70,15 @@ final class Renderer {
 			&& untrailingslashit( $requested ) === untrailingslashit( $canonical );
 	}
 
+	/** Malformed query input is not a valid preview state. */
+	public static function normalized_preview_state() {
+		$raw = isset( $_GET['state'] ) ? $_GET['state'] : 'default';
+		if ( ! is_string( $raw ) ) { return 'default'; }
+		$state = sanitize_key( wp_unslash( $raw ) );
+		return in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true )
+			? $state : 'default';
+	}
+
 	public static function maybe_preview() {
 		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
@@ -77,8 +86,7 @@ final class Renderer {
 		nocache_headers();
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
 
-		$state = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : 'default';
-		if ( ! in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true ) ) { $state = 'default'; }
+		$state = self::normalized_preview_state();
 		$config = Settings::get();
 		$tokens = self::visual_tokens();
 
