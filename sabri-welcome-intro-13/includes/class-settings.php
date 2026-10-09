@@ -90,18 +90,27 @@ final class Settings {
 		$out = $base;
 		if ( array_key_exists( 'enabled', $input ) ) { $out['enabled'] = self::to_bool( $input['enabled'] ); }
 		if ( isset( $input['status'] ) ) {
-			$status = sanitize_key( $input['status'] );
+			$status = is_string( $input['status'] ) ? sanitize_key( $input['status'] ) : 'disabled';
 			$out['status'] = in_array( $status, array( 'active', 'disabled' ), true ) ? $status : $base['status'];
 		}
-		if ( isset( $input['heading'] ) ) { $out['heading'] = sanitize_text_field( $input['heading'] ); }
-		if ( isset( $input['claim'] ) ) { $out['claim'] = sanitize_textarea_field( $input['claim'] ); }
-		if ( isset( $input['duration_ms'] ) ) { $out['duration_ms'] = min( 12000, max( 800, absint( $input['duration_ms'] ) ) ); }
-		if ( isset( $input['recurrence_days'] ) ) { $out['recurrence_days'] = min( 365, max( 30, absint( $input['recurrence_days'] ) ) ); }
+		if ( isset( $input['heading'] ) ) { $out['heading'] = sanitize_text_field( is_string( $input['heading'] ) ? $input['heading'] : self::defaults()['heading'] ); }
+		if ( isset( $input['claim'] ) ) { $out['claim'] = sanitize_textarea_field( is_string( $input['claim'] ) ? $input['claim'] : self::defaults()['claim'] ); }
+		if ( isset( $input['duration_ms'] ) ) {
+			$value = $input['duration_ms'];
+			$out['duration_ms'] = is_int( $value ) || ( is_string( $value ) && ctype_digit( $value ) )
+				? min( 12000, max( 800, absint( $value ) ) ) : self::defaults()['duration_ms'];
+		}
+		if ( isset( $input['recurrence_days'] ) ) {
+			$value = $input['recurrence_days'];
+			$out['recurrence_days'] = is_int( $value ) || ( is_string( $value ) && ctype_digit( $value ) )
+				? min( 365, max( 30, absint( $value ) ) ) : self::defaults()['recurrence_days'];
+		}
 		if ( isset( $input['eligible_paths'] ) ) {
-			$paths = is_array( $input['eligible_paths'] ) ? $input['eligible_paths'] : preg_split( '/[\r\n,]+/', (string) $input['eligible_paths'] );
+			$paths = is_array( $input['eligible_paths'] ) ? $input['eligible_paths']
+				: ( is_string( $input['eligible_paths'] ) ? preg_split( '/[\r\n,]+/', $input['eligible_paths'] ) : array() );
 			$clean = array();
 			foreach ( $paths as $path ) {
-				$path = self::normalize_path( $path );
+				$path = is_string( $path ) ? self::normalize_path( $path ) : '';
 				if ( '' !== $path ) { $clean[] = $path; }
 			}
 			$out['eligible_paths'] = array_values( array_unique( $clean ) );
@@ -120,7 +129,9 @@ final class Settings {
 		$out['enabled'] = false;
 		$out['status'] = 'disabled';
 		$out['analytics_enabled'] = false;
-		$out['config_version'] = max( 1, absint( $base['config_version'] ?? 1 ) );
+		$revision = $base['config_version'] ?? 1;
+		$out['config_version'] = is_int( $revision ) || ( is_string( $revision ) && ctype_digit( $revision ) )
+			? max( 1, absint( $revision ) ) : 1;
 		return $out;
 	}
 
@@ -179,7 +190,11 @@ final class Settings {
 		if ( ! is_array( $new_value ) ) { return is_array( $old_value ) ? $old_value : self::defaults(); }
 		$old_value = is_array( $old_value ) ? array_replace( self::defaults(), $old_value ) : self::defaults();
 		$clean = self::sanitize( $new_value, $old_value );
-		if ( isset( $new_value['config_version'] ) ) { $clean['config_version'] = max( 1, absint( $new_value['config_version'] ) ); }
+		if ( isset( $new_value['config_version'] ) ) {
+			$revision = $new_value['config_version'];
+			$clean['config_version'] = is_int( $revision ) || ( is_string( $revision ) && ctype_digit( $revision ) )
+				? max( 1, absint( $revision ) ) : 1;
+		}
 		return $clean;
 	}
 
@@ -243,7 +258,8 @@ final class Settings {
 	}
 
 	public static function normalize_path( $path ) {
-		$path = trim( (string) $path );
+		if ( ! is_string( $path ) ) { return ''; }
+		$path = trim( $path );
 		if ( '' === $path ) { return ''; }
 		$parsed = wp_parse_url( $path, PHP_URL_PATH );
 		$path = is_string( $parsed ) ? $parsed : $path;
@@ -252,7 +268,8 @@ final class Settings {
 	}
 
 	private static function sanitize_datetime( $value ) {
-		$value = trim( sanitize_text_field( (string) $value ) );
+		if ( ! is_string( $value ) ) { return ''; }
+		$value = trim( sanitize_text_field( $value ) );
 		if ( '' === $value ) { return ''; }
 		$ts = strtotime( $value );
 		return false === $ts ? '' : gmdate( 'c', $ts );

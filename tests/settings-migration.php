@@ -73,4 +73,36 @@ $GLOBALS['deny_add'] = false;
 Settings::activate();
 verify_migration( '1.0.1' === $GLOBALS['swi_schema'] && is_array( $GLOBALS['swi_config'] )
     && false === $GLOBALS['swi_config']['enabled'], 'Fresh activation failed safe migration.' );
-echo "File 13 fail-closed schema migration persistence: PASS\n";
+// Historical option rows are untrusted: arrays/objects must never reach WordPress scalar sanitizers.
+$GLOBALS['deny_config_write'] = false;
+$GLOBALS['swi_schema'] = '1.0.0';
+$GLOBALS['swi_config'] = array(
+    'enabled' => true,
+    'status' => array( 'active' ),
+    'heading' => array( 'malformed' ),
+    'claim' => array( 'malformed' ),
+    'duration_ms' => array( 999 ),
+    'recurrence_days' => new stdClass(),
+    'eligible_paths' => array( '/safe', array( '/bad' ), new stdClass() ),
+    'analytics_enabled' => true,
+    'start_at' => array( 'tomorrow' ),
+    'end_at' => new stdClass(),
+    'config_version' => array( 10 ),
+);
+set_error_handler( static function ( $severity, $message ) { throw new ErrorException( $message, 0, $severity ); } );
+try {
+    Settings::maybe_upgrade();
+    verify_migration( '' === Settings::normalize_path( array( '/unsafe' ) ), 'Array path was accepted.' );
+} finally {
+    restore_error_handler();
+}
+$clean = $GLOBALS['swi_config'];
+verify_migration( '1.0.1' === $GLOBALS['swi_schema'], 'Malformed legacy config blocked safe migration.' );
+verify_migration( false === $clean['enabled'] && 'disabled' === $clean['status']
+    && false === $clean['analytics_enabled'], 'Malformed legacy row reactivated public runtime.' );
+verify_migration( 'Sabri Homeopathy' === $clean['heading']
+    && 3200 === $clean['duration_ms'] && 30 === $clean['recurrence_days']
+    && 1 === $clean['config_version'], 'Malformed scalar values not normalized.' );
+verify_migration( array( '/safe' ) === $clean['eligible_paths']
+    && '' === $clean['start_at'] && '' === $clean['end_at'], 'Malformed paths/dates not normalized.' );
+echo "File 13 fail-closed schema migration persistence and malformed legacy input: PASS\n";
