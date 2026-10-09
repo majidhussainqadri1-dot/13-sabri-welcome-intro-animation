@@ -62,6 +62,23 @@ $assert_status = static function ( $module, $want, $label ) {
     }
 };
 $assert_status( $expected, 'synced', 'canonical File 01 normalized DTO' );
+// Registry state must reject a second owner of the same canonical path.
+$foreign_route = array( 'route_key' => 'foreign-preview', 'route_path' => '/welcome-intro-preview/', 'owner_module' => 'file-20' );
+SPF_Registry::$routes = array( $route, $foreign_route );
+$assert_status( $expected, 'unsynced', 'duplicate canonical preview path' );
+SPF_Registry::$module = $expected;
+$collision = Foundation::sync();
+if ( ! ( $collision instanceof WP_Error ) || 'swi_foundation_route_collision' !== $collision->get_error_code()
+    || SPF_Registry::$module_writes || SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Duplicate preview path bypassed registry preflight.\n" ); exit( 1 );
+}
+SPF_Registry::$routes = array( $route );
+// File 01 owner-file identities are strings, not loosely equivalent integers.
+$wrong_type = $expected;
+$wrong_type['owner_file'] = 13;
+$assert_status( $wrong_type, 'unsynced', 'noncanonical numeric owner_file' );
+SPF_Registry::$module = $expected;
+
 // Exact repeated sync is a true no-op, including record versions and audit writes.
 SPF_Registry::$module = $expected;
 $already = Foundation::sync();

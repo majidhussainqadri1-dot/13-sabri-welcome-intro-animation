@@ -118,8 +118,16 @@ final class Foundation {
 		// A full page cannot prove there are no later collisions: fail closed.
 		$route_inventory_complete = is_array( $routes ) && count( $routes ) < 200;
 		$route = null;
+		$route_collision = false;
 		foreach ( $route_inventory_complete ? $routes : array() as $candidate ) {
-			if ( is_array( $candidate ) && self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) { $route = $candidate; break; }
+			if ( ! is_array( $candidate ) ) { continue; }
+			if ( self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
+				$route = $candidate;
+			} elseif ( '/welcome-intro-preview/' === (string) ( $candidate['route_path'] ?? '' ) ) {
+				// An unrelated route owning our path must invalidate even an otherwise
+				// matching route; otherwise sync() incorrectly returns already_synced.
+				$route_collision = true;
+			}
 		}
 		$manifest = self::manifest();
 		// File 01 normalizes dependency order before persistence; compare the same
@@ -132,14 +140,14 @@ final class Foundation {
 		$module_ok = is_array( $module ) && in_array( (string) ( $module['state'] ?? '' ), array( 'compatible', 'degraded' ), true );
 		if ( $module_ok ) {
 			foreach ( array( 'module_key', 'owner_file', 'owner_name', 'slug', 'namespace_prefix', 'software_version', 'contract_version', 'required', 'optional', 'health', 'capabilities', 'commands', 'queries', 'events', 'routes', 'data_classes', 'canonical_entities', 'writes', 'global_shell_owner', 'application_shell_owner' ) as $field ) {
-				if ( ! array_key_exists( $field, $module ) || $module[ $field ] != $manifest[ $field ] ) { $module_ok = false; break; }
+				if ( ! array_key_exists( $field, $module ) || $module[ $field ] !== $manifest[ $field ] ) { $module_ok = false; break; }
 			}
 		}
 		$expected_route = self::route();
-		$route_ok = $route_inventory_complete && is_array( $route );
+		$route_ok = $route_inventory_complete && ! $route_collision && is_array( $route );
 		if ( $route_ok ) {
 			foreach ( array( 'route_key', 'route_path', 'owner_module', 'page_id', 'layout_context', 'status', 'destination', 'redirects' ) as $field ) {
-				if ( ! array_key_exists( $field, $route ) || $route[ $field ] != $expected_route[ $field ] ) { $route_ok = false; break; }
+				if ( ! array_key_exists( $field, $route ) || $route[ $field ] !== $expected_route[ $field ] ) { $route_ok = false; break; }
 			}
 		}
 		return array(
