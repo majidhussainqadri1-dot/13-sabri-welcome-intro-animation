@@ -115,8 +115,10 @@ final class Renderer {
 			$config
 		);
 		$copy = is_array( $copy ) ? $copy : array();
-		$heading = sanitize_text_field( $copy['heading'] ?? $config['heading'] );
-		$claim = sanitize_textarea_field( $copy['claim'] ?? $config['claim'] );
+		$heading_raw = $copy['heading'] ?? null;
+		$claim_raw = $copy['claim'] ?? null;
+		$heading = sanitize_text_field( is_string( $heading_raw ) ? $heading_raw : $config['heading'] );
+		$claim = sanitize_textarea_field( is_string( $claim_raw ) ? $claim_raw : $config['claim'] );
 		$id = $preview ? 'swi-welcome-intro-preview' : 'swi-welcome-intro';
 		$html = '<aside id="' . esc_attr( $id ) . '" class="swi-intro" hidden data-swi-version="' . esc_attr( absint( $config['config_version'] ) ) . '" aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', SWI_TEXT_DOMAIN ) . '"><div class="swi-intro__panel">';
 		$html .= '<div class="swi-intro__logo" aria-hidden="true"><svg viewBox="0 0 72 72" width="72" height="72" focusable="false"><circle cx="36" cy="36" r="32"></circle><text x="36" y="42" text-anchor="middle">SH</text></svg></div>';
@@ -139,8 +141,10 @@ final class Renderer {
 
 	public static function visual_contract_status() {
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
-		$owner = is_array( $contract ) ? sanitize_key( (string) ( $contract['owner'] ?? '' ) ) : '';
-		$version = is_array( $contract ) ? sanitize_text_field( (string) ( $contract['version'] ?? '' ) ) : '';
+		$owner_raw = is_array( $contract ) ? ( $contract['owner'] ?? null ) : null;
+		$version_raw = is_array( $contract ) ? ( $contract['version'] ?? null ) : null;
+		$owner = is_string( $owner_raw ) ? sanitize_key( $owner_raw ) : '';
+		$version = is_string( $version_raw ) ? sanitize_text_field( $version_raw ) : '';
 		$tokens = is_array( $contract ) && isset( $contract['tokens'] ) && is_array( $contract['tokens'] )
 			? $contract['tokens']
 			: array();

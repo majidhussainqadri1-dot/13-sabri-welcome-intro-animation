@@ -15,7 +15,8 @@ namespace Sabri\WelcomeIntro {
     final class Settings {
         public const SCHEMA_OPTION = 'swi_intro_schema_version';
         public static function get() { return array( 'enabled' => false, 'status' => 'disabled', 'analytics_enabled' => false, 'config_version' => 1 ); }
-        public static function stored() { return self::get(); }
+        public static function stored() { return $GLOBALS['swi_stored_override'] ?? self::get(); }
+        public static function schema_version() { return is_string( $GLOBALS['swi_schema_version'] ) ? $GLOBALS['swi_schema_version'] : ''; }
     }
     final class Renderer {
         public static function invoke() {}
@@ -47,5 +48,12 @@ namespace Sabri\WelcomeIntro {
     if ( 'degraded' !== $pending['status'] || ! in_array( 'schema_migration_pending', $pending['issues'], true ) ) {
         fwrite( STDERR, "Unmigrated schema was reported healthy\n" ); exit( 1 );
     }
+    $GLOBALS['swi_schema_version'] = '1.0.1';
+    $GLOBALS['swi_stored_override'] = array( 'enabled' => array(), 'status' => array( 'disabled' ), 'analytics_enabled' => false );
+    set_error_handler( static function ( $severity, $message ) { throw new \ErrorException( $message, 0, $severity ); } );
+    try { $malformed = Health::status(); $file24 = Health::file24_contract_state( 'unassessed' ); }
+    finally { restore_error_handler(); }
+    if ( 'degraded' !== $malformed['status'] || ! in_array( 'legacy_stored_malformed', $malformed['issues'], true )
+        || 'blocked' !== $file24 ) { fwrite( STDERR, "Malformed persisted flags were concealed\n" ); exit( 1 ); }
     echo "File 13 legacy effective-public-disable health regression: PASS\n";
 }

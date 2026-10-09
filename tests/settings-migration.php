@@ -105,4 +105,16 @@ verify_migration( 'Sabri Homeopathy' === $clean['heading']
     && 1 === $clean['config_version'], 'Malformed scalar values not normalized.' );
 verify_migration( array( '/safe' ) === $clean['eligible_paths']
     && '' === $clean['start_at'] && '' === $clean['end_at'], 'Malformed paths/dates not normalized.' );
+// Schema-current reads remain safe even if a third-party later corrupts the option.
+$GLOBALS['swi_config']['heading'] = array( 'invalid' );
+$GLOBALS['swi_config']['claim'] = new stdClass();
+$GLOBALS['swi_config']['config_version'] = array( 99 );
+$GLOBALS['swi_schema'] = array( 'corrupt-schema' );
+set_error_handler( static function ( $severity, $message ) { throw new ErrorException( $message, 0, $severity ); } );
+try {
+    $view = Settings::get();
+    verify_migration( '' === Settings::schema_version(), 'Malformed schema version was cast.' );
+} finally { restore_error_handler(); }
+verify_migration( 'Sabri Homeopathy' === $view['heading']
+    && 1 === $view['config_version'] && false === $view['enabled'], 'Malformed post-migration view not normalized.' );
 echo "File 13 fail-closed schema migration persistence and malformed legacy input: PASS\n";

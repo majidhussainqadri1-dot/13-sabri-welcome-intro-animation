@@ -37,7 +37,7 @@ final class Settings {
 	}
 
 	public static function maybe_upgrade() {
-		if ( SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' ) ) { return; }
+		if ( SWI_SCHEMA_VERSION === self::schema_version() ) { return; }
 		if ( ! self::persist_suppressed_config() || ! self::persist_schema_version() ) {
 			do_action( 'swi_intro_schema_upgrade_blocked', SWI_SCHEMA_VERSION );
 			return;
@@ -69,7 +69,7 @@ final class Settings {
 	/** Verify the persisted schema row before claiming migration success. */
 	private static function persist_schema_version() {
 		update_option( self::SCHEMA_OPTION, SWI_SCHEMA_VERSION, false );
-		return SWI_SCHEMA_VERSION === (string) get_option( self::SCHEMA_OPTION, '' );
+		return SWI_SCHEMA_VERSION === self::schema_version();
 	}
 
 	public static function stored() {
@@ -77,8 +77,15 @@ final class Settings {
 		return array_replace( self::defaults(), is_array( $stored ) ? $stored : array() );
 	}
 
+	public static function schema_version() {
+		$value = get_option( self::SCHEMA_OPTION, '' );
+		return is_string( $value ) ? $value : '';
+	}
+
 	public static function get() {
 		$config = self::stored();
+		// Even a schema-current option row may be corrupted after migration.
+		$config = self::sanitize( $config, $config );
 		$config['enabled'] = false;
 		$config['status'] = 'disabled';
 		$config['analytics_enabled'] = false;

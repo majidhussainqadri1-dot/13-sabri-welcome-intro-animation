@@ -21,4 +21,10 @@ $colors = Renderer::visual_tokens();
 if ( '#123456' !== $colors['primary'] || '#123abc' !== $colors['dark'] || '#abcdef' !== $colors['light'] ) {
     fwrite( STDERR, "valid token mapping incorrect\n" ); exit( 1 );
 }
+$GLOBALS['visual_contract']['owner'] = array( 'file-25' );
+$GLOBALS['visual_contract']['version'] = array( '1.0.0' );
+set_error_handler( static function ( $severity, $message ) { throw new ErrorException( $message, 0, $severity ); } );
+try { $malformed = Renderer::visual_contract_status(); }
+finally { restore_error_handler(); }
+if ( $malformed['valid'] ) { fwrite( STDERR, "Malformed visual contract accepted\n" ); exit( 1 ); }
 echo "File 13 / File 25 visual-token integrity: PASS\n";
