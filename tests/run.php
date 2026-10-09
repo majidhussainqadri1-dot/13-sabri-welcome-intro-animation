@@ -72,6 +72,7 @@ if ( false !== strpos( $rest, "'/config'" ) ) { $failures[] = 'legacy-config-res
 if ( false !== strpos( $admin, 'swi_save_intro_config' ) ) { $failures[] = 'legacy-config-admin-write-must-not-exist'; }
 if ( false !== strpos( $admin, 'permanently disabled' ) ) { $failures[] = 'admin-must-not-claim-unapproved-permanent-transfer'; }
 if ( false === strpos( $admin, 'Founder-approved change control' ) ) { $failures[] = 'admin-must-disclose-founder-approval-gate'; }
+if ( false === strpos( $admin, "isset( \$_GET['swi_registry_synced'] ) && 'synced' ===" ) ) { $failures[] = 'admin-registry-success-must-be-backed-by-actual-state'; }
 if ( false === strpos( $plugin_bootstrap, "esc_html__( 'Status', SWI_TEXT_DOMAIN )" ) ) { $failures[] = 'admin-action-link-must-identify-status-not-settings'; }
 foreach ( array( 'localStorage', 'sessionStorage', 'fetch(', 'admin-ajax.php' ) as $forbidden ) {
 	if ( false !== strpos( $javascript, $forbidden ) ) { $failures[] = 'compatibility-preview-forbidden-token:' . $forbidden; }
