@@ -28,6 +28,10 @@ foreach ( $required as $file ) {
 }
 
 $checks = array(
+	$root . '/docs/TRACEABILITY.md' => array( 'Founder-approved File 13 plan v1.0', 'schema migration is current', 'audit gap each changes' ),
+	$root . '/docs/MIGRATION.md' => array( 'schema 1.0.1 is persisted', 'dated Founder change-control record', '13-sabri-welcome-intro' ),
+	$root . '/docs/ROLLBACK.md' => array( 'schema migration is current', 'backup/restore proof', 'Founder authorization' ),
+	$root . '/README.md' => array( 'fail-closed in this source candidate', 'dated Founder-approved change-control evidence', 'package-identity change-control approval remains unverified' ),
 	$plugin . '/includes/class-plugin.php' => array( 'Settings::register()', 'Renderer::register()', 'Rest::register()', 'Health::register()' ),
 	$plugin . '/includes/class-renderer.php' => array( 'swi_intro_legacy_invocation_blocked', 'sabri_shell_file25_visual_contract', 'visual_contract_status', 'file-25', 'surface_strong', '#087a4e' ),
 	$plugin . '/assets/js/welcome-intro.js' => array( 'cfg.preview', 'swi-welcome-intro-preview', 'Escape', 'prefers-reduced-motion' ),
