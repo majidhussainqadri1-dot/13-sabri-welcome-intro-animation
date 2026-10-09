@@ -22,7 +22,7 @@ final class Plugin {
 	}
 
 	public function action_links( $links ) {
-		array_unshift( $links, '<a href="' . esc_url( admin_url( 'options-general.php?page=sabri-welcome-intro' ) ) . '">' . esc_html__( 'Settings', SWI_TEXT_DOMAIN ) . '</a>' );
+		array_unshift( $links, '<a href="' . esc_url( admin_url( 'options-general.php?page=sabri-welcome-intro' ) ) . '">' . esc_html__( 'Status', SWI_TEXT_DOMAIN ) . '</a>' );
 		return $links;
 	}
 

@@ -70,6 +70,9 @@ if ( false !== strpos( $plugin_bootstrap, 'Eligibility::register()' ) ) { $failu
 if ( false !== strpos( $renderer, "add_action( 'sabri_shell_welcome_intro_invoke'" ) ) { $failures[] = 'legacy-public-renderer-must-not-register'; }
 if ( false !== strpos( $rest, "'/config'" ) ) { $failures[] = 'legacy-config-rest-write-must-not-exist'; }
 if ( false !== strpos( $admin, 'swi_save_intro_config' ) ) { $failures[] = 'legacy-config-admin-write-must-not-exist'; }
+if ( false !== strpos( $admin, 'permanently disabled' ) ) { $failures[] = 'admin-must-not-claim-unapproved-permanent-transfer'; }
+if ( false === strpos( $admin, 'Founder-approved change control' ) ) { $failures[] = 'admin-must-disclose-founder-approval-gate'; }
+if ( false === strpos( $plugin_bootstrap, "esc_html__( 'Status', SWI_TEXT_DOMAIN )" ) ) { $failures[] = 'admin-action-link-must-identify-status-not-settings'; }
 foreach ( array( 'localStorage', 'sessionStorage', 'fetch(', 'admin-ajax.php' ) as $forbidden ) {
 	if ( false !== strpos( $javascript, $forbidden ) ) { $failures[] = 'compatibility-preview-forbidden-token:' . $forbidden; }
 }

@@ -19,7 +19,7 @@ final class Admin {
 		$health = Health::status();
 		$preview = home_url( '/welcome-intro-preview/' );
 		echo '<div class="wrap"><h1>' . esc_html__( 'File 13 Legacy Compatibility', SWI_TEXT_DOMAIN ) . '</h1>';
-		echo '<div class="notice notice-info"><p>' . esc_html__( 'The historical File 13 public intro is permanently disabled. File 20 owns invocation and frequency; File 25 owns presentation.', SWI_TEXT_DOMAIN ) . '</p></div>';
+		echo '<div class="notice notice-info"><p>' . esc_html__( 'The historical File 13 public intro is disabled in this source candidate. Permanent ownership transfer requires dated Founder-approved change control. Current source contracts assign invocation and frequency to File 20 and presentation to File 25.', SWI_TEXT_DOMAIN ) . '</p></div>';
 		if ( isset( $_GET['swi_registry_synced'] ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'File 01 registry synchronized.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		if ( isset( $_GET['swi_registry_error'] ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — ' . esc_html__( 'File 24 contract state:', SWI_TEXT_DOMAIN ) . ' ' . esc_html( $health['file24_contract_state'] ) . '</p>';

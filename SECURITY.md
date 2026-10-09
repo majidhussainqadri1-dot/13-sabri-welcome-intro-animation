@@ -1,6 +1,6 @@
 # Security
 
-File 13 is a fail-closed historical compatibility module: it emits no active public intro and therefore cannot block ordinary page access.
+This File 13 source candidate is a fail-closed historical compatibility module: it registers no active public intro. Source behavior is not proof of the installed live or staging version, and permanent ownership transfer remains subject to dated Founder-approved change control.
 
 Security controls:
 - File 13 does not register `sabri_shell_welcome_intro_invoke`;
