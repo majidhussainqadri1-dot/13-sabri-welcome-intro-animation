@@ -81,7 +81,13 @@ final class Health {
 		$renderer_registered = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$analytics_registered = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
-		return empty( $config['enabled'] )
+		// File 24 assurance must not certify a suppressed legacy runtime while
+		// schema migration, the File 01 registry, or its audit trail is unresolved.
+		$registry = Foundation::status();
+		$assurance_ready = SWI_SCHEMA_VERSION === Settings::schema_version()
+			&& 'synced' === (string) ( $registry['state'] ?? '' )
+			&& false === get_option( 'swi_intro_audit_gap', false );
+		return $assurance_ready && empty( $config['enabled'] )
 			&& 'disabled' === (string) $config['status']
 			&& empty( $config['analytics_enabled'] )
 			&& $stored_flags_valid

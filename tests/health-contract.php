@@ -8,7 +8,11 @@ $GLOBALS['swi_schema_version'] = '1.0.1';
 define( 'SWI_TEXT_DOMAIN', 'sabri-welcome-intro' );
 function has_action( $hook, $callback = false ) { return isset( $GLOBALS['swi_test_hooks'][ $hook ] ) ? 10 : false; }
 function get_bloginfo( $field ) { return 'version' === $field ? '6.8' : ''; }
-function get_option( $key, $default = false ) { return 'swi_intro_schema_version' === $key ? $GLOBALS['swi_schema_version'] : $default; }
+function get_option( $key, $default = false ) {
+    if ( 'swi_intro_schema_version' === $key ) { return $GLOBALS['swi_schema_version']; }
+    if ( 'swi_intro_audit_gap' === $key ) { return $GLOBALS['swi_test_audit_gap'] ?? $default; }
+    return $default;
+}
 function absint( $value ) { return abs( (int) $value ); }
 }
 namespace Sabri\WelcomeIntro {
@@ -25,7 +29,7 @@ namespace Sabri\WelcomeIntro {
     }
     final class Analytics { public static function ajax_event() {} }
     final class Eligibility { public static function safe_mode_active() { return false; } }
-    final class Foundation { public static function status() { return array( 'available' => true, 'state' => 'synced' ); } }
+    final class Foundation { public static function status() { return array( 'available' => true, 'state' => $GLOBALS['swi_test_registry_state'] ?? 'synced' ); } }
     require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-health.php';
     $GLOBALS['swi_test_hooks'] = array();
     $clean = Health::status();
@@ -48,7 +52,23 @@ namespace Sabri\WelcomeIntro {
     if ( 'degraded' !== $pending['status'] || ! in_array( 'schema_migration_pending', $pending['issues'], true ) ) {
         fwrite( STDERR, "Unmigrated schema was reported healthy\n" ); exit( 1 );
     }
+    if ( 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Pending schema migration falsely certified by File 24 adapter\n" ); exit( 1 );
+    }
     $GLOBALS['swi_schema_version'] = '1.0.1';
+    $GLOBALS['swi_test_audit_gap'] = array( 'from' => 1, 'to' => 2 );
+    if ( 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Audit gap falsely certified by File 24 adapter\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_test_audit_gap'] );
+    $GLOBALS['swi_test_registry_state'] = 'unsynced';
+    if ( 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Unsynced File 01 registry falsely certified by File 24 adapter\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_test_registry_state'] );
+    if ( 'compatible' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Healthy File 24 adapter was incorrectly blocked\n" ); exit( 1 );
+    }
     $GLOBALS['swi_stored_override'] = array( 'enabled' => array(), 'status' => array( 'disabled' ), 'analytics_enabled' => false );
     set_error_handler( static function ( $severity, $message ) { throw new \ErrorException( $message, 0, $severity ); } );
     try { $malformed = Health::status(); $file24 = Health::file24_contract_state( 'unassessed' ); }
