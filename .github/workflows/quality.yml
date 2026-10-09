@@ -39,6 +39,10 @@ jobs:
         run: php tests/rewrite-lifecycle.php
       - name: File 25 visual-token contract regression
         run: php tests/visual-contract.php
+      - name: Analytics privacy kill-switch regression
+        run: php tests/analytics-privacy.php
+      - name: Direct SQL option cache regression
+        run: php tests/option-cache-invalidation.php
       - name: JavaScript syntax
         run: node --check sabri-welcome-intro-13/assets/js/welcome-intro.js
       - name: JavaScript behavior

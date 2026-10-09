@@ -183,10 +183,12 @@ final class Settings {
 
 		if ( 1 !== $updated ) {
 			wp_cache_delete( self::OPTION, 'options' );
+			wp_cache_delete( 'alloptions', 'options' ); // Direct SQL may race an autoloaded legacy row.
 			return new \WP_Error( 'swi_stale_config', __( 'The configuration changed before your save completed. Reload before saving.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
 
 		wp_cache_delete( self::OPTION, 'options' );
+		wp_cache_delete( 'alloptions', 'options' ); // WordPress stores autoloaded options under this key.
 		self::append_audit( $current, $next, absint( $actor_id ) );
 		do_action( 'swi_intro_config_updated', $next, $current );
 		return $next;
@@ -250,6 +252,7 @@ final class Settings {
 			); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 			if ( 1 === $updated ) {
 				wp_cache_delete( self::AUDIT_OPTION, 'options' );
+				wp_cache_delete( 'alloptions', 'options' ); // Legacy audit option may be autoloaded.
 				return;
 			}
 		}
