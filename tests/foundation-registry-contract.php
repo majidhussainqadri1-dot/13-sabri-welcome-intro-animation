@@ -15,6 +15,9 @@ class WP_Error {
 function absint( $value ) { return abs( (int) $value ); }
 function is_wp_error( $value ) { return $value instanceof WP_Error; }
 function do_action( $hook, ...$args ) { /* Standalone event stub. */ }
+function apply_filters( $hook, $value, ...$args ) { return $value; }
+function current_user_can( $cap ) { return $GLOBALS['swi_test_admin_allowed'] ?? true; }
+function get_current_user_id() { return 1; }
 final class SPF_Registry {
     public static $module;
     public static $routes = array();
@@ -26,6 +29,7 @@ final class SPF_Registry {
     public static function get_module( $key ) { return 'file-13' === $key ? self::$module : null; }
     public static function list_routes() { return self::$routes; }
 }
+require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-authorization.php';
 require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-foundation.php';
 
 use Sabri\WelcomeIntro\Foundation;
@@ -62,6 +66,15 @@ $assert_status = static function ( $module, $want, $label ) {
     }
 };
 $assert_status( $expected, 'synced', 'canonical File 01 normalized DTO' );
+// Direct calls must not bypass the File 13 capability boundary, even when
+// the File 01 registry would otherwise return an already-synced no-op.
+$GLOBALS['swi_test_admin_allowed'] = false;
+$denied = Foundation::sync();
+if ( ! ( $denied instanceof WP_Error ) || 'swi_foundation_forbidden' !== $denied->get_error_code()
+    || SPF_Registry::$module_writes || SPF_Registry::$route_writes ) {
+    fwrite( STDERR, "Unprivileged direct registry sync bypassed File 13 authorization.\n" ); exit( 1 );
+}
+unset( $GLOBALS['swi_test_admin_allowed'] );
 // Registry state must reject a second owner of the same canonical path.
 $foreign_route = array( 'route_key' => 'foreign-preview', 'route_path' => '/welcome-intro-preview/', 'owner_module' => 'file-20' );
 SPF_Registry::$routes = array( $route, $foreign_route );

@@ -174,6 +174,11 @@ final class Foundation {
 	}
 
 	public static function sync() {
+		// Enforce the native File 13 operator boundary even for direct callers
+		// and already-synced no-op paths; File 01 independently guards writes.
+		if ( ! Authorization::can_manage( 'sync_foundation_registry' ) ) {
+			return new \WP_Error( 'swi_foundation_forbidden', __( 'You are not authorized to synchronize the File 01 registry.', SWI_TEXT_DOMAIN ), array( 'status' => 403 ) );
+		}
 		if ( ! class_exists( 'SPF_Registry' ) ) {
 			return new \WP_Error( 'swi_foundation_unavailable', __( 'File 01 registry is not available.', SWI_TEXT_DOMAIN ), array( 'status' => 503 ) );
 		}
