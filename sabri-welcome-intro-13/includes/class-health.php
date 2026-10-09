@@ -15,10 +15,14 @@ final class Health {
 	public static function status() {
 		$config = Settings::get();
 		$stored = Settings::stored();
+		// Settings::stored() normalizes a scalar/missing row into safe defaults.
+		// Assurance must inspect the raw persisted shape, not certify those defaults.
+		$raw_stored = get_option( Settings::OPTION, false );
 		$stored_status = is_string( $stored['status'] ?? null ) ? $stored['status'] : '';
-		$stored_flags_valid = is_bool( $stored['enabled'] ?? null )
-			&& is_string( $stored['status'] ?? null )
-			&& is_bool( $stored['analytics_enabled'] ?? null );
+		$stored_flags_valid = is_array( $raw_stored )
+			&& is_bool( $raw_stored['enabled'] ?? null )
+			&& is_string( $raw_stored['status'] ?? null )
+			&& is_bool( $raw_stored['analytics_enabled'] ?? null );
 		$file20_class = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$file20_available = class_exists( $file20_class ) && defined( 'SABRI_SHELL_VERSION' );
 		$legacy_renderer = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
@@ -74,10 +78,14 @@ final class Health {
 		unset( $state, $definition );
 		$config = Settings::get();
 		$stored = Settings::stored();
+		// Settings::stored() normalizes a scalar/missing row into safe defaults.
+		// Assurance must inspect the raw persisted shape, not certify those defaults.
+		$raw_stored = get_option( Settings::OPTION, false );
 		$stored_status = is_string( $stored['status'] ?? null ) ? $stored['status'] : '';
-		$stored_flags_valid = is_bool( $stored['enabled'] ?? null )
-			&& is_string( $stored['status'] ?? null )
-			&& is_bool( $stored['analytics_enabled'] ?? null );
+		$stored_flags_valid = is_array( $raw_stored )
+			&& is_bool( $raw_stored['enabled'] ?? null )
+			&& is_string( $raw_stored['status'] ?? null )
+			&& is_bool( $raw_stored['analytics_enabled'] ?? null );
 		$renderer_registered = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$analytics_registered = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );

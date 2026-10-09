@@ -10,6 +10,7 @@ function has_action( $hook, $callback = false ) { return isset( $GLOBALS['swi_te
 function get_bloginfo( $field ) { return 'version' === $field ? '6.8' : ''; }
 function get_option( $key, $default = false ) {
     if ( 'swi_intro_schema_version' === $key ) { return $GLOBALS['swi_schema_version']; }
+    if ( 'swi_intro_config' === $key ) { return array_key_exists( 'swi_stored_override', $GLOBALS ) ? $GLOBALS['swi_stored_override'] : array( 'enabled' => false, 'status' => 'disabled', 'analytics_enabled' => false ); }
     if ( 'swi_intro_audit_gap' === $key ) { return $GLOBALS['swi_test_audit_gap'] ?? $default; }
     return $default;
 }
@@ -18,8 +19,9 @@ function absint( $value ) { return abs( (int) $value ); }
 namespace Sabri\WelcomeIntro {
     final class Settings {
         public const SCHEMA_OPTION = 'swi_intro_schema_version';
+        public const OPTION = 'swi_intro_config';
         public static function get() { return array( 'enabled' => false, 'status' => 'disabled', 'analytics_enabled' => false, 'config_version' => 1 ); }
-        public static function stored() { return $GLOBALS['swi_stored_override'] ?? self::get(); }
+        public static function stored() { $raw = $GLOBALS['swi_stored_override'] ?? self::get(); return is_array( $raw ) ? $raw : self::get(); }
         public static function schema_version() { return is_string( $GLOBALS['swi_schema_version'] ) ? $GLOBALS['swi_schema_version'] : ''; }
     }
     final class Renderer {
@@ -75,5 +77,13 @@ namespace Sabri\WelcomeIntro {
     finally { restore_error_handler(); }
     if ( 'degraded' !== $malformed['status'] || ! in_array( 'legacy_stored_malformed', $malformed['issues'], true )
         || 'blocked' !== $file24 ) { fwrite( STDERR, "Malformed persisted flags were concealed\n" ); exit( 1 ); }
+    // A scalar persisted row is masked by Settings::stored() safe defaults;
+    // source assurance must nevertheless fail closed on the raw DB shape.
+    $GLOBALS['swi_stored_override'] = 'corrupt-serialized-option';
+    set_error_handler( static function ( $severity, $message ) { throw new \ErrorException( $message, 0, $severity ); } );
+    try { $scalar = Health::status(); $scalar_contract = Health::file24_contract_state( 'unassessed' ); }
+    finally { restore_error_handler(); }
+    if ( 'degraded' !== $scalar['status'] || ! in_array( 'legacy_stored_malformed', $scalar['issues'], true )
+        || 'blocked' !== $scalar_contract ) { fwrite( STDERR, "Scalar persisted config falsely certified\n" ); exit( 1 ); }
     echo "File 13 legacy effective-public-disable health regression: PASS\n";
 }
