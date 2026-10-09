@@ -143,6 +143,19 @@ final class Settings {
 	}
 
 	public static function update( array $input, $expected_revision, $actor_id = 0 ) {
+		// Protect the persistence boundary even if a future internal caller bypasses admin/REST gates.
+		$current_actor = get_current_user_id();
+		if ( ! is_user_logged_in() || ! Authorization::can_manage( 'manage_intro' ) || ! is_int( $current_actor ) || $current_actor <= 0 ) {
+			return new \WP_Error( 'swi_forbidden', __( 'You are not authorized to change the welcome intro.', SWI_TEXT_DOMAIN ), array( 'status' => 403 ) );
+		}
+		if ( 0 !== $actor_id && ( ! is_int( $actor_id ) || $actor_id !== $current_actor ) ) {
+			return new \WP_Error( 'swi_actor_mismatch', __( 'The audit actor does not match the current operator.', SWI_TEXT_DOMAIN ), array( 'status' => 403 ) );
+		}
+		if ( ! ( is_int( $expected_revision ) && $expected_revision > 0 )
+			&& ! ( is_string( $expected_revision ) && ctype_digit( $expected_revision ) && '0' !== $expected_revision && (int) $expected_revision > 0 ) ) {
+			return new \WP_Error( 'swi_invalid_revision', __( 'A valid configuration revision is required.', SWI_TEXT_DOMAIN ), array( 'status' => 400 ) );
+		}
+		$actor_id = $current_actor;
 		global $wpdb;
 
 		// Compare-and-swap against the exact serialized row so two administrators
@@ -162,8 +175,13 @@ final class Settings {
 		$stored = maybe_unserialize( $row['option_value'] );
 		$stored = is_array( $stored ) ? $stored : array();
 		$current = array_replace( self::defaults(), $stored );
+		$revision_value = $current['config_version'];
+		if ( ! ( is_int( $revision_value ) && $revision_value > 0 )
+			&& ! ( is_string( $revision_value ) && ctype_digit( $revision_value ) && (int) $revision_value > 0 ) ) {
+			return new \WP_Error( 'swi_corrupt_revision', __( 'The stored configuration revision is invalid.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
+		}
 		$expected_revision = absint( $expected_revision );
-		$current_revision = absint( $current['config_version'] );
+		$current_revision = absint( $revision_value );
 		if ( $expected_revision !== $current_revision ) {
 			return new \WP_Error( 'swi_stale_config', __( 'The configuration changed since you opened it. Reload before saving.', SWI_TEXT_DOMAIN ), array( 'status' => 409, 'current_revision' => $current_revision ) );
 		}
