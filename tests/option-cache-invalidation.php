@@ -26,6 +26,14 @@ class WP_Error {
     public function get_error_code() { return $this->code; }
 }
 function __( $text, $domain ) { return $text; }
+// Model a legitimate administrator rather than weakening the persistence guard.
+$GLOBALS['swi_test_actor'] = array( 'id' => 5, 'logged_in' => true, 'capabilities' => array( 'manage_options' ), 'institutional' => true );
+function is_user_logged_in() { return $GLOBALS['swi_test_actor']['logged_in']; }
+function get_current_user_id() { return $GLOBALS['swi_test_actor']['id']; }
+function current_user_can( $cap ) { return in_array( $cap, $GLOBALS['swi_test_actor']['capabilities'], true ); }
+function apply_filters( $hook, $value, ...$args ) {
+    return 'swi_intro_authorization_decision' === $hook ? ( $value && $GLOBALS['swi_test_actor']['institutional'] ) : $value;
+}
 function get_option( $key, $default = false ) { return $default; }
 function add_option( $key, $value, $deprecated = '', $autoload = false ) { return true; }
 function maybe_unserialize( $value ) { return unserialize( $value ); }
@@ -40,6 +48,7 @@ function wp_cache_delete( $key, $group ) { $GLOBALS['swi_cache_deletes'][] = $ke
 function do_action( $name, ...$args ) {}
 }
 namespace Sabri\WelcomeIntro {
+require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-authorization.php';
 require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-settings.php';
 function check( $condition, $message ) { if ( ! $condition ) { fwrite( STDERR, $message . "\n" ); exit( 1 ); } }
 $result = Settings::update( array( 'heading' => 'Changed' ), 1, 5 );
