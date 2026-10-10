@@ -52,6 +52,7 @@ final class Health {
 		if ( false !== get_option( 'swi_intro_audit_gap', false ) ) { $issues[] = 'configuration_audit_gap'; }
 		if ( empty( $preview_route['registered'] ) ) { $issues[] = 'preview_rewrite_unregistered'; }
 		if ( empty( $preview_route['persisted'] ) ) { $issues[] = 'preview_rewrite_not_persisted'; }
+		if ( ! empty( $preview_route['persisted'] ) && empty( $preview_route['precedence'] ) ) { $issues[] = 'preview_rewrite_shadowed'; }
 
 		return array(
 			'plugin_version' => SWI_VERSION,

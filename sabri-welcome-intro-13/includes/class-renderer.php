@@ -55,11 +55,37 @@ final class Renderer {
 		$rules = get_option( 'rewrite_rules', false );
 		$persisted = is_array( $rules )
 			&& $target === ( $rules[ $pattern ] ?? null );
+		$precedence = $persisted && self::persisted_preview_has_precedence( $rules, $pattern, $target );
 		return array(
 			'registered' => (bool) $registered,
 			'persisted' => (bool) $persisted,
-			'available' => (bool) ( $registered && $persisted ),
+			'precedence' => (bool) $precedence,
+			'available' => (bool) ( $registered && $persisted && $precedence ),
 		);
+	}
+
+	/**
+	 * WordPress resolves the FIRST matching persisted rewrite rule. An exact
+	 * canonical mapping later in the table does not prove preview reachability.
+	 * Check both canonical slash variants using WordPress's rule-match shape.
+	 * This is read-only; never reorder or flush another owner's rules.
+	 */
+	private static function persisted_preview_has_precedence( array $rules, $pattern, $target ) {
+		foreach ( array( 'welcome-intro-preview', 'welcome-intro-preview/' ) as $request ) {
+			$owned = false;
+			foreach ( $rules as $candidate => $query ) {
+				if ( ! is_string( $candidate ) ) { return false; }
+				// Mirror WP::parse_request()'s anchored rewrite matching.
+				$matched = @preg_match( '#^' . $candidate . '#', $request ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				if ( false === $matched ) { return false; }
+				if ( 1 !== $matched ) { continue; }
+				if ( $pattern !== $candidate || $target !== $query ) { return false; }
+				$owned = true;
+				break;
+			}
+			if ( ! $owned ) { return false; }
+		}
+		return true;
 	}
 
 	public static function query_vars( $vars ) {

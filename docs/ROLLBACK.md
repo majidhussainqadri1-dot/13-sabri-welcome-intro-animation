@@ -11,4 +11,4 @@ Version 1.0.1 is itself the safe suppression boundary.
 
 Uninstall is non-destructive unless an operator deliberately defines `SWI_PURGE_ON_UNINSTALL=true`. A source-level `compatible` result is not approval to deploy or revert on live: verify exact installed code, DB schema, migration state, backup/restore proof, rollback artifact, and Founder authorization before production action.
 
-Historical preview-route assurance is separate from public suppression: a missing or foreign persisted `rewrite_rules` mapping must degrade File 13 health and block File 24 compatibility. Diagnose first; never overwrite a foreign owner or flush blindly during rollback.
+Historical preview-route assurance is separate from public suppression: a missing, shadowed by an earlier matching rule, or foreign persisted `rewrite_rules` mapping must degrade File 13 health and block File 24 compatibility. Diagnose first; never overwrite a foreign owner or flush blindly during rollback.

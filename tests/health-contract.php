@@ -30,7 +30,8 @@ namespace Sabri\WelcomeIntro {
         public static function preview_route_status() {
             $registered = $GLOBALS['swi_preview_registered'] ?? true;
             $persisted = $GLOBALS['swi_preview_persisted'] ?? true;
-            return array( 'registered' => $registered, 'persisted' => $persisted, 'available' => $registered && $persisted );
+            $precedence = $GLOBALS['swi_preview_precedence'] ?? true;
+            return array( 'registered' => $registered, 'persisted' => $persisted, 'precedence' => $precedence, 'available' => $registered && $persisted && $precedence );
         }
         public static function visual_contract_status() { return array( 'valid' => true, 'owner' => 'file-25', 'version' => '1.0.0' ); }
     }
@@ -55,6 +56,13 @@ namespace Sabri\WelcomeIntro {
         fwrite( STDERR, "Missing persisted preview rewrite was falsely certified healthy\n" ); exit( 1 );
     }
     unset( $GLOBALS['swi_preview_persisted'] );
+    $GLOBALS['swi_preview_precedence'] = false;
+    $shadowed = Health::status();
+    if ( 'degraded' !== $shadowed['status'] || ! in_array( 'preview_rewrite_shadowed', $shadowed['issues'], true )
+        || 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Shadowed persisted preview was falsely certified healthy\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_preview_precedence'] );
     $GLOBALS['swi_test_hooks']['sabri_shell_welcome_intro_invoke'] = true;
     $unsafe = Health::status();
     if ( false !== $unsafe['legacy_public_disabled'] || 'degraded' !== $unsafe['status']
