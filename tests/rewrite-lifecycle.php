@@ -106,129 +106,21 @@ $GLOBALS['stored_rewrite_rules'][ $pattern ] = $target;
 $GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = 'index.php?foreign=1';
 file13_check( false === Renderer::preview_route_status()['available'], 'Foreign request-local rewrite was falsely certified available.' );
 $GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = $target;
-// A broader foreign rewrite appearing before our exact rule wins WordPress's
-// first-match routing despite the canonical mapping still being persisted.
+// Persisted routing is first-match; a foreign broad rule before our exact route shadows it.
 $GLOBALS['stored_rewrite_rules'] = array(
-    '^welcome-intro-preview(?:/.*)?
-file13_check( empty( $GLOBALS['rewrite_conflicts'] ), 'False collision on clean activation.' );
-
-// Preview must be bound to the actual canonical rewrite, not a query parameter.
-function get_query_var( $key ) { return 'swi_intro_preview' === $key ? ( $GLOBALS['preview_query_var'] ?? 0 ) : 0; }
-function home_url( $path = '/' ) { return 'https://example.test/subsite' . $path; }
-function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
-function wp_unslash( $value ) { return stripslashes( $value ); }
-function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
-$GLOBALS['preview_query_var'] = 1;
-$GLOBALS['wp'] = (object) array( 'matched_rule' => $pattern );
-$_SERVER['REQUEST_URI'] = '/subsite/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Public home query spoof reached admin preview.' );
-$_SERVER['REQUEST_URI'] = '/subsite/account/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Public account query spoof reached admin preview.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/?state=reduced';
-file13_check( true === Renderer::is_preview_request(), 'Canonical subdirectory preview was rejected.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview';
-file13_check( true === Renderer::is_preview_request(), 'Canonical preview without trailing slash was rejected.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview-other/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Lookalike route reached admin preview.' );
-$GLOBALS['preview_query_var'] = 0;
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
-file13_check( false === Renderer::is_preview_request(), 'Missing rewrite query var was accepted.' );
-$GLOBALS['preview_query_var'] = 1;
-$GLOBALS['wp']->matched_rule = '^other/?$';
-file13_check( false === Renderer::is_preview_request(), 'GET spoof on canonical path bypassed matched-rule ownership.' );
-$GLOBALS['wp']->matched_rule = $pattern;
-unset( $_SERVER['REQUEST_URI'] );
-file13_check( false === Renderer::is_preview_request(), 'Missing request URI was accepted.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
-file13_reset_rewrite_state();
-$GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = 'index.php?foreign=1';
-file13_check( false === Renderer::register_rewrite(), 'Foreign preview route was accepted.' );
-file13_check( false === Renderer::is_preview_request(), 'Foreign-owned route with query spoof reached admin preview.' );
-file13_reset_rewrite_state();
-file13_check( true === Renderer::register_rewrite(), 'Clean route registration rejected after collision.' );
-file13_check( true === Renderer::is_preview_request(), 'Clean route registration did not restore canonical preview.' );
-// PHP 8 rejects arrays passed to sanitize_key(); the preview must not fatal.
-function sanitize_key( $value ) {
-    if ( ! is_string( $value ) ) { throw new TypeError( 'Expected string preview state.' ); }
-    return strtolower( preg_replace( '/[^a-z0-9_-]/', '', $value ) );
-}
-$_GET['state'] = array( 'reduced' );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Array state caused an unsafe preview parse.' );
-$_GET['state'] = 'reduced';
-file13_check( 'reduced' === Renderer::normalized_preview_state(), 'Valid reduced state was rejected.' );
-$_GET['state'] = 'unknown';
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Unknown state did not fail closed.' );
-unset( $_GET['state'] );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Missing state did not use safe default.' );
-echo "File 13 preview rewrite ownership and deactivation: PASS\n";
- => 'index.php?foreign=1',
+    '^welcome-intro-preview(?:/.*)?$' => 'index.php?foreign=1',
     $pattern => $target,
 );
-file13_check( true === Renderer::preview_route_status()['persisted'], 'Canonical mapping unexpectedly absent in precedence test.' );
-file13_check( false === Renderer::preview_route_status()['precedence'], 'Foreign earlier matching rule was not detected.' );
-file13_check( false === Renderer::preview_route_status()['available'], 'Shadowed preview was falsely certified available.' );
+file13_check( true === Renderer::preview_route_status()['persisted'], 'Expected canonical persisted mapping.' );
+file13_check( false === Renderer::preview_route_status()['precedence'], 'Earlier foreign rule was not detected.' );
+file13_check( false === Renderer::preview_route_status()['available'], 'Shadowed route falsely available.' );
 $GLOBALS['stored_rewrite_rules'] = array(
     $pattern => $target,
-    '^welcome-intro-preview(?:/.*)?
-file13_check( empty( $GLOBALS['rewrite_conflicts'] ), 'False collision on clean activation.' );
-
-// Preview must be bound to the actual canonical rewrite, not a query parameter.
-function get_query_var( $key ) { return 'swi_intro_preview' === $key ? ( $GLOBALS['preview_query_var'] ?? 0 ) : 0; }
-function home_url( $path = '/' ) { return 'https://example.test/subsite' . $path; }
-function wp_parse_url( $url, $component = -1 ) { return parse_url( $url, $component ); }
-function wp_unslash( $value ) { return stripslashes( $value ); }
-function untrailingslashit( $value ) { return rtrim( $value, '/' ); }
-$GLOBALS['preview_query_var'] = 1;
-$GLOBALS['wp'] = (object) array( 'matched_rule' => $pattern );
-$_SERVER['REQUEST_URI'] = '/subsite/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Public home query spoof reached admin preview.' );
-$_SERVER['REQUEST_URI'] = '/subsite/account/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Public account query spoof reached admin preview.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/?state=reduced';
-file13_check( true === Renderer::is_preview_request(), 'Canonical subdirectory preview was rejected.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview';
-file13_check( true === Renderer::is_preview_request(), 'Canonical preview without trailing slash was rejected.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview-other/?swi_intro_preview=1';
-file13_check( false === Renderer::is_preview_request(), 'Lookalike route reached admin preview.' );
-$GLOBALS['preview_query_var'] = 0;
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
-file13_check( false === Renderer::is_preview_request(), 'Missing rewrite query var was accepted.' );
-$GLOBALS['preview_query_var'] = 1;
-$GLOBALS['wp']->matched_rule = '^other/?$';
-file13_check( false === Renderer::is_preview_request(), 'GET spoof on canonical path bypassed matched-rule ownership.' );
-$GLOBALS['wp']->matched_rule = $pattern;
-unset( $_SERVER['REQUEST_URI'] );
-file13_check( false === Renderer::is_preview_request(), 'Missing request URI was accepted.' );
-$_SERVER['REQUEST_URI'] = '/subsite/welcome-intro-preview/';
-file13_reset_rewrite_state();
-$GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = 'index.php?foreign=1';
-file13_check( false === Renderer::register_rewrite(), 'Foreign preview route was accepted.' );
-file13_check( false === Renderer::is_preview_request(), 'Foreign-owned route with query spoof reached admin preview.' );
-file13_reset_rewrite_state();
-file13_check( true === Renderer::register_rewrite(), 'Clean route registration rejected after collision.' );
-file13_check( true === Renderer::is_preview_request(), 'Clean route registration did not restore canonical preview.' );
-// PHP 8 rejects arrays passed to sanitize_key(); the preview must not fatal.
-function sanitize_key( $value ) {
-    if ( ! is_string( $value ) ) { throw new TypeError( 'Expected string preview state.' ); }
-    return strtolower( preg_replace( '/[^a-z0-9_-]/', '', $value ) );
-}
-$_GET['state'] = array( 'reduced' );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Array state caused an unsafe preview parse.' );
-$_GET['state'] = 'reduced';
-file13_check( 'reduced' === Renderer::normalized_preview_state(), 'Valid reduced state was rejected.' );
-$_GET['state'] = 'unknown';
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Unknown state did not fail closed.' );
-unset( $_GET['state'] );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Missing state did not use safe default.' );
-echo "File 13 preview rewrite ownership and deactivation: PASS\n";
- => 'index.php?foreign=1',
+    '^welcome-intro-preview(?:/.*)?$' => 'index.php?foreign=1',
 );
-file13_check( true === Renderer::preview_route_status()['available'], 'Later foreign rule incorrectly blocked canonical first match.' );
-$GLOBALS['stored_rewrite_rules'] = array(
-    '[invalid' => 'index.php?foreign=1',
-    $pattern => $target,
-);
-file13_check( false === Renderer::preview_route_status()['available'], 'Malformed persisted regex was falsely certified available.' );
+file13_check( true === Renderer::preview_route_status()['available'], 'Later foreign rule incorrectly shadowed own first match.' );
+$GLOBALS['stored_rewrite_rules'] = array( '[invalid' => 'index.php?foreign=1', $pattern => $target );
+file13_check( false === Renderer::preview_route_status()['available'], 'Invalid earlier rule incorrectly accepted.' );
 $GLOBALS['stored_rewrite_rules'] = array( $pattern => $target );
 file13_check( $target === ( $GLOBALS['flushed_rules'][ $pattern ] ?? '' ), 'Clean activation missing own route.' );
 file13_check( empty( $GLOBALS['rewrite_conflicts'] ), 'False collision on clean activation.' );
