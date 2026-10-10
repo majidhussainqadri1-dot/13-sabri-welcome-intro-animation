@@ -3,6 +3,10 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
+	/** Request-local proof that the canonical preview rewrite was registered without collision. */
+	private static $preview_route_registered = false;
+	const PREVIEW_REWRITE_PATTERN = '^welcome-intro-preview/?$';
+	const PREVIEW_REWRITE_TARGET = 'index.php?swi_intro_preview=1';
 	public static function register() {
 		add_action( 'init', array( __CLASS__, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
@@ -10,7 +14,52 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( '^welcome-intro-preview/?$', 'index.php?swi_intro_preview=1', 'top' );
+		self::$preview_route_registered = false;
+		// Fail closed when another module owns the exact preview route.
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		if ( is_object( $wp_rewrite ) ) {
+			foreach ( array( 'extra_rules_top', 'extra_rules' ) as $bucket ) {
+				$rules = isset( $wp_rewrite->{$bucket} ) ? $wp_rewrite->{$bucket} : array();
+				if ( is_array( $rules ) && array_key_exists( $pattern, $rules ) && $target !== $rules[ $pattern ] ) {
+					do_action( 'swi_intro_preview_rewrite_conflict', $pattern, $bucket );
+					return false;
+				}
+			}
+		}
+		// Persisted rules can predate this request's init registrations.
+		$persisted = get_option( 'rewrite_rules', array() );
+		if ( is_array( $persisted ) && array_key_exists( $pattern, $persisted ) && $target !== $persisted[ $pattern ] ) {
+			do_action( 'swi_intro_preview_rewrite_conflict', $pattern, 'persisted' );
+			return false;
+		}
+		add_rewrite_rule( $pattern, $target, 'top' );
+		self::$preview_route_registered = true;
+		return true;
+	}
+
+	/**
+	 * Verify both this request's registered rule and the persisted WordPress
+	 * rewrite table. add_rewrite_rule() alone cannot prove route availability.
+	 */
+	public static function preview_route_status() {
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		$registered = self::$preview_route_registered
+			&& is_object( $wp_rewrite )
+			&& isset( $wp_rewrite->extra_rules_top )
+			&& is_array( $wp_rewrite->extra_rules_top )
+			&& $target === ( $wp_rewrite->extra_rules_top[ $pattern ] ?? null );
+		$rules = get_option( 'rewrite_rules', false );
+		$persisted = is_array( $rules )
+			&& $target === ( $rules[ $pattern ] ?? null );
+		return array(
+			'registered' => (bool) $registered,
+			'persisted' => (bool) $persisted,
+			'available' => (bool) ( $registered && $persisted ),
+		);
 	}
 
 	public static function query_vars( $vars ) {
@@ -25,15 +74,42 @@ final class Renderer {
 		do_action( 'swi_intro_legacy_invocation_blocked', SWI_VERSION );
 	}
 
+	/**
+	 * Fail closed unless WordPress actually matched our canonical rewrite.
+	 * A public ?swi_intro_preview=1 query string is not proof of route ownership.
+	 */
+	public static function is_preview_request() {
+		if ( ! self::$preview_route_registered || ! get_query_var( 'swi_intro_preview' ) ) { return false; }
+		global $wp, $wp_rewrite;
+		if ( ! is_object( $wp ) || ! isset( $wp->matched_rule ) || self::PREVIEW_REWRITE_PATTERN !== $wp->matched_rule ) { return false; }
+		if ( ! is_object( $wp_rewrite ) || ! isset( $wp_rewrite->extra_rules_top )
+			|| ! is_array( $wp_rewrite->extra_rules_top )
+			|| self::PREVIEW_REWRITE_TARGET !== ( $wp_rewrite->extra_rules_top[ self::PREVIEW_REWRITE_PATTERN ] ?? null ) ) { return false; }
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		if ( ! is_string( $request_uri ) || '' === $request_uri ) { return false; }
+		$requested = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$canonical = wp_parse_url( home_url( '/welcome-intro-preview/' ), PHP_URL_PATH );
+		return is_string( $requested ) && is_string( $canonical )
+			&& untrailingslashit( $requested ) === untrailingslashit( $canonical );
+	}
+
+	/** Malformed query input is not a valid preview state. */
+	public static function normalized_preview_state() {
+		$raw = isset( $_GET['state'] ) ? $_GET['state'] : 'default';
+		if ( ! is_string( $raw ) ) { return 'default'; }
+		$state = sanitize_key( wp_unslash( $raw ) );
+		return in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true )
+			? $state : 'default';
+	}
+
 	public static function maybe_preview() {
-		if ( ! get_query_var( 'swi_intro_preview' ) ) { return; }
+		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
 		Authorization::require_manage( 'preview_intro' );
 		nocache_headers();
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
 
-		$state = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : 'default';
-		if ( ! in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true ) ) { $state = 'default'; }
+		$state = self::normalized_preview_state();
 		$config = Settings::get();
 		$tokens = self::visual_tokens();
 
@@ -62,8 +138,10 @@ final class Renderer {
 			$config
 		);
 		$copy = is_array( $copy ) ? $copy : array();
-		$heading = sanitize_text_field( $copy['heading'] ?? $config['heading'] );
-		$claim = sanitize_textarea_field( $copy['claim'] ?? $config['claim'] );
+		$heading_raw = $copy['heading'] ?? null;
+		$claim_raw = $copy['claim'] ?? null;
+		$heading = sanitize_text_field( is_string( $heading_raw ) ? $heading_raw : $config['heading'] );
+		$claim = sanitize_textarea_field( is_string( $claim_raw ) ? $claim_raw : $config['claim'] );
 		$id = $preview ? 'swi-welcome-intro-preview' : 'swi-welcome-intro';
 		$html = '<aside id="' . esc_attr( $id ) . '" class="swi-intro" hidden data-swi-version="' . esc_attr( absint( $config['config_version'] ) ) . '" aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', SWI_TEXT_DOMAIN ) . '"><div class="swi-intro__panel">';
 		$html .= '<div class="swi-intro__logo" aria-hidden="true"><svg viewBox="0 0 72 72" width="72" height="72" focusable="false"><circle cx="36" cy="36" r="32"></circle><text x="36" y="42" text-anchor="middle">SH</text></svg></div>';
@@ -86,15 +164,23 @@ final class Renderer {
 
 	public static function visual_contract_status() {
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
-		$owner = is_array( $contract ) ? sanitize_key( (string) ( $contract['owner'] ?? '' ) ) : '';
-		$version = is_array( $contract ) ? sanitize_text_field( (string) ( $contract['version'] ?? '' ) ) : '';
+		$owner_raw = is_array( $contract ) ? ( $contract['owner'] ?? null ) : null;
+		$version_raw = is_array( $contract ) ? ( $contract['version'] ?? null ) : null;
+		$owner = is_string( $owner_raw ) ? sanitize_key( $owner_raw ) : '';
+		$version = is_string( $version_raw ) ? sanitize_text_field( $version_raw ) : '';
 		$tokens = is_array( $contract ) && isset( $contract['tokens'] ) && is_array( $contract['tokens'] )
 			? $contract['tokens']
 			: array();
 		$valid = 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
 			&& version_compare( $version, '1.0.0', '>=' )
-			&& ! empty( $tokens );
+			&& isset( $tokens['primary_color'], $tokens['text'], $tokens['surface_strong'] )
+			&& is_string( $tokens['primary_color'] )
+			&& is_string( $tokens['text'] )
+			&& is_string( $tokens['surface_strong'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['primary_color'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['text'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['surface_strong'] );
 
 		return array(
 			'valid' => $valid,

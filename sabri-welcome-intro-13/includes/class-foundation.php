@@ -45,14 +45,14 @@ final class Foundation {
 				),
 				array(
 					'module_key' => 'file-24',
-					'minimum_version' => '1.0.0',
+					'minimum_version' => '0.99.0',
 					'maximum_version' => '',
 					'purpose' => 'Cross-cutting security and resilience assurance without native-control takeover.',
 					'fail_mode' => 'File 13 native validation, authorization and fail-open-to-content controls remain active.',
 				),
 				array(
 					'module_key' => 'file-25',
-					'minimum_version' => '1.0.0',
+					'minimum_version' => '0.15.0',
 					'maximum_version' => '',
 					'purpose' => 'Canonical owner of welcome presentation and accessibility.',
 					'fail_mode' => 'Legacy File 13 intro remains disabled.',
@@ -112,27 +112,49 @@ final class Foundation {
 		if ( ! class_exists( 'SPF_Registry' ) ) {
 			return array( 'available' => false, 'module_registered' => false, 'route_registered' => false, 'state' => 'unavailable' );
 		}
-
 		$module = \SPF_Registry::get_module( self::MODULE_KEY );
+		$routes = \SPF_Registry::list_routes();
+		// File 01 list_routes() is capped at 200 with no paging or exact-key read.
+		// A full page cannot prove there are no later collisions: fail closed.
+		$route_inventory_complete = is_array( $routes ) && count( $routes ) < 200;
 		$route = null;
-		foreach ( (array) \SPF_Registry::list_routes() as $candidate ) {
-			if ( is_array( $candidate ) && self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
+		$route_collision = false;
+		foreach ( $route_inventory_complete ? $routes : array() as $candidate ) {
+			if ( ! is_array( $candidate ) ) { continue; }
+			if ( self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
 				$route = $candidate;
-				break;
+			} elseif ( '/welcome-intro-preview/' === (string) ( $candidate['route_path'] ?? '' ) ) {
+				// An unrelated route owning our path must invalidate even an otherwise
+				// matching route; otherwise sync() incorrectly returns already_synced.
+				$route_collision = true;
 			}
 		}
-
-		$module_ok = is_array( $module ) && in_array( (string) ( $module['state'] ?? '' ), array( 'compatible', 'active', 'degraded' ), true );
-		$route_ok = is_array( $route )
-			&& '/welcome-intro-preview/' === (string) ( $route['route_path'] ?? '' )
-			&& self::MODULE_KEY === (string) ( $route['owner_module'] ?? '' )
-			&& in_array( (string) ( $route['status'] ?? '' ), array( 'active', 'degraded' ), true );
-
+		$manifest = self::manifest();
+		// File 01 normalizes dependency order before persistence; compare the same
+		// canonical order, while checking all dependencies and the health contract.
+		foreach ( array( 'required', 'optional' ) as $dependency_field ) {
+			usort( $manifest[ $dependency_field ], static function ( $a, $b ) {
+				return strcmp( $a['module_key'], $b['module_key'] );
+			} );
+		}
+		$module_ok = is_array( $module ) && in_array( (string) ( $module['state'] ?? '' ), array( 'compatible', 'degraded' ), true );
+		if ( $module_ok ) {
+			foreach ( array( 'module_key', 'owner_file', 'owner_name', 'slug', 'namespace_prefix', 'software_version', 'contract_version', 'required', 'optional', 'health', 'capabilities', 'commands', 'queries', 'events', 'routes', 'data_classes', 'canonical_entities', 'writes', 'global_shell_owner', 'application_shell_owner' ) as $field ) {
+				if ( ! array_key_exists( $field, $module ) || $module[ $field ] !== $manifest[ $field ] ) { $module_ok = false; break; }
+			}
+		}
+		$expected_route = self::route();
+		$route_ok = $route_inventory_complete && ! $route_collision && is_array( $route );
+		if ( $route_ok ) {
+			foreach ( array( 'route_key', 'route_path', 'owner_module', 'page_id', 'layout_context', 'status', 'destination', 'redirects' ) as $field ) {
+				if ( ! array_key_exists( $field, $route ) || $route[ $field ] !== $expected_route[ $field ] ) { $route_ok = false; break; }
+			}
+		}
 		return array(
-			'available' => true,
-			'module_registered' => $module_ok,
-			'route_registered' => $route_ok,
+			'available' => true, 'module_registered' => $module_ok, 'route_registered' => $route_ok,
+			'route_inventory_complete' => $route_inventory_complete,
 			'state' => $module_ok && $route_ok ? 'synced' : 'unsynced',
+			'module_state' => is_array( $module ) ? (string) ( $module['state'] ?? '' ) : '',
 			'module_record_version' => is_array( $module ) ? absint( $module['record_version'] ?? 0 ) : 0,
 			'route_record_version' => is_array( $route ) ? absint( $route['record_version'] ?? 0 ) : 0,
 		);
@@ -152,48 +174,96 @@ final class Foundation {
 	}
 
 	public static function sync() {
+		// Enforce the native File 13 operator boundary even for direct callers
+		// and already-synced no-op paths; File 01 independently guards writes.
+		if ( ! Authorization::can_manage( 'sync_foundation_registry' ) ) {
+			return new \WP_Error( 'swi_foundation_forbidden', __( 'You are not authorized to synchronize the File 01 registry.', SWI_TEXT_DOMAIN ), array( 'status' => 403 ) );
+		}
 		if ( ! class_exists( 'SPF_Registry' ) ) {
 			return new \WP_Error( 'swi_foundation_unavailable', __( 'File 01 registry is not available.', SWI_TEXT_DOMAIN ), array( 'status' => 503 ) );
 		}
-
+		// An exact, complete registry contract is already synchronized. File 01
+		// increments record versions and emits audit events on every write, so
+		// avoid duplicate registration when both module and route match.
+		$current_status = self::status();
+		if ( 'synced' === (string) ( $current_status['state'] ?? '' ) ) {
+			return array(
+				'already_synced' => true,
+				'module' => array(
+					'module_key' => self::MODULE_KEY,
+					'record_version' => $current_status['module_record_version'],
+					'state' => $current_status['module_state'],
+				),
+				'route' => array(
+					'route_key' => self::ROUTE_KEY,
+					'record_version' => $current_status['route_record_version'],
+					'status' => 'active',
+				),
+			);
+		}
 		$existing = \SPF_Registry::get_module( self::MODULE_KEY );
-		if ( is_array( $existing ) && 'retired' === (string) ( $existing['state'] ?? '' ) ) {
-			return new \WP_Error( 'swi_foundation_module_retired', __( 'The File 13 registry record is retired and cannot be silently revived.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
+		$existing_state = is_array( $existing ) ? (string) ( $existing['state'] ?? '' ) : '';
+		if ( in_array( $existing_state, array( 'retired', 'suspended' ), true ) ) {
+			return new \WP_Error( 'swi_foundation_module_protected', __( 'A suspended or retired module cannot be silently revived.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
-
-		$manifest = self::manifest();
-		if ( is_array( $existing ) ) {
-			$current_state = (string) ( $existing['state'] ?? '' );
-			// File 01 does not allow active -> compatible directly. Preserve a
-			// truthful degraded compatibility record instead of retaining active.
-			$manifest['state'] = in_array( $current_state, array( 'active', 'degraded' ), true ) ? 'degraded' : 'compatible';
+		if ( is_array( $existing ) && '13' !== (string) ( $existing['owner_file'] ?? '' ) ) {
+			return new \WP_Error( 'swi_foundation_owner_conflict', __( 'The existing registry module has a different owner.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
-		$context = array( 'purpose' => 'file13_registry_sync' );
-		if ( is_array( $existing ) ) {
-			$context['expected_version'] = absint( $existing['record_version'] ?? 0 );
+		// Preflight route BEFORE module mutation. File 01 offers separate writes.
+		$routes = \SPF_Registry::list_routes();
+		if ( ! is_array( $routes ) || count( $routes ) >= 200 ) {
+			return new \WP_Error( 'swi_foundation_route_inventory_incomplete', __( 'File 01 route inventory is bounded or unavailable; no registry writes were attempted.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
-		$registered = \SPF_Registry::register_manifest( $manifest, $context );
-		if ( is_wp_error( $registered ) ) { return $registered; }
-
 		$current_route = null;
-		foreach ( (array) \SPF_Registry::list_routes() as $candidate ) {
-			if ( is_array( $candidate ) && self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
+		foreach ( $routes as $candidate ) {
+			if ( ! is_array( $candidate ) ) { continue; }
+			if ( self::ROUTE_KEY === (string) ( $candidate['route_key'] ?? '' ) ) {
 				$current_route = $candidate;
-				break;
+			} elseif ( '/welcome-intro-preview/' === (string) ( $candidate['route_path'] ?? '' ) ) {
+				return new \WP_Error( 'swi_foundation_route_collision', __( 'The preview route is owned by another registry entry.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 			}
 		}
 		if ( is_array( $current_route ) && 'retired' === (string) ( $current_route['status'] ?? '' ) ) {
-			return new \WP_Error( 'swi_foundation_route_retired', __( 'The File 13 preview route is retired and cannot be silently revived.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
+			return new \WP_Error( 'swi_foundation_route_retired', __( 'The preview route is retired and cannot be silently revived.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
-
-		$route_context = array( 'purpose' => 'file13_preview_route_sync' );
-		if ( is_array( $current_route ) ) {
-			$route_context['expected_version'] = absint( $current_route['record_version'] ?? 0 );
+		if ( is_array( $current_route ) && self::MODULE_KEY !== (string) ( $current_route['owner_module'] ?? '' ) ) {
+			return new \WP_Error( 'swi_foundation_route_owner_conflict', __( 'The preview route has a different owner.', SWI_TEXT_DOMAIN ), array( 'status' => 409 ) );
 		}
-		$mapped = \SPF_Registry::map_route( self::route(), $route_context );
-		if ( is_wp_error( $mapped ) ) { return $mapped; }
-
+		$manifest = self::manifest();
+		if ( is_array( $existing ) ) {
+			$manifest['state'] = in_array( $existing_state, array( 'active', 'degraded' ), true ) ? 'degraded' : 'compatible';
+		}
+		$context = array( 'purpose' => 'file13_registry_sync' );
+		if ( is_array( $existing ) ) { $context['expected_version'] = absint( $existing['record_version'] ?? 0 ); }
+		// File 01 writes increment versions and emit audit/events. Repair only drift.
+		$module_needs_write = empty( $current_status['module_registered'] );
+		$route_needs_write = empty( $current_status['route_registered'] );
+		$registered = array(
+			'module_key' => self::MODULE_KEY,
+			'record_version' => $current_status['module_record_version'],
+			'state' => $current_status['module_state'],
+		);
+		if ( $module_needs_write ) {
+			$registered = \SPF_Registry::register_manifest( $manifest, $context );
+			if ( is_wp_error( $registered ) ) { return $registered; }
+		}
+		$mapped = array(
+			'route_key' => self::ROUTE_KEY,
+			'record_version' => $current_status['route_record_version'],
+			'status' => 'active',
+		);
+		if ( $route_needs_write ) {
+			$route_context = array( 'purpose' => 'file13_preview_route_sync' );
+			if ( is_array( $current_route ) ) { $route_context['expected_version'] = absint( $current_route['record_version'] ?? 0 ); }
+			$mapped = \SPF_Registry::map_route( self::route(), $route_context );
+			if ( is_wp_error( $mapped ) ) {
+				// A route-only failure did not modify the module.
+				if ( ! $module_needs_write ) { return $mapped; }
+				return new \WP_Error( 'swi_foundation_partial_sync', __( 'Module updated but route mapping failed. Reconcile registry before retrying.', SWI_TEXT_DOMAIN ), array( 'status' => 409, 'route_error' => $mapped->get_error_code(), 'module_record_version' => $registered['record_version'] ?? 0 ) );
+			}
+		}
 		do_action( 'swi_intro_foundation_registry_synced', $registered, $mapped );
 		return array( 'module' => $registered, 'route' => $mapped );
 	}
+
 }

@@ -9,7 +9,7 @@ Historical File 13 compatibility and migration guard for the Sabri Social Homeop
 
 == Description ==
 
-File 13 is compatibility-only. File 20 owns welcome invocation and frequency. File 25 owns active welcome presentation and accessibility.
+File 13 is compatibility-only in this source candidate. Current File 20 contracts assign welcome invocation and frequency to File 20; File 25 owns active welcome presentation and accessibility. Permanent ownership transfer and package-folder change require dated Founder-approved change-control evidence.
 
 The historical File 13 public runtime, analytics and settings writes are disabled. An authenticated, non-persistent preview remains for migration inspection. File 24 receives a fail-closed compatibility-state adapter.
 
@@ -17,7 +17,7 @@ The historical File 13 public runtime, analytics and settings writes are disable
 
 1. Install the plugin folder as sabri-welcome-intro-13.
 2. Activate or upgrade to force historical File 13 runtime state disabled.
-3. Review Settings > Sabri Welcome Intro and sync the File 01 compatibility manifest.
+3. Open Settings > Sabri Welcome Intro (status-only administration page) and sync the File 01 compatibility manifest.
 4. Verify File 24 contract state and the authenticated historical preview.
 5. Do not treat this module as the active welcome implementation.
 
