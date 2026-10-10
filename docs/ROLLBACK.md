@@ -10,3 +10,5 @@ Version 1.0.1 is itself the safe suppression boundary.
 6. Do not re-enable the historical File 13 runtime without an approved change. Current File 24/25 source contracts assign active welcome behavior to File 20 and File 25, subject to Founder change-control verification.
 
 Uninstall is non-destructive unless an operator deliberately defines `SWI_PURGE_ON_UNINSTALL=true`. A source-level `compatible` result is not approval to deploy or revert on live: verify exact installed code, DB schema, migration state, backup/restore proof, rollback artifact, and Founder authorization before production action.
+
+Historical preview-route assurance is separate from public suppression: a missing or foreign persisted `rewrite_rules` mapping must degrade File 13 health and block File 24 compatibility. Diagnose first; never overwrite a foreign owner or flush blindly during rollback.

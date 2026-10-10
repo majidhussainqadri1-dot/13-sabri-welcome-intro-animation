@@ -30,6 +30,7 @@ function flush_rewrite_rules( $hard ) {
     global $wp_rewrite;
     if ( false !== $hard ) { throw new RuntimeException( 'Hard flush is forbidden.' ); }
     $GLOBALS['flushed_rules'] = $wp_rewrite->extra_rules_top;
+    $GLOBALS['stored_rewrite_rules'] = $GLOBALS['flushed_rules'];
     $GLOBALS['flush_count']++;
 }
 require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-renderer.php';
@@ -96,6 +97,15 @@ file13_reset_rewrite_state();
 $flush_before = $GLOBALS['flush_count'];
 Plugin::activate();
 file13_check( $flush_before + 1 === $GLOBALS['flush_count'], 'Clean activation did not flush.' );
+file13_check( true === Renderer::preview_route_status()['available'], 'Persisted canonical preview was not certified available.' );
+$GLOBALS['stored_rewrite_rules'] = array();
+file13_check( false === Renderer::preview_route_status()['available'], 'Transient rewrite was falsely certified as persisted.' );
+$GLOBALS['stored_rewrite_rules'][ $pattern ] = 'index.php?foreign=1';
+file13_check( false === Renderer::preview_route_status()['available'], 'Foreign persisted rewrite was falsely certified available.' );
+$GLOBALS['stored_rewrite_rules'][ $pattern ] = $target;
+$GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = 'index.php?foreign=1';
+file13_check( false === Renderer::preview_route_status()['available'], 'Foreign request-local rewrite was falsely certified available.' );
+$GLOBALS['wp_rewrite']->extra_rules_top[ $pattern ] = $target;
 file13_check( $target === ( $GLOBALS['flushed_rules'][ $pattern ] ?? '' ), 'Clean activation missing own route.' );
 file13_check( empty( $GLOBALS['rewrite_conflicts'] ), 'False collision on clean activation.' );
 

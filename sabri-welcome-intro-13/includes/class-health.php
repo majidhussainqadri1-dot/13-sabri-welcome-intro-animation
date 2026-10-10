@@ -36,6 +36,7 @@ final class Health {
 		$visual = Renderer::visual_tokens();
 		$visual_contract = Renderer::visual_contract_status();
 		$foundation = Foundation::status();
+		$preview_route = Renderer::preview_route_status();
 		$issues = array();
 
 		if ( version_compare( PHP_VERSION, '8.1', '<' ) ) { $issues[] = 'php_below_declared_minimum'; }
@@ -49,6 +50,8 @@ final class Health {
 		if ( empty( $foundation['available'] ) ) { $issues[] = 'file01_registry_unavailable'; }
 		elseif ( 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { $issues[] = 'file01_registry_unsynced'; }
 		if ( false !== get_option( 'swi_intro_audit_gap', false ) ) { $issues[] = 'configuration_audit_gap'; }
+		if ( empty( $preview_route['registered'] ) ) { $issues[] = 'preview_rewrite_unregistered'; }
+		if ( empty( $preview_route['persisted'] ) ) { $issues[] = 'preview_rewrite_not_persisted'; }
 
 		return array(
 			'plugin_version' => SWI_VERSION,
@@ -66,6 +69,7 @@ final class Health {
 				'version' => (string) ( $visual_contract['version'] ?? '' ),
 			),
 			'file01_registry' => $foundation,
+			'preview_route' => $preview_route,
 			'file24_contract_state' => self::file24_contract_state( 'unassessed' ),
 			'ownership' => array( 'invocation_frequency' => 'file-20', 'presentation' => 'file-25', 'file-13' => 'legacy-compatibility-only' ),
 			'status' => empty( $issues ) ? 'healthy' : 'degraded',
@@ -92,9 +96,11 @@ final class Health {
 		// File 24 assurance must not certify a suppressed legacy runtime while
 		// schema migration, the File 01 registry, or its audit trail is unresolved.
 		$registry = Foundation::status();
+		$preview_route = Renderer::preview_route_status();
 		$assurance_ready = SWI_SCHEMA_VERSION === Settings::schema_version()
 			&& 'synced' === (string) ( $registry['state'] ?? '' )
-			&& false === get_option( 'swi_intro_audit_gap', false );
+			&& false === get_option( 'swi_intro_audit_gap', false )
+			&& ! empty( $preview_route['available'] );
 		return $assurance_ready && empty( $config['enabled'] )
 			&& 'disabled' === (string) $config['status']
 			&& empty( $config['analytics_enabled'] )

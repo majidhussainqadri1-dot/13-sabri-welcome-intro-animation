@@ -11,3 +11,5 @@ File 13 migration is intentionally small, non-destructive and suppressive.
 7. Use File 13 preview only to inspect historical copy during migration; it stores no preference or analytics state.
 
 No companion table, profile/content data, File 20 state or File 25 state is mutated. Before approving a permanent ownership transfer, verify the dated Founder change-control record, affected-file migration, rollback and acceptance. The original plan names package folder `13-sabri-welcome-intro`, whereas this candidate builds `sabri-welcome-intro-13`; resolve that package identity through explicit change control before deployment.
+
+8. Verify the exact WordPress `rewrite_rules` persisted mapping and request-local File 13 preview registration after activation; if absent or foreign-owned, health must be `degraded` and File 24 assurance `blocked`. Do not flush a foreign route or claim live preview availability without an authenticated live re-test.

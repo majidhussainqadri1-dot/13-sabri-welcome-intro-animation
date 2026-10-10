@@ -27,6 +27,11 @@ namespace Sabri\WelcomeIntro {
     final class Renderer {
         public static function invoke() {}
         public static function visual_tokens() { return array( 'primary' => '#087a4e' ); }
+        public static function preview_route_status() {
+            $registered = $GLOBALS['swi_preview_registered'] ?? true;
+            $persisted = $GLOBALS['swi_preview_persisted'] ?? true;
+            return array( 'registered' => $registered, 'persisted' => $persisted, 'available' => $registered && $persisted );
+        }
         public static function visual_contract_status() { return array( 'valid' => true, 'owner' => 'file-25', 'version' => '1.0.0' ); }
     }
     final class Analytics { public static function ajax_event() {} }
@@ -36,6 +41,20 @@ namespace Sabri\WelcomeIntro {
     $GLOBALS['swi_test_hooks'] = array();
     $clean = Health::status();
     if ( true !== $clean['legacy_public_disabled'] || 'healthy' !== $clean['status'] ) { fwrite( STDERR, "disabled baseline invalid\n" ); exit( 1 ); }
+    $GLOBALS['swi_preview_registered'] = false;
+    $missing = Health::status();
+    if ( 'degraded' !== $missing['status'] || ! in_array( 'preview_rewrite_unregistered', $missing['issues'], true )
+        || 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Unregistered preview was falsely certified healthy\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_preview_registered'] );
+    $GLOBALS['swi_preview_persisted'] = false;
+    $missing = Health::status();
+    if ( 'degraded' !== $missing['status'] || ! in_array( 'preview_rewrite_not_persisted', $missing['issues'], true )
+        || 'blocked' !== Health::file24_contract_state( 'unassessed' ) ) {
+        fwrite( STDERR, "Missing persisted preview rewrite was falsely certified healthy\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_preview_persisted'] );
     $GLOBALS['swi_test_hooks']['sabri_shell_welcome_intro_invoke'] = true;
     $unsafe = Health::status();
     if ( false !== $unsafe['legacy_public_disabled'] || 'degraded' !== $unsafe['status']

@@ -39,6 +39,29 @@ final class Renderer {
 		return true;
 	}
 
+	/**
+	 * Verify both this request's registered rule and the persisted WordPress
+	 * rewrite table. add_rewrite_rule() alone cannot prove route availability.
+	 */
+	public static function preview_route_status() {
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		$registered = self::$preview_route_registered
+			&& is_object( $wp_rewrite )
+			&& isset( $wp_rewrite->extra_rules_top )
+			&& is_array( $wp_rewrite->extra_rules_top )
+			&& $target === ( $wp_rewrite->extra_rules_top[ $pattern ] ?? null );
+		$rules = get_option( 'rewrite_rules', false );
+		$persisted = is_array( $rules )
+			&& $target === ( $rules[ $pattern ] ?? null );
+		return array(
+			'registered' => (bool) $registered,
+			'persisted' => (bool) $persisted,
+			'available' => (bool) ( $registered && $persisted ),
+		);
+	}
+
 	public static function query_vars( $vars ) {
 		$vars[] = 'swi_intro_preview';
 		return $vars;

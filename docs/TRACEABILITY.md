@@ -49,3 +49,7 @@ Source implementation is not proof of packaging, CI, staging, production deploym
 ## Preview rewrite hardening (source-only correction)
 
 The historical admin preview is accepted only when WordPress matched the exact File 13 rewrite rule, the request path equals the canonical site-relative preview path, the registered mapping remains File 13's expected target, and the preview query variable is present. Arbitrary public query-string parameters must not trigger administrator redirects. A foreign rewrite collision fails closed. This is source-level behavior, not staging/live verification.
+
+## Historical preview route health assurance (source-only)
+
+File 13 health must not claim `healthy`, or return File 24 `compatible`, when the authenticated historical preview route was not registered by File 13 in this request or the canonical mapping is missing/mismatched in persisted WordPress rewrite rules. Registration in memory alone is not proof of a reachable URL. The route check is read-only and never flushes rewrite rules during health evaluation. A successful source regression does not establish live rewrite or deployed-state parity.
