@@ -53,3 +53,7 @@ The historical admin preview is accepted only when WordPress matched the exact F
 ## Historical preview route health assurance (source-only)
 
 File 13 health must not claim `healthy`, or return File 24 `compatible`, when the authenticated historical preview route was not registered by File 13 in this request or the canonical mapping is missing/mismatched in persisted WordPress rewrite rules. Registration in memory alone is not proof of a reachable URL. The route check also checks both slash variants against the first matching persisted rewrite rule: a broader foreign rule preceding File 13's exact mapping degrades health and blocks File 24 compatibility, even if the exact mapping is present later. The route check is read-only and never flushes rewrite rules during health evaluation. A successful source regression does not establish live rewrite or deployed-state parity.
+
+## Historical preview forced reduced-motion assurance (source-only)
+
+When the authenticated legacy preview selects `state=reduced`, JavaScript applies `swi-intro--reduced` before revealing the preview, and scoped CSS suppresses entrance, exit, transition and progress-line animation even if the operating system does not request reduced motion. The OS media query remains supported. The public runtime remains inert; File 25 still owns active presentation. Regression coverage: `tests/js-behavior.test.js` and `tests/visual-contract.php`. This is not browser, staging or live accessibility acceptance.

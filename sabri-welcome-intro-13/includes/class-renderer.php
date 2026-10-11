@@ -185,6 +185,7 @@ final class Renderer {
 			. '.swi-intro__skip{appearance:none;border:1px solid ' . $p . ';background:#fff;color:' . $d . ';border-radius:999px;padding:.55rem .75rem;font:inherit;cursor:pointer;white-space:nowrap}.swi-intro__skip:focus-visible{outline:3px solid ' . $p . ';outline-offset:3px}.swi-intro.swi-intro--enter .swi-intro__panel{animation:swi-enter 220ms ease-out both}.swi-intro.swi-intro--leave .swi-intro__panel{animation:swi-leave 160ms ease-in both}'
 			. '@keyframes swi-enter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@keyframes swi-leave{to{opacity:0;transform:translateY(-6px)}}@keyframes swi-line{to{inline-size:100%}}'
 			. '@media(max-width:560px){.swi-intro{inset-block-start:.5rem;inset-inline:.5rem}.swi-intro__panel{inline-size:100%;grid-template-columns:auto 1fr;gap:.7rem}.swi-intro__skip{grid-column:1/-1;justify-self:end;min-block-size:44px}.swi-intro__logo svg{width:56px;height:56px}}'
+			. '.swi-intro.swi-intro--reduced *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.swi-intro.swi-intro--reduced .swi-intro__line{inline-size:100%}'
 			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
 	}
 
