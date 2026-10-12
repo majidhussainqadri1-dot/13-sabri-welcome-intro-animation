@@ -159,35 +159,17 @@ file13_check( false === Renderer::register_rewrite(), 'Foreign preview route was
 file13_check( false === Renderer::is_preview_request(), 'Foreign-owned route with query spoof reached admin preview.' );
 file13_reset_rewrite_state();
 file13_check( true === Renderer::register_rewrite(), 'Clean route registration rejected after collision.' );
-// A request-local registration must not authorize the preview until WordPress
-// has persisted the canonical route and confirmed its first-match precedence.
-file13_check( false === Renderer::is_preview_request(), 'Unpersisted rewrite reached protected preview.' );
+// Request-local registration without persistence must not authorize a preview.
+file13_check( false === Renderer::is_preview_request(), 'Unpersisted preview was authorized.' );
 $GLOBALS['stored_rewrite_rules'] = array( $pattern => $target );
-file13_check( true === Renderer::is_preview_request(), 'Persisted canonical preview route was rejected.' );
-$GLOBALS['stored_rewrite_rules'] = array(
-    '^welcome-intro-preview(?:/.*)?
-// PHP 8 rejects arrays passed to sanitize_key(); the preview must not fatal.
-function sanitize_key( $value ) {
-    if ( ! is_string( $value ) ) { throw new TypeError( 'Expected string preview state.' ); }
-    return strtolower( preg_replace( '/[^a-z0-9_-]/', '', $value ) );
-}
-$_GET['state'] = array( 'reduced' );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Array state caused an unsafe preview parse.' );
-$_GET['state'] = 'reduced';
-file13_check( 'reduced' === Renderer::normalized_preview_state(), 'Valid reduced state was rejected.' );
-$_GET['state'] = 'unknown';
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Unknown state did not fail closed.' );
-unset( $_GET['state'] );
-file13_check( 'default' === Renderer::normalized_preview_state(), 'Missing state did not use safe default.' );
-echo "File 13 preview rewrite ownership and deactivation: PASS\n";
- => 'index.php?foreign=1',
-    $pattern => $target,
-);
-file13_check( false === Renderer::is_preview_request(), 'Shadowed persisted rewrite reached protected preview.' );
+file13_check( true === Renderer::is_preview_request(), 'Persisted own preview was rejected.' );
+// A matching rule stored after another broad owner must also be denied.
+$GLOBALS['stored_rewrite_rules'] = array( '^welcome-intro-preview' => 'index.php?foreign=1', $pattern => $target );
+file13_check( false === Renderer::is_preview_request(), 'Shadowed preview was authorized.' );
 $GLOBALS['stored_rewrite_rules'] = array( $pattern => 'index.php?foreign=1' );
-file13_check( false === Renderer::is_preview_request(), 'Foreign persisted mapping reached protected preview.' );
+file13_check( false === Renderer::is_preview_request(), 'Foreign persisted target was authorized.' );
 $GLOBALS['stored_rewrite_rules'] = array( $pattern => $target );
-file13_check( true === Renderer::is_preview_request(), 'Restored canonical preview route was rejected.' );
+file13_check( true === Renderer::is_preview_request(), 'Restored own preview was rejected.' );
 // PHP 8 rejects arrays passed to sanitize_key(); the preview must not fatal.
 function sanitize_key( $value ) {
     if ( ! is_string( $value ) ) { throw new TypeError( 'Expected string preview state.' ); }
