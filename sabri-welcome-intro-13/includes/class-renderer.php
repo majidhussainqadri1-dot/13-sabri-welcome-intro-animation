@@ -106,6 +106,9 @@ final class Renderer {
 	 */
 	public static function is_preview_request() {
 		if ( ! self::$preview_route_registered || ! get_query_var( 'swi_intro_preview' ) ) { return false; }
+		// The canonical route must also be persisted and first-match reachable.
+		// A request-local registration or spoofed query variable is insufficient.
+		if ( empty( self::preview_route_status()['available'] ) ) { return false; }
 		global $wp, $wp_rewrite;
 		if ( ! is_object( $wp ) || ! isset( $wp->matched_rule ) || self::PREVIEW_REWRITE_PATTERN !== $wp->matched_rule ) { return false; }
 		if ( ! is_object( $wp_rewrite ) || ! isset( $wp_rewrite->extra_rules_top )
