@@ -57,3 +57,9 @@ File 13 health must not claim `healthy`, or return File 24 `compatible`, when th
 ## Historical preview forced reduced-motion assurance (source-only)
 
 When the authenticated legacy preview selects `state=reduced`, JavaScript applies `swi-intro--reduced` before revealing the preview, and scoped CSS suppresses entrance, exit, transition and progress-line animation even if the operating system does not request reduced motion. The OS media query remains supported. The public runtime remains inert; File 25 still owns active presentation. Regression coverage: `tests/js-behavior.test.js` and `tests/visual-contract.php`. This is not browser, staging or live accessibility acceptance.
+
+## One-off File 13 preview first-match route guard — source-only hardening (2026-10-12)
+
+The authenticated historical preview now requires the same persisted and first-match-reachable canonical WordPress rewrite proof that the File 13 health/assurance contract already demands. Request-local `add_rewrite_rule()`, a manually supplied preview query variable, or an unpersisted/foreign/shadowed rewrite cannot be mistaken for a verified protected preview route. `tests/rewrite-lifecycle.php` now exercises the unpersisted, earlier-shadowing, mismatched persisted target, and restored valid route states. This is a narrowly owned File 13 correction. It is **not** an assertion that the production WordPress rewrite table is current, nor does it transfer File 20 frequency or File 25 presentation responsibilities.
+
+Plan-to-code cross-owner exceptions remain recorded separately: File 20 still declares File 13 the historic session/frequency owner; approval of permanent ownership and package identity, activated File 20 thirty-day recurrence, active File 25 presentation, and WordPress staging/live acceptance are **not** established by this patch. Do not promote a source-only passing CI into a claim of completed welcome experience.
