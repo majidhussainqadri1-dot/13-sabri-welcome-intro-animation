@@ -34,3 +34,24 @@
 - Fresh File13-source code fixes were already separately incorporated on PR#6 at `2c8e8e81627a064cd0627c907f446cfdb1758f4b` and documented at `d8eacc91433367eaee7c0c52f254167250098fa2`; do not patch-stack same issue.
 - This audit ledger records **20 distinct, focused source/contract review scopes**, not 20 independently complete full-scope repeat audits. Later changes to File20/25 require fresh owner-specific review and CI evidence.
 - Repository HEAD / Deployed Version / DB Version / Migration State / Live Verification Status must always remain separately recorded.
+
+## Corrective source work AFTER the twenty distinct audit scopes — 12 October 2026
+
+Source corrections are staged in their canonical owners, NOT deployed:
+- File 20 draft [PR #41](https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell/pull/41): replace obsolete File13 hook with File20 \`WelcomeFrequency\` registration; first eligible homepage only; 30-day account-first \`user_meta\` / first-party cookie+localStorage; current-session guard; Continue/Close/Skip/Escape persistence; authenticated REST nonce+capability check; safe mode; File25-only escaped rendering; fail-open hidden host; File20 structural CSS. Includes PHP and executed Node guest/member behavior regression. Post-correction candidate exact source SHA \`4115a2f83d281616fa94c827f453b067ac366bfe\`, full regression [CI #38226909814](https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell/actions/runs/38226909814) SUCCESS, baseline [#38226910016](https://github.com/majidhussainqadri1-dot/20-sabri-unified-application-shell/actions/runs/38226910016) SUCCESS.
+- File 25 draft [PR #19](https://github.com/majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience/pull/19): add proper \`Skip intro\` button to its already-existing File25 \`render_welcome_panel\` and reject an empty skip accessible label; preserve \`invoked_by_file_20\` ownership gate and regression. Exact source SHA \`c2263c964af33f8ffa55a8ca4cb07edec021ec95\`, exact-head PR [CI #38226981017](https://github.com/majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience/actions/runs/38226981017) SUCCESS, push [#38226975196](https://github.com/majidhussainqadri1-dot/25-sabri-public-ui-profile-timeline-visual-experience/actions/runs/38226975196) SUCCESS.
+- File 13 existing draft PR #6 retains inert historical public runtime and protected operator preview. This audit doc is outside the installable plugin folder; File13's previous exact-head [CI #38225308521](https://github.com/majidhussainqadri1-dot/13-sabri-welcome-intro-animation/actions/runs/38225308521) and [#38225303258](https://github.com/majidhussainqadri1-dot/13-sabri-welcome-intro-animation/actions/runs/38225303258) passed on earlier frozen source SHA \`f929b183b1e1d959ba426103d3e0a9a8ff05fd54\`; any subsequent doc commit needs new exact-head CI.
+- Cross-PR technical linkage: File20 calls existing \`sabri_visual_experience_render_welcome\` with \`invoked_by_file_20=true\`; File25 supplies accessible HTML/green visual tokens; File20 JS consumes File25's \`data-sabri-welcome-dismiss\` and \`data-sabri-welcome-skip\` attributes. This is **source-level contract compatibility**, NOT a complete installed WordPress/browser matrix acceptance.
+
+### Remaining non-code/Release gates (UNRESOLVED)
+1. Founder-dated permanent ownership and File13 package/slug change-control, with explicit migration, rollback and approval evidence.
+2. PR #6 / PR #41 / PR #19 all remain DRAFT, UNMERGED source candidates; release assembly and companion version/compatibility pinning still needed.
+3. Real WordPress staging backup/restore, account and guest first/30-day tests, no-storage/JS-blocked/safe-mode/deep-link cases, rtl/ltr/mobile/screen reader/keyboard/reduced-motion screenshot/visual and Core Web Vitals acceptance.
+4. Installed runtime File 13/20/25 versions, deployed artifact hashes, File01 registry state, DB/schema/wp_options/user_meta/cookies, migration status and runtime error logs unknown; live acceptance cannot be asserted.
+5. Source-only 20 distinct review scopes are not 20 independent full-scope adversarial repeats. Required two fresh post-final-source reviews and staged regression acceptance still pending.
+
+REPOSITORY HEAD (File13 main) \`67418c0f9d0fb4cf77fc2c5d5d79e4caf2e3c316\`; DEPLOYED VERSION UNKNOWN; DB VERSION UNKNOWN; MIGRATION STATE UNKNOWN; LIVE VERIFICATION UNVERIFIED.
+
+Exact deployed code ابھی unverified ہے؛ repository-based diagnosis provisional ہے۔
+
+**Automation:** previously disabled File13 hourly audit remains disabled; this was a one-off user-authorized review and corrective branch effort.
