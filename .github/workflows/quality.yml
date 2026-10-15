@@ -37,6 +37,8 @@ jobs:
         run: php tests/schema-write-failure.php
       - name: Direct settings authorization regression
         run: php tests/settings-update-authorization.php
+      - name: Historical option suppression and revision regression
+        run: php tests/legacy-option-guard.php
       - name: Preview rewrite deactivation regression
         run: php tests/rewrite-lifecycle.php
       - name: File 25 visual-token contract regression
