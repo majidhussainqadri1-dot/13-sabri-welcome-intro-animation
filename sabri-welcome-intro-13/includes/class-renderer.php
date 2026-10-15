@@ -131,6 +131,20 @@ final class Renderer {
 			? $state : 'default';
 	}
 
+	/** Strictly allowlisted administrator-only responsive migration previews. */
+	public static function normalized_preview_viewport() {
+		$raw = isset( $_GET['viewport'] ) ? $_GET['viewport'] : 'auto';
+		if ( ! is_string( $raw ) ) { return 'auto'; }
+		$viewport = sanitize_key( wp_unslash( $raw ) );
+		return in_array( $viewport, array( 'auto', 'mobile', 'tablet', 'desktop' ), true )
+			? $viewport : 'auto';
+	}
+
+	/** A preview iframe must never recursively embed itself. */
+	public static function preview_embed_requested() {
+		return isset( $_GET['embed'] ) && is_string( $_GET['embed'] ) && '1' === $_GET['embed'];
+	}
+
 	public static function maybe_preview() {
 		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
@@ -139,12 +153,32 @@ final class Renderer {
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
 
 		$state = self::normalized_preview_state();
+		$viewport = self::normalized_preview_viewport();
+		$embedded = self::preview_embed_requested();
 		$config = Settings::get();
 		$tokens = self::visual_tokens();
 
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="' . esc_attr( get_bloginfo( 'charset' ) ) . '"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . esc_html__( 'Welcome Intro Preview', SWI_TEXT_DOMAIN ) . '</title>';
 		echo self::style_block( $tokens ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</head><body class="swi-preview-page"><main><h1>' . esc_html__( 'Underlying page remains available', SWI_TEXT_DOMAIN ) . '</h1><p>' . esc_html__( 'This preview does not modify public recurrence or session state.', SWI_TEXT_DOMAIN ) . '</p></main>';
+
+		// These are read-only authenticated previews. The iframe is a genuine
+		// browser viewport so mobile/tablet CSS media queries are exercised.
+		if ( ! $embedded ) {
+			echo '<nav aria-label="' . esc_attr__( 'Preview viewport', SWI_TEXT_DOMAIN ) . '" style="display:flex;flex-wrap:wrap;gap:.75rem;margin:1rem 0">';
+			foreach ( array( 'auto', 'mobile', 'tablet', 'desktop' ) as $choice ) {
+				$link = add_query_arg( array( 'state' => $state, 'viewport' => $choice ), home_url( '/welcome-intro-preview/' ) );
+				echo '<a href="' . esc_url( $link ) . '"' . ( $choice === $viewport ? ' aria-current="page"' : '' ) . '>' . esc_html( ucfirst( $choice ) ) . '</a>';
+			}
+			echo '</nav>';
+			if ( 'auto' !== $viewport ) {
+				$widths = array( 'mobile' => 360, 'tablet' => 768, 'desktop' => 1280 );
+				$frame_url = add_query_arg( array( 'state' => $state, 'viewport' => $viewport, 'embed' => '1' ), home_url( '/welcome-intro-preview/' ) );
+				echo '<div class="swi-preview-device swi-preview-viewport-' . esc_attr( $viewport ) . '" style="max-width:100%;overflow-x:auto;border:1px solid #d9dde2;padding:1rem;background:#eee"><iframe title="' . esc_attr__( 'Welcome intro responsive preview', SWI_TEXT_DOMAIN ) . '" width="' . esc_attr( $widths[ $viewport ] ) . '" height="720" src="' . esc_url( $frame_url ) . '" sandbox="allow-scripts" referrerpolicy="same-origin"></iframe></div>';
+				echo '</body></html>';
+				exit;
+			}
+		}
 
 		if ( 'error' === $state ) {
 			echo '<div class="swi-preview-note">' . esc_html__( 'Failure preview: the intro is suppressed and content is revealed immediately.', SWI_TEXT_DOMAIN ) . '</div>';
