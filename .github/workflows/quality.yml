@@ -41,6 +41,8 @@ jobs:
         run: php tests/legacy-option-guard.php
       - name: Preview rewrite deactivation regression
         run: php tests/rewrite-lifecycle.php
+      - name: Responsive historical preview viewport regression
+        run: php tests/preview-viewports.php
       - name: File 25 visual-token contract regression
         run: php tests/visual-contract.php
       - name: Analytics privacy kill-switch regression
