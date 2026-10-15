@@ -214,15 +214,14 @@ final class Settings {
 
 	public static function guard_option_write( $new_value, $old_value, $option ) {
 		unset( $option );
-		if ( ! is_array( $new_value ) ) { return is_array( $old_value ) ? $old_value : self::defaults(); }
 		$old_value = is_array( $old_value ) ? array_replace( self::defaults(), $old_value ) : self::defaults();
-		$clean = self::sanitize( $new_value, $old_value );
-		if ( isset( $new_value['config_version'] ) ) {
-			$revision = $new_value['config_version'];
-			$clean['config_version'] = is_int( $revision ) || ( is_string( $revision ) && ctype_digit( $revision ) )
-				? max( 1, absint( $revision ) ) : 1;
-		}
-		return $clean;
+		// A malformed external update must not preserve a historically active row.
+		// Always pass through the compatibility sanitizer, including scalar input.
+		$input = is_array( $new_value ) ? $new_value : $old_value;
+		// The trusted revision is the persisted one. Do not allow an unversioned
+		// legacy update_option() caller to rewind/forge configuration revisions.
+		// Settings::update() has its own authorized, audited CAS revision path.
+		return self::sanitize( $input, $old_value );
 	}
 
 	private static function append_audit( array $before, array $after, $actor_id ) {
