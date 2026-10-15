@@ -28,7 +28,7 @@ foreach ( array( '', 'true', '2', array( '1' ), 1, null ) as $invalid ) {
 }
 $source = file_get_contents( dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-renderer.php' );
 foreach ( array(
-    "if ( ! \\$embedded )", "'mobile' => 360", "'tablet' => 768", "'desktop' => 1280",
+    'if ( ! $embedded )', "'mobile' => 360", "'tablet' => 768", "'desktop' => 1280",
     "'embed' => '1'", 'sandbox="allow-scripts"', 'referrerpolicy="same-origin"',
     'swi-preview-viewport-', 'aria-current="page"', 'esc_url( $frame_url )',
     'esc_attr( $widths[ $viewport ] )', "Authorization::require_manage( 'preview_intro' )",
