@@ -14,7 +14,7 @@ function verify_preview_viewport( $ok, $message ) {
 unset( $_GET['viewport'], $_GET['embed'] );
 verify_preview_viewport( 'auto' === Renderer::normalized_preview_viewport(), 'Default viewport must be auto.' );
 verify_preview_viewport( false === Renderer::preview_embed_requested(), 'Default must not embed.' );
-foreach ( array( 'auto', 'mobile', 'tablet', 'desktop' ) as $valid ) {
+foreach ( array( 'auto', 'mobile-small', 'mobile', 'tablet', 'desktop' ) as $valid ) {
     $_GET['viewport'] = $valid;
     verify_preview_viewport( $valid === Renderer::normalized_preview_viewport(), 'Approved viewport rejected: ' . $valid );
 }
@@ -29,9 +29,10 @@ foreach ( array( '', 'true', '2', array( '1' ), 1, null ) as $invalid ) {
     verify_preview_viewport( false === Renderer::preview_embed_requested(), 'Malformed nested-frame mode accepted.' );
 }
 $translated = Renderer::preview_viewport_labels();
-verify_preview_viewport( array_keys( $translated ) === array( 'auto', 'mobile', 'tablet', 'desktop' ), 'Viewport label keys drifted.' );
+verify_preview_viewport( array_keys( $translated ) === array( 'auto', 'mobile-small', 'mobile', 'tablet', 'desktop' ), 'Viewport label keys drifted.' );
 foreach ( array(
     'auto' => 'Automatic',
+    'mobile-small' => 'Small mobile (320px)',
     'mobile' => 'Mobile',
     'tablet' => 'Tablet',
     'desktop' => 'Desktop',
@@ -40,7 +41,7 @@ foreach ( array(
 }
 $source = file_get_contents( dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-renderer.php' );
 foreach ( array(
-    'if ( ! $embedded )', "'mobile' => 360", "'tablet' => 768", "'desktop' => 1280",
+    'if ( ! $embedded )', "'mobile-small' => 320", "'mobile' => 360", "'tablet' => 768", "'desktop' => 1280",
     "'embed' => '1'", 'sandbox="allow-scripts"', 'referrerpolicy="same-origin"',
     'swi-preview-viewport-', 'aria-current="page"', 'esc_url( $frame_url )',
     'esc_attr( $widths[ $viewport ] )', "Authorization::require_manage( 'preview_intro' )",
