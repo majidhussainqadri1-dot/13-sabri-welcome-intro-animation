@@ -14,6 +14,12 @@ function apply_filters( $name, $fallback ) {
     return $fallback;
 }
 function has_action( $hook, $callback = false ) { return isset( $GLOBALS['swi_test_hooks'][ $hook ] ) ? 10 : false; }
+function has_filter( $hook, $callback = false ) {
+    // Only File20's *exact native* callback can authorize contract readiness.
+    if ( 'sabri_shell_welcome_frequency_contract' !== $hook ) { return false; }
+    $native = array( \Sabri\UnifiedShell\WelcomeFrequency::class, 'contract' );
+    return $native === $callback && ! empty( $GLOBALS['swi_native_welcome_callback_registered'] ) ? 10 : false;
+}
 function get_bloginfo( $field ) { return 'version' === $field ? '6.8' : ''; }
 function get_option( $key, $default = false ) {
     if ( 'swi_intro_schema_version' === $key ) { return $GLOBALS['swi_schema_version']; }
@@ -27,6 +33,8 @@ namespace Sabri\UnifiedShell {
     // Intentionally only legacy-compatible plugin class/version: this does
     // NOT provide File20's newer WelcomeFrequency bridge/filter.
     final class FourPlanHarmonization {}
+    // Class availability alone is not a registered WordPress callback.
+    final class WelcomeFrequency { public static function contract( $prior = array() ) { return $prior; } }
 }
 namespace Sabri\WelcomeIntro {
     final class Settings {
@@ -69,11 +77,24 @@ namespace Sabri\WelcomeIntro {
         'live_verified' => false,
     );
     $GLOBALS['swi_file20_welcome_contract'] = $approved_welcome;
+    $forged_status = Health::status();
+    if ( $forged_status['file20_welcome_contract']['valid']
+        || $forged_status['file20_welcome_contract']['provider_registered']
+        || 'healthy' !== $forged_status['status'] ) {
+        fwrite( STDERR, "Forged welcome filter without File20 native provider hook was accepted\n" ); exit( 1 );
+    }
+    $GLOBALS['swi_native_welcome_callback_registered'] = true;
     $approved_status = Health::status();
     if ( ! $approved_status['file20_welcome_contract']['valid']
+        || ! $approved_status['file20_welcome_contract']['provider_registered']
         || 'healthy' !== $approved_status['status'] ) {
         fwrite( STDERR, "Canonical File20 WelcomeFrequency contract rejected or legacy health changed\n" ); exit( 1 );
     }
+    $GLOBALS['swi_native_welcome_callback_registered'] = false;
+    if ( Health::status()['file20_welcome_contract']['valid'] ) {
+        fwrite( STDERR, "Native File20 callback removed but readiness remained true\n" ); exit( 1 );
+    }
+    $GLOBALS['swi_native_welcome_callback_registered'] = true;
     foreach ( array(
         array(),
         'not-an-array',
