@@ -93,6 +93,12 @@ final class Health {
 	public static function file20_welcome_contract_status() {
 		$provider = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$installed = class_exists( $provider ) && defined( 'SABRI_SHELL_VERSION' );
+		// A third-party filter can forge a plausible payload. Confirm File20's
+		// actual native owner class AND its exact WordPress filter callback.
+		$native_owner = 'Sabri\\UnifiedShell\\WelcomeFrequency';
+		$provider_registered = $installed
+			&& class_exists( $native_owner, false )
+			&& false !== has_filter( 'sabri_shell_welcome_frequency_contract', array( $native_owner, 'contract' ) );
 		$raw = apply_filters( 'sabri_shell_welcome_frequency_contract', array() );
 		$contract = is_array( $raw ) ? $raw : array();
 		$owner = isset( $contract['owner'] ) && is_string( $contract['owner'] ) ? $contract['owner'] : '';
@@ -100,7 +106,7 @@ final class Health {
 		$days = isset( $contract['days'] ) && is_int( $contract['days'] ) ? $contract['days'] : 0;
 		$presentation = isset( $contract['presentation_owner'] ) && is_string( $contract['presentation_owner'] )
 			? $contract['presentation_owner'] : '';
-		$valid = $installed && 'file-20' === $owner
+		$valid = $provider_registered && 'file-20' === $owner
 			&& 1 === preg_match( '/^\\d+\\.\\d+\\.\\d+$/', $version )
 			&& version_compare( $version, '1.0.0', '>=' )
 			&& version_compare( $version, '2.0.0', '<' )
@@ -111,6 +117,7 @@ final class Health {
 			&& ( $contract['no_file13_public_hook'] ?? null ) === true;
 		return array(
 			'valid' => (bool) $valid,
+			'provider_registered' => (bool) $provider_registered,
 			'owner' => $owner,
 			'version' => $version,
 			'days' => $days,
