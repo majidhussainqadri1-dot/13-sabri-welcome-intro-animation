@@ -165,10 +165,18 @@ final class Renderer {
 		// These are read-only authenticated previews. The iframe is a genuine
 		// browser viewport so mobile/tablet CSS media queries are exercised.
 		if ( ! $embedded ) {
-			echo '<nav aria-label="' . esc_attr__( 'Preview viewport', SWI_TEXT_DOMAIN ) . '" style="display:flex;flex-wrap:wrap;gap:.75rem;margin:1rem 0">';
-			foreach ( array( 'auto', 'mobile', 'tablet', 'desktop' ) as $choice ) {
+			// Textdomain labels are translated by WordPress/locale providers.
+			// Never derive user-facing copy from internal state keys.
+			$viewport_labels = array(
+				'auto' => __( 'Automatic', SWI_TEXT_DOMAIN ),
+				'mobile' => __( 'Mobile', SWI_TEXT_DOMAIN ),
+				'tablet' => __( 'Tablet', SWI_TEXT_DOMAIN ),
+				'desktop' => __( 'Desktop', SWI_TEXT_DOMAIN ),
+			);
+			echo '<nav class="swi-preview-viewports" aria-label="' . esc_attr__( 'Preview viewport', SWI_TEXT_DOMAIN ) . '">';
+			foreach ( $viewport_labels as $choice => $label ) {
 				$link = add_query_arg( array( 'state' => $state, 'viewport' => $choice ), home_url( '/welcome-intro-preview/' ) );
-				echo '<a href="' . esc_url( $link ) . '"' . ( $choice === $viewport ? ' aria-current="page"' : '' ) . '>' . esc_html( ucfirst( $choice ) ) . '</a>';
+				echo '<a href="' . esc_url( $link ) . '"' . ( $choice === $viewport ? ' aria-current="page"' : '' ) . '>' . esc_html( $label ) . '</a>';
 			}
 			echo '</nav>';
 			if ( 'auto' !== $viewport ) {
@@ -223,7 +231,7 @@ final class Renderer {
 			. '@keyframes swi-enter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@keyframes swi-leave{to{opacity:0;transform:translateY(-6px)}}@keyframes swi-line{to{inline-size:100%}}'
 			. '@media(max-width:560px){.swi-intro{inset-block-start:.5rem;inset-inline:.5rem}.swi-intro__panel{inline-size:100%;grid-template-columns:auto 1fr;gap:.7rem}.swi-intro__skip{grid-column:1/-1;justify-self:end;min-block-size:44px}.swi-intro__logo svg{width:56px;height:56px}}'
 			. '.swi-intro.swi-intro--reduced *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.swi-intro.swi-intro--reduced .swi-intro__line{inline-size:100%}'
-			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
+			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-viewports{display:flex;flex-wrap:wrap;gap:.75rem;margin-block:1rem}.swi-preview-viewports a{display:inline-flex;align-items:center;justify-content:center;min-block-size:44px;min-inline-size:44px;box-sizing:border-box;padding:.5rem .75rem;border:1px solid #7a8a83;border-radius:6px;color:#064e3b;background:#fff;text-decoration:underline}.swi-preview-viewports a:focus-visible{outline:3px solid #087a4e;outline-offset:2px}.swi-preview-viewports [aria-current="page"]{font-weight:700;border-color:#087a4e}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
 	}
 
 	public static function visual_contract_status() {
