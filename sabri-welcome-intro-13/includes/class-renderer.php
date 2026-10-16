@@ -136,7 +136,7 @@ final class Renderer {
 		$raw = isset( $_GET['viewport'] ) ? $_GET['viewport'] : 'auto';
 		if ( ! is_string( $raw ) ) { return 'auto'; }
 		$viewport = sanitize_key( wp_unslash( $raw ) );
-		return in_array( $viewport, array( 'auto', 'mobile', 'tablet', 'desktop' ), true )
+		return in_array( $viewport, array( 'auto', 'mobile-small', 'mobile', 'tablet', 'desktop' ), true )
 			? $viewport : 'auto';
 	}
 
@@ -144,6 +144,7 @@ final class Renderer {
 	public static function preview_viewport_labels() {
 		return array(
 			'auto' => __( 'Automatic', SWI_TEXT_DOMAIN ),
+			'mobile-small' => __( 'Small mobile (320px)', SWI_TEXT_DOMAIN ),
 			'mobile' => __( 'Mobile', SWI_TEXT_DOMAIN ),
 			'tablet' => __( 'Tablet', SWI_TEXT_DOMAIN ),
 			'desktop' => __( 'Desktop', SWI_TEXT_DOMAIN ),
@@ -183,7 +184,7 @@ final class Renderer {
 			}
 			echo '</nav>';
 			if ( 'auto' !== $viewport ) {
-				$widths = array( 'mobile' => 360, 'tablet' => 768, 'desktop' => 1280 );
+				$widths = array( 'mobile-small' => 320, 'mobile' => 360, 'tablet' => 768, 'desktop' => 1280 );
 				$frame_url = add_query_arg( array( 'state' => $state, 'viewport' => $viewport, 'embed' => '1' ), home_url( '/welcome-intro-preview/' ) );
 				echo '<div class="swi-preview-device swi-preview-viewport-' . esc_attr( $viewport ) . '" style="max-width:100%;overflow-x:auto;border:1px solid #d9dde2;padding:1rem;background:#eee"><iframe title="' . esc_attr__( 'Welcome intro responsive preview', SWI_TEXT_DOMAIN ) . '" width="' . esc_attr( $widths[ $viewport ] ) . '" height="720" src="' . esc_url( $frame_url ) . '" sandbox="allow-scripts" referrerpolicy="same-origin"></iframe></div>';
 				echo '</body></html>';
@@ -248,7 +249,10 @@ final class Renderer {
 			: array();
 		$valid = 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
-			&& version_compare( $version, '1.0.0', '>=' )
+			// Match File20's supported File25 contract range; older 1.x
+			// shapes must not appear compatible in historical preview diagnostics.
+			&& version_compare( $version, '1.9.0', '>=' )
+			&& version_compare( $version, '2.0.0', '<' )
 			&& isset( $tokens['primary_color'], $tokens['text'], $tokens['surface_strong'] )
 			&& is_string( $tokens['primary_color'] )
 			&& is_string( $tokens['text'] )
