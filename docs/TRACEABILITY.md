@@ -20,7 +20,7 @@ Current File 24/25 source contracts assign invocation/frequency to File 20, pres
 | F13-COMPAT-004 historical preview | authenticated, no-store, non-persistent migration inspection only |
 | F13-COMPAT-005 File 24 assurance | `spcrc/file13_contract_state` returns compatible only when legacy runtime is disabled, schema migration is current, File 01 registry is synced, and no audit-gap marker remains |
 | F13-COMPAT-006 File 20 boundary | File 13 does not register `sabri_shell_welcome_intro_invoke` |
-| F13-FR-011 admin preview | authenticated `/welcome-intro-preview/` states and auto/mobile/tablet/desktop responsive iframe presets; translated, keyboard-visible, 44px viewport links |
+| F13-FR-011 admin preview | authenticated `/welcome-intro-preview/` semantic states with auto/320px small-mobile/360px mobile/768px tablet/1280px desktop responsive iframe presets; translated, keyboard-visible, 44px viewport links |
 | F13-COMPAT-007 configuration migration | legacy values are preserved for audit but activation/analytics sanitize to disabled |
 | F13-COMPAT-008 registry | File 01 manifest declares compatibility/migration scope and no active-render capability |
 | F13-COMPAT-009 release truth | source, CI, package, staging and live states remain separately reported |
@@ -35,6 +35,8 @@ File 20 main (reviewed SHA `8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca`) still con
 
 ### File 25
 File 25 is the canonical active presentation owner. File 13 may read its tokens only inside the authenticated historical preview; it produces no public presentation.
+
+The legacy preview's File 25 contract diagnostics now use the exact version compatibility boundary required by the reviewed File 20 draft owner bridge: File 25 >=1.9.0 and <2.0.0, plus three validated six-digit hex color tokens. Versions outside that range fail closed to historical fallback colors; source parity does not prove installed plugin parity.
 
 ### File 00
 File 13 does not clone identity, roles or entitlement data. Administrative authorization is capability-based and exposes `swi_intro_authorization_decision` as the adapter point for a stricter File 00 provider.
