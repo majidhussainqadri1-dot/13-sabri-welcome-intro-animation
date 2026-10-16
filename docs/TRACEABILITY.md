@@ -20,7 +20,7 @@ Current File 24/25 source contracts assign invocation/frequency to File 20, pres
 | F13-COMPAT-004 historical preview | authenticated, no-store, non-persistent migration inspection only |
 | F13-COMPAT-005 File 24 assurance | `spcrc/file13_contract_state` returns compatible only when legacy runtime is disabled, schema migration is current, File 01 registry is synced, and no audit-gap marker remains |
 | F13-COMPAT-006 File 20 boundary | File 13 does not register `sabri_shell_welcome_intro_invoke` |
-| F13-FR-011 admin preview | authenticated `/welcome-intro-preview/` states |
+| F13-FR-011 admin preview | authenticated `/welcome-intro-preview/` states and auto/mobile/tablet/desktop responsive iframe presets; translated, keyboard-visible, 44px viewport links |
 | F13-COMPAT-007 configuration migration | legacy values are preserved for audit but activation/analytics sanitize to disabled |
 | F13-COMPAT-008 registry | File 01 manifest declares compatibility/migration scope and no active-render capability |
 | F13-COMPAT-009 release truth | source, CI, package, staging and live states remain separately reported |
@@ -31,7 +31,7 @@ Current File 24/25 source contracts assign invocation/frequency to File 20, pres
 File 13 provides an explicit, authenticated File 01 registry synchronization path. It registers compatibility/migration scope and the private preview route only. An existing active registry record is downgraded truthfully to `degraded`; it is never silently retained as active.
 
 ### File 20
-Current File 20 source still contains a historical handoff that names File 13 as preference owner. File 13 no longer registers that hook. This fail-closed gap must be corrected in File 20 before the active welcome experience can be claimed complete.
+File 20 main (reviewed SHA `8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca`) still contains a historical handoff naming File 13 as the preference owner. File 13 no longer registers that legacy hook. The separate, current open draft PR #41 (reviewed SHA `340d9864b9d77add92777b04826b4eeb6f408fcf`) implements File 20's canonical 30-day welcome frequency, File 25 presentation handoff, and strict version/token validation. These draft changes are **not merged to File 20 main**. Neither branch is evidence of the live deployment; actual installed parity, Founder's ownership approval and staging/browser acceptance remain independent release gates.
 
 ### File 25
 File 25 is the canonical active presentation owner. File 13 may read its tokens only inside the authenticated historical preview; it produces no public presentation.
@@ -62,4 +62,4 @@ When the authenticated legacy preview selects `state=reduced`, JavaScript applie
 
 The authenticated historical preview now requires the same persisted and first-match-reachable canonical WordPress rewrite proof that the File 13 health/assurance contract already demands. Request-local `add_rewrite_rule()`, a manually supplied preview query variable, or an unpersisted/foreign/shadowed rewrite cannot be mistaken for a verified protected preview route. `tests/rewrite-lifecycle.php` now exercises the unpersisted, earlier-shadowing, mismatched persisted target, and restored valid route states. This is a narrowly owned File 13 correction. It is **not** an assertion that the production WordPress rewrite table is current, nor does it transfer File 20 frequency or File 25 presentation responsibilities.
 
-Plan-to-code cross-owner exceptions remain recorded separately: File 20 still declares File 13 the historic session/frequency owner; approval of permanent ownership and package identity, activated File 20 thirty-day recurrence, active File 25 presentation, and WordPress staging/live acceptance are **not** established by this patch. Do not promote a source-only passing CI into a claim of completed welcome experience.
+Plan-to-code cross-owner exceptions remain recorded separately: the reviewed File 20 **main** still declares File 13 the historic session/frequency owner, while the separate open draft PR #41 has the newer File 20/25 arrangement. Approval of permanent ownership and package identity, merging and deploying the 30-day recurrence, the installed File 25 presentation, and WordPress staging/live acceptance are **not** established by a draft-source patch. Do not promote source-only passing CI into a claim of completed welcome experience.
