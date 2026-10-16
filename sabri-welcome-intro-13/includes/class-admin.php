@@ -25,6 +25,14 @@ final class Admin {
 		if ( isset( $_GET['swi_registry_error'] ) && 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — ' . esc_html__( 'File 24 contract state:', SWI_TEXT_DOMAIN ) . ' ' . esc_html( $health['file24_contract_state'] ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'File 01 registry:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $foundation['state'] ) . '</p>';
+		// File20's installed plugin class/version is NOT proof of the distinct
+		// 30-day WelcomeFrequency contract (old main and draft share 1.4.17).
+		$welcome_contract_valid = ! empty( $health['file20_welcome_contract']['valid'] );
+		echo '<p><strong>' . esc_html__( 'File 20 welcome frequency contract:', SWI_TEXT_DOMAIN ) . '</strong> '
+			. ( $welcome_contract_valid
+				? esc_html__( 'Detected; operational verification remains separate.', SWI_TEXT_DOMAIN )
+				: esc_html__( 'Missing or incompatible; plugin presence is insufficient.', SWI_TEXT_DOMAIN ) )
+			. '</p>';
 		echo '<p><a class="button" href="' . esc_url( $preview ) . '" target="_blank" rel="noopener">' . esc_html__( 'Inspect legacy preview', SWI_TEXT_DOMAIN ) . '</a></p>';
 		echo '<form style="display:inline-block;margin-bottom:12px" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( Foundation::SYNC_ACTION ) . '">';
 		wp_nonce_field( Foundation::SYNC_ACTION, '_swi_nonce' );
