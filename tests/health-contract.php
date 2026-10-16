@@ -60,7 +60,41 @@ namespace Sabri\WelcomeIntro {
     final class Foundation { public static function status() { return array( 'available' => true, 'state' => $GLOBALS['swi_test_registry_state'] ?? 'synced' ); } }
     require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-health.php';
     $GLOBALS['swi_test_hooks'] = array();
+    // Project RELEASE versions are distinct from supported plugin minimums.
+    // Pure version fixtures are not an installed WordPress/staging acceptance test.
+    $project_versions = array(
+        array( '7.0.1', '8.3.0', true ),
+        array( '7.0.2', '8.3.24', true ),
+        array( '7.1.0', '8.4.0', true ),
+        array( '7.0.0', '8.3.0', false ),
+        array( '6.8', '8.3.0', false ),
+        array( '7.0.1', '8.2.99', false ),
+        array( '7.0.1', '8.1.0', false ),
+        array( '6.8', '8.1.0', false ),
+        array( '', '8.3.0', false ),
+        array( '7.0.1-dev', '8.3.0', false ),
+        array( '7.0.1', '', false ),
+        array( '7.0.1', '8.3.0-dev', false ),
+        array( array( '7.0.1' ), '8.3.0', false ),
+        array( '7.0.1', array( '8.3.0' ), false ),
+    );
+    foreach ( $project_versions as $case ) {
+        $runtime = Health::project_baseline_status( $case[0], $case[1] );
+        if ( $runtime['meets_version_targets'] !== $case[2]
+            || $runtime['acceptance_verification'] !== 'not_assessed'
+            || $runtime['wordpress_required'] !== '7.0.1'
+            || $runtime['php_required'] !== '8.3' ) {
+            fwrite( STDERR, "Project WP/PHP target baseline incorrectly classified or falsely certified staging\\n" ); exit( 1 );
+        }
+    }
     $clean = Health::status();
+    if ( ! isset( $clean['project_baseline'] )
+        || $clean['project_baseline']['wordpress_version'] !== '6.8'
+        || $clean['project_baseline']['wordpress_meets_target']
+        || $clean['project_baseline']['meets_version_targets']
+        || 'not_assessed' !== $clean['project_baseline']['acceptance_verification'] ) {
+        fwrite( STDERR, "Health incorrectly certified below-target WordPress or staging acceptance\\n" ); exit( 1 );
+    }
     // Old File20 main and a newer unmerged draft both advertise 1.4.17.
     // Class/version presence must never be advertised as a verified
     // 30-day welcome-frequency contract.
