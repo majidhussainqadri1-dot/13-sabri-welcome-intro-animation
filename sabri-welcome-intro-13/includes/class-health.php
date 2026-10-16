@@ -25,6 +25,7 @@ final class Health {
 			&& is_bool( $raw_stored['analytics_enabled'] ?? null );
 		$file20_class = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$file20_available = class_exists( $file20_class ) && defined( 'SABRI_SHELL_VERSION' );
+		$file20_welcome_contract = self::file20_welcome_contract_status();
 		$legacy_renderer = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$legacy_analytics = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
@@ -62,6 +63,7 @@ final class Health {
 			'legacy_public_disabled' => $legacy_public_disabled,
 			'safe_mode' => Eligibility::safe_mode_active(),
 			'file20_available' => (bool) $file20_available,
+			'file20_welcome_contract' => $file20_welcome_contract,
 			'file20_version' => defined( 'SABRI_SHELL_VERSION' ) ? (string) SABRI_SHELL_VERSION : '',
 			'visual_primary' => $visual['primary'],
 			'file25_visual_contract' => array(
@@ -76,6 +78,43 @@ final class Health {
 			'status' => empty( $issues ) ? 'healthy' : 'degraded',
 			'issues' => $issues,
 			'live_deployment' => 'unverified',
+		);
+	}
+
+	/**
+	 * Read the actual File20 welcome-frequency handshake, not only its plugin
+	 * header version. File20 main and an unmerged draft may report 1.4.17
+	 * while providing different welcome behavior.
+	 *
+	 * This is a non-mutating, source-contract diagnostic. It never certifies
+	 * installed package parity or staging/live acceptance and does not
+	 * reclassify File13's independent historical-suppression health.
+	 */
+	public static function file20_welcome_contract_status() {
+		$provider = 'Sabri\\\\UnifiedShell\\\\FourPlanHarmonization';
+		$installed = class_exists( $provider ) && defined( 'SABRI_SHELL_VERSION' );
+		$raw = apply_filters( 'sabri_shell_welcome_frequency_contract', array() );
+		$contract = is_array( $raw ) ? $raw : array();
+		$owner = isset( $contract['owner'] ) && is_string( $contract['owner'] ) ? $contract['owner'] : '';
+		$version = isset( $contract['version'] ) && is_string( $contract['version'] ) ? $contract['version'] : '';
+		$days = isset( $contract['days'] ) && is_int( $contract['days'] ) ? $contract['days'] : 0;
+		$presentation = isset( $contract['presentation_owner'] ) && is_string( $contract['presentation_owner'] )
+			? $contract['presentation_owner'] : '';
+		$valid = $installed && 'file-20' === $owner
+			&& 1 === preg_match( '/^\\d+\\.\\d+\\.\\d+$/', $version )
+			&& version_compare( $version, '1.0.0', '>=' )
+			&& version_compare( $version, '2.0.0', '<' )
+			&& 30 === $days
+			&& 'file-25' === $presentation
+			&& ( $contract['guest_preference'] ?? null ) === 'first-party-cookie-and-local-storage'
+			&& ( $contract['member_preference'] ?? null ) === 'authenticated-user-meta'
+			&& ( $contract['no_file13_public_hook'] ?? null ) === true;
+		return array(
+			'valid' => (bool) $valid,
+			'owner' => $owner,
+			'version' => $version,
+			'days' => $days,
+			'presentation_owner' => $presentation,
 		);
 	}
 
