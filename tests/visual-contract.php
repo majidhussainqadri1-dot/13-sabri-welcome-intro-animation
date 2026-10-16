@@ -17,7 +17,21 @@ $GLOBALS['visual_contract']['tokens'] = array(
 );
 if ( Renderer::visual_contract_status()['valid'] ) { fwrite( STDERR, "malformed token falsely accepted\n" ); exit( 1 ); }
 $GLOBALS['visual_contract']['tokens']['text'] = '#123abc';
+// The active File20 bridge requires File25 >=1.9.0 and <2.0.0. Historical
+// File13 preview diagnostics must not approve an incompatible version.
+foreach ( array( '1.0.0', '1.8.9', '2.0.0', 'v1.9.0', array( '1.9.0' ) ) as $incompatible ) {
+    $GLOBALS['visual_contract']['version'] = $incompatible;
+    if ( Renderer::visual_contract_status()['valid'] ) {
+        fwrite( STDERR, "Out-of-range File25 visual contract accepted\n" ); exit( 1 );
+    }
+}
+$GLOBALS['visual_contract']['version'] = '1.9.0';
 if ( ! Renderer::visual_contract_status()['valid'] ) { fwrite( STDERR, "valid File 25 tokens rejected\n" ); exit( 1 ); }
+$GLOBALS['visual_contract']['version'] = '1.10.0';
+if ( ! Renderer::visual_contract_status()['valid'] ) {
+    fwrite( STDERR, "Compatible File25 1.x minor version rejected\n" ); exit( 1 );
+}
+$GLOBALS['visual_contract']['version'] = '1.9.0';
 $colors = Renderer::visual_tokens();
 if ( '#123456' !== $colors['primary'] || '#123abc' !== $colors['dark'] || '#abcdef' !== $colors['light'] ) {
     fwrite( STDERR, "valid token mapping incorrect\n" ); exit( 1 );
