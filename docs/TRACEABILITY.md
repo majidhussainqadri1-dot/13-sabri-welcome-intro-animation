@@ -33,6 +33,8 @@ File 13 provides an explicit, authenticated File 01 registry synchronization pat
 ### File 20
 File 20 main (reviewed SHA `8a4dbcaf4fef8e926b9b834ecfde16c21a0f00ca`) still contains a historical handoff naming File 13 as the preference owner. File 13 no longer registers that legacy hook. The separate, current open draft PR #41 (reviewed SHA `340d9864b9d77add92777b04826b4eeb6f408fcf`) implements File 20's canonical 30-day welcome frequency, File 25 presentation handoff, and strict version/token validation. These draft changes are **not merged to File 20 main**. Neither branch is evidence of the live deployment; actual installed parity, Founder's ownership approval and staging/browser acceptance remain independent release gates.
 
+**Distinct contract diagnostic:** File 13 reports `file20_available` for the installed File 20 plugin/class presence only, and separately reports `file20_welcome_contract.valid` after inspecting the actual `sabri_shell_welcome_frequency_contract` filter for owner, contract semver 1.x, exact 30-day interval, File 25 presentation, guest/member preference boundaries, and suppression of the old File 13 hook. The older main and newer draft both report File 20 plugin version `1.4.17`; version alone is not proof of the canonical 30-day implementation. An absent contract does **not** automatically reclassify File 13's independent historical-suppression/ File 24 compatibility state. A positive contract does **not** certify deployed SHA, database state or live user journeys.
+
 ### File 25
 File 25 is the canonical active presentation owner. File 13 may read its tokens only inside the authenticated historical preview; it produces no public presentation.
 
