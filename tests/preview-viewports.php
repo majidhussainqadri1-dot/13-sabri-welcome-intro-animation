@@ -5,6 +5,7 @@ define( 'SWI_TEXT_DOMAIN', 'sabri-welcome-intro' );
 function __( $message, $domain = '' ) { return $domain . ':' . $message; }
 function sanitize_key( $value ) { return strtolower( (string) $value ); }
 function wp_unslash( $value ) { return $value; }
+function esc_attr( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); }
 require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-renderer.php';
 use Sabri\WelcomeIntro\Renderer;
 
@@ -39,6 +40,23 @@ foreach ( array(
 ) as $key => $english ) {
     verify_preview_viewport( SWI_TEXT_DOMAIN . ':' . $english === $translated[ $key ], 'Viewport label bypassed WordPress textdomain: ' . $key );
 }
+// Exercise the REAL privately rendered stylesheet, not only a static source
+// substring. The historical Skip button needs a >=44px target even at
+// desktop widths, where the mobile @media rule does not apply.
+$css_method = new ReflectionMethod( Renderer::class, 'style_block' );
+$css = $css_method->invoke( null, array(
+    'primary' => '#087a4e', 'dark' => '#171717', 'light' => '#e7f5ee',
+) );
+$desktop_css = explode( '@media(max-width:560px)', $css )[0];
+verify_preview_viewport(
+    1 === preg_match( '/\\.swi-intro__skip\\{[^}]*min-block-size:44px[^}]*min-inline-size:44px/', $desktop_css ),
+    'Desktop-width Skip button missing minimum 44px interactive target.'
+);
+verify_preview_viewport(
+    str_contains( $css, '.swi-intro__skip:focus-visible' )
+        && str_contains( $css, '@media(max-width:560px)' ),
+    'Skip keyboard focus or mobile responsive style disappeared.'
+);
 $source = file_get_contents( dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-renderer.php' );
 foreach ( array(
     'if ( ! $embedded )', "'mobile-small' => 320", "'mobile' => 360", "'tablet' => 768", "'desktop' => 1280",
