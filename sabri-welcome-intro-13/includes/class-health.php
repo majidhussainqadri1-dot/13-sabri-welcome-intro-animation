@@ -26,6 +26,7 @@ final class Health {
 		$file20_class = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$file20_available = class_exists( $file20_class ) && defined( 'SABRI_SHELL_VERSION' );
 		$file20_welcome_contract = self::file20_welcome_contract_status();
+		$project_baseline = self::project_baseline_status();
 		$legacy_renderer = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$legacy_analytics = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
@@ -64,6 +65,7 @@ final class Health {
 			'safe_mode' => Eligibility::safe_mode_active(),
 			'file20_available' => (bool) $file20_available,
 			'file20_welcome_contract' => $file20_welcome_contract,
+			'project_baseline' => $project_baseline,
 			'file20_version' => defined( 'SABRI_SHELL_VERSION' ) ? (string) SABRI_SHELL_VERSION : '',
 			'visual_primary' => $visual['primary'],
 			'file25_visual_contract' => array(
@@ -78,6 +80,38 @@ final class Health {
 			'status' => empty( $issues ) ? 'healthy' : 'degraded',
 			'issues' => $issues,
 			'live_deployment' => 'unverified',
+		);
+	}
+
+	/**
+	 * Non-mutating project-release version diagnostic (F13-NFR-009).
+	 *
+	 * These TARGETS are separate from the lower supported plugin minimums
+	 * WordPress 6.0 / PHP 8.1. Matching runtime versions are a prerequisite,
+	 * never evidence that staging, rollback, a browser test or live deployment
+	 * has actually been verified.
+	 *
+	 * Optional inputs permit a deterministic PHP regression matrix without
+	 * pretending the CI PHP or a mocked WordPress version is installed live.
+	 */
+	public static function project_baseline_status( $wordpress_version = null, $php_version = null ) {
+		$wordpress_version = null === $wordpress_version ? get_bloginfo( 'version' ) : $wordpress_version;
+		$php_version = null === $php_version ? PHP_VERSION : $php_version;
+		$wordpress_valid = is_string( $wordpress_version )
+			&& 1 === preg_match( '/^\\d+\\.\\d+(?:\\.\\d+)?$/', $wordpress_version );
+		$php_valid = is_string( $php_version )
+			&& 1 === preg_match( '/^\\d+\\.\\d+(?:\\.\\d+)?$/', $php_version );
+		$wordpress_meets = $wordpress_valid && version_compare( $wordpress_version, '7.0.1', '>=' );
+		$php_meets = $php_valid && version_compare( $php_version, '8.3.0', '>=' );
+		return array(
+			'wordpress_required' => '7.0.1',
+			'php_required' => '8.3',
+			'wordpress_version' => $wordpress_valid ? $wordpress_version : '',
+			'php_version' => $php_valid ? $php_version : '',
+			'wordpress_meets_target' => (bool) $wordpress_meets,
+			'php_meets_target' => (bool) $php_meets,
+			'meets_version_targets' => (bool) ( $wordpress_meets && $php_meets ),
+			'acceptance_verification' => 'not_assessed',
 		);
 	}
 
