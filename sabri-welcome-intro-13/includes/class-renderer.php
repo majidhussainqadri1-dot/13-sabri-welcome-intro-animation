@@ -140,6 +140,16 @@ final class Renderer {
 			? $viewport : 'auto';
 	}
 
+	/** Label choices are translated independently of internal viewport IDs. */
+	public static function preview_viewport_labels() {
+		return array(
+			'auto' => __( 'Automatic', SWI_TEXT_DOMAIN ),
+			'mobile' => __( 'Mobile', SWI_TEXT_DOMAIN ),
+			'tablet' => __( 'Tablet', SWI_TEXT_DOMAIN ),
+			'desktop' => __( 'Desktop', SWI_TEXT_DOMAIN ),
+		);
+	}
+
 	/** A preview iframe must never recursively embed itself. */
 	public static function preview_embed_requested() {
 		return isset( $_GET['embed'] ) && is_string( $_GET['embed'] ) && '1' === $_GET['embed'];
@@ -165,14 +175,7 @@ final class Renderer {
 		// These are read-only authenticated previews. The iframe is a genuine
 		// browser viewport so mobile/tablet CSS media queries are exercised.
 		if ( ! $embedded ) {
-			// Textdomain labels are translated by WordPress/locale providers.
-			// Never derive user-facing copy from internal state keys.
-			$viewport_labels = array(
-				'auto' => __( 'Automatic', SWI_TEXT_DOMAIN ),
-				'mobile' => __( 'Mobile', SWI_TEXT_DOMAIN ),
-				'tablet' => __( 'Tablet', SWI_TEXT_DOMAIN ),
-				'desktop' => __( 'Desktop', SWI_TEXT_DOMAIN ),
-			);
+			$viewport_labels = self::preview_viewport_labels();
 			echo '<nav class="swi-preview-viewports" aria-label="' . esc_attr__( 'Preview viewport', SWI_TEXT_DOMAIN ) . '">';
 			foreach ( $viewport_labels as $choice => $label ) {
 				$link = add_query_arg( array( 'state' => $state, 'viewport' => $choice ), home_url( '/welcome-intro-preview/' ) );
