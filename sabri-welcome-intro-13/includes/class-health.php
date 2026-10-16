@@ -91,7 +91,7 @@ final class Health {
 	 * reclassify File13's independent historical-suppression health.
 	 */
 	public static function file20_welcome_contract_status() {
-		$provider = 'Sabri\\\\UnifiedShell\\\\FourPlanHarmonization';
+		$provider = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$installed = class_exists( $provider ) && defined( 'SABRI_SHELL_VERSION' );
 		$raw = apply_filters( 'sabri_shell_welcome_frequency_contract', array() );
 		$contract = is_array( $raw ) ? $raw : array();
