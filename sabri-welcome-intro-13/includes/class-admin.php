@@ -25,6 +25,15 @@ final class Admin {
 		if ( isset( $_GET['swi_registry_error'] ) && 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — ' . esc_html__( 'File 24 contract state:', SWI_TEXT_DOMAIN ) . ' ' . esc_html( $health['file24_contract_state'] ) . '</p>';
 		echo '<p><strong>' . esc_html__( 'File 01 registry:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $foundation['state'] ) . '</p>';
+		// Compatibility minimums and project release targets are distinct.
+		// Never imply that a version-only check is an accepted staging/live test.
+		$baseline = isset( $health['project_baseline'] ) && is_array( $health['project_baseline'] )
+			? $health['project_baseline'] : array();
+		echo '<p><strong>' . esc_html__( 'Project version baseline (WordPress 7.0.1 / PHP 8.3):', SWI_TEXT_DOMAIN ) . '</strong> '
+			. ( ! empty( $baseline['meets_version_targets'] )
+				? esc_html__( 'Runtime versions meet the targets; acceptance is not verified.', SWI_TEXT_DOMAIN )
+				: esc_html__( 'Runtime versions do not meet the targets; acceptance is not verified.', SWI_TEXT_DOMAIN ) )
+			. '</p>';
 		// File20's installed plugin class/version is NOT proof of the distinct
 		// 30-day WelcomeFrequency contract (old main and draft share 1.4.17).
 		$welcome_contract_valid = ! empty( $health['file20_welcome_contract']['valid'] );
