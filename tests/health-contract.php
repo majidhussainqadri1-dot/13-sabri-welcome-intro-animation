@@ -6,6 +6,13 @@ define( 'SWI_VERSION', '1.0.1' );
 define( 'SWI_SCHEMA_VERSION', '1.0.1' );
 $GLOBALS['swi_schema_version'] = '1.0.1';
 define( 'SWI_TEXT_DOMAIN', 'sabri-welcome-intro' );
+define( 'SABRI_SHELL_VERSION', '1.4.17' );
+function apply_filters( $name, $fallback ) {
+    if ( 'sabri_shell_welcome_frequency_contract' === $name ) {
+        return array_key_exists( 'swi_file20_welcome_contract', $GLOBALS ) ? $GLOBALS['swi_file20_welcome_contract'] : $fallback;
+    }
+    return $fallback;
+}
 function has_action( $hook, $callback = false ) { return isset( $GLOBALS['swi_test_hooks'][ $hook ] ) ? 10 : false; }
 function get_bloginfo( $field ) { return 'version' === $field ? '6.8' : ''; }
 function get_option( $key, $default = false ) {
@@ -15,6 +22,11 @@ function get_option( $key, $default = false ) {
     return $default;
 }
 function absint( $value ) { return abs( (int) $value ); }
+}
+namespace Sabri\UnifiedShell {
+    // Intentionally only legacy-compatible plugin class/version: this does
+    // NOT provide File20's newer WelcomeFrequency bridge/filter.
+    final class FourPlanHarmonization {}
 }
 namespace Sabri\WelcomeIntro {
     final class Settings {
@@ -41,6 +53,52 @@ namespace Sabri\WelcomeIntro {
     require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-health.php';
     $GLOBALS['swi_test_hooks'] = array();
     $clean = Health::status();
+    // Old File20 main and a newer unmerged draft both advertise 1.4.17.
+    // Class/version presence must never be advertised as a verified
+    // 30-day welcome-frequency contract.
+    if ( ! $clean['file20_available'] || ! isset( $clean['file20_welcome_contract'] )
+        || $clean['file20_welcome_contract']['valid'] ) {
+        fwrite( STDERR, "Legacy File20 plugin presence falsely certified WelcomeFrequency contract\n" ); exit( 1 );
+    }
+    $approved_welcome = array(
+        'owner' => 'file-20', 'version' => '1.0.0', 'days' => 30,
+        'presentation_owner' => 'file-25',
+        'guest_preference' => 'first-party-cookie-and-local-storage',
+        'member_preference' => 'authenticated-user-meta',
+        'no_file13_public_hook' => true,
+        'live_verified' => false,
+    );
+    $GLOBALS['swi_file20_welcome_contract'] = $approved_welcome;
+    $approved_status = Health::status();
+    if ( ! $approved_status['file20_welcome_contract']['valid']
+        || 'healthy' !== $approved_status['status'] ) {
+        fwrite( STDERR, "Canonical File20 WelcomeFrequency contract rejected or legacy health changed\n" ); exit( 1 );
+    }
+    foreach ( array(
+        array(),
+        'not-an-array',
+        array_replace( $approved_welcome, array( 'owner' => 'file-13' ) ),
+        array_replace( $approved_welcome, array( 'version' => '0.9.0' ) ),
+        array_replace( $approved_welcome, array( 'version' => '2.0.0' ) ),
+        array_replace( $approved_welcome, array( 'version' => array( '1.0.0' ) ) ),
+        array_replace( $approved_welcome, array( 'days' => '30' ) ),
+        array_replace( $approved_welcome, array( 'days' => 29 ) ),
+        array_replace( $approved_welcome, array( 'presentation_owner' => 'file-13' ) ),
+        array_replace( $approved_welcome, array( 'guest_preference' => 'tracking-cookie' ) ),
+        array_replace( $approved_welcome, array( 'member_preference' => 'shared-cookie' ) ),
+        array_replace( $approved_welcome, array( 'no_file13_public_hook' => false ) ),
+    ) as $invalid_contract ) {
+        $GLOBALS['swi_file20_welcome_contract'] = $invalid_contract;
+        $invalid_status = Health::status();
+        if ( $invalid_status['file20_welcome_contract']['valid']
+            || 'healthy' !== $invalid_status['status'] ) {
+            fwrite( STDERR, "Malformed File20 welcome contract falsely certified or File13 compatibility incorrectly degraded\n" ); exit( 1 );
+        }
+    }
+    unset( $GLOBALS['swi_file20_welcome_contract'] );
+    if ( Health::status()['file20_welcome_contract']['valid'] ) {
+        fwrite( STDERR, "Missing File20 welcome filter falsely certified after reset\n" ); exit( 1 );
+    }
     if ( true !== $clean['legacy_public_disabled'] || 'healthy' !== $clean['status'] ) { fwrite( STDERR, "disabled baseline invalid\n" ); exit( 1 ); }
     $GLOBALS['swi_preview_registered'] = false;
     $missing = Health::status();
