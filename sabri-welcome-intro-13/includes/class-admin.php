@@ -10,21 +10,38 @@ final class Admin {
 	}
 
 	public static function menu() {
-		$capability = apply_filters( 'swi_intro_manage_capability', Authorization::DEFAULT_CAPABILITY, 'manage_intro' );
-		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), is_string( $capability ) ? $capability : Authorization::DEFAULT_CAPABILITY, self::PAGE, array( __CLASS__, 'render' ) );
+		// A companion filter can only tighten render authorization, not the native menu gate.
+		add_options_page( __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), __( 'Sabri Welcome Intro', SWI_TEXT_DOMAIN ), Authorization::DEFAULT_CAPABILITY, self::PAGE, array( __CLASS__, 'render' ) );
 	}
 
 	public static function render() {
 		Authorization::require_manage( 'manage_intro' );
 		$health = Health::status();
+		$foundation = Foundation::status();
 		$preview = home_url( '/welcome-intro-preview/' );
 		echo '<div class="wrap"><h1>' . esc_html__( 'File 13 Legacy Compatibility', SWI_TEXT_DOMAIN ) . '</h1>';
-		echo '<div class="notice notice-info"><p>' . esc_html__( 'The historical File 13 public intro is permanently disabled. File 20 owns invocation and frequency; File 25 owns presentation.', SWI_TEXT_DOMAIN ) . '</p></div>';
-		if ( isset( $_GET['swi_registry_synced'] ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'File 01 registry synchronized.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
-		if ( isset( $_GET['swi_registry_error'] ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
+		echo '<div class="notice notice-info"><p>' . esc_html__( 'The historical File 13 public intro is disabled in this source candidate. Permanent ownership transfer requires dated Founder-approved change control. Current source contracts assign invocation and frequency to File 20 and presentation to File 25.', SWI_TEXT_DOMAIN ) . '</p></div>';
+		if ( isset( $_GET['swi_registry_synced'] ) && 'synced' === (string) ( $foundation['state'] ?? '' ) ) { echo '<div class="notice notice-success"><p>' . esc_html__( 'File 01 registry synchronized.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
+		if ( isset( $_GET['swi_registry_error'] ) && 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { echo '<div class="notice notice-error"><p>' . esc_html__( 'File 01 registry synchronization failed. Review authorization and registry health.', SWI_TEXT_DOMAIN ) . '</p></div>'; }
 		echo '<p><strong>' . esc_html__( 'Health:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $health['status'] ) . ' — ' . esc_html__( 'File 24 contract state:', SWI_TEXT_DOMAIN ) . ' ' . esc_html( $health['file24_contract_state'] ) . '</p>';
-		$foundation = Foundation::status();
 		echo '<p><strong>' . esc_html__( 'File 01 registry:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $foundation['state'] ) . '</p>';
+		// Compatibility minimums and project release targets are distinct.
+		// Never imply that a version-only check is an accepted staging/live test.
+		$baseline = isset( $health['project_baseline'] ) && is_array( $health['project_baseline'] )
+			? $health['project_baseline'] : array();
+		echo '<p><strong>' . esc_html__( 'Project version baseline (WordPress 7.0.1 / PHP 8.3):', SWI_TEXT_DOMAIN ) . '</strong> '
+			. ( ! empty( $baseline['meets_version_targets'] )
+				? esc_html__( 'Runtime versions meet the targets; acceptance is not verified.', SWI_TEXT_DOMAIN )
+				: esc_html__( 'Runtime versions do not meet the targets; acceptance is not verified.', SWI_TEXT_DOMAIN ) )
+			. '</p>';
+		// File20's installed plugin class/version is NOT proof of the distinct
+		// 30-day WelcomeFrequency contract (old main and draft share 1.4.17).
+		$welcome_contract_valid = ! empty( $health['file20_welcome_contract']['valid'] );
+		echo '<p><strong>' . esc_html__( 'File 20 welcome frequency contract:', SWI_TEXT_DOMAIN ) . '</strong> '
+			. ( $welcome_contract_valid
+				? esc_html__( 'Detected; operational verification remains separate.', SWI_TEXT_DOMAIN )
+				: esc_html__( 'Missing or incompatible; plugin presence is insufficient.', SWI_TEXT_DOMAIN ) )
+			. '</p>';
 		echo '<p><a class="button" href="' . esc_url( $preview ) . '" target="_blank" rel="noopener">' . esc_html__( 'Inspect legacy preview', SWI_TEXT_DOMAIN ) . '</a></p>';
 		echo '<form style="display:inline-block;margin-bottom:12px" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( Foundation::SYNC_ACTION ) . '">';
 		wp_nonce_field( Foundation::SYNC_ACTION, '_swi_nonce' );

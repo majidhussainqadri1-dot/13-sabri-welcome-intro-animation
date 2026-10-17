@@ -1,4 +1,6 @@
-# File 13 Current-Head Cross-Contract Audit — 2026-10-07
+# File 13 Historical Cross-Contract Audit Baseline — 2026-10-07
+
+> Dated evidence only. The SHAs below were current at this historical review, not necessarily now. Each future audit must re-read current main and companion HEADs; this report is not live or deployed-state evidence.
 
 ## Exact source evidence
 

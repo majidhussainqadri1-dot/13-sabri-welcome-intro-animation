@@ -7,9 +7,7 @@ final class Analytics {
 	const OPTION_PREFIX = 'swi_intro_agg_';
 	const CLEANUP_HOOK = 'swi_intro_cleanup_aggregates';
 
-	public static function register() {
-		add_action( 'wp_ajax_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
-		add_action( 'wp_ajax_nopriv_swi_intro_event', array( __CLASS__, 'ajax_event' ) );
+	public static function register_retention() {
 		add_action( self::CLEANUP_HOOK, array( __CLASS__, 'cleanup' ) );
 		add_action( 'init', array( __CLASS__, 'schedule_cleanup' ), 20 );
 	}
@@ -30,19 +28,33 @@ final class Analytics {
 			wp_send_json_error( array( 'code' => 'origin_rejected' ), 403 );
 		}
 
-		$event = isset( $_POST['event'] ) ? sanitize_key( wp_unslash( $_POST['event'] ) ) : '';
-		$version = isset( $_POST['version'] ) ? absint( $_POST['version'] ) : 0;
+		$raw_event = isset( $_POST['event'] ) ? wp_unslash( $_POST['event'] ) : '';
+		$event = is_string( $raw_event ) ? sanitize_key( $raw_event ) : '';
+		$raw_version = isset( $_POST['version'] ) ? wp_unslash( $_POST['version'] ) : 0;
+		$version = is_int( $raw_version ) || ( is_string( $raw_version ) && ctype_digit( $raw_version ) )
+			? absint( $raw_version ) : 0;
 		if ( ! in_array( $event, array( 'shown', 'skipped', 'completed' ), true )
 			|| $version < 1
 			|| $version !== absint( $config['config_version'] ) ) {
 			wp_send_json_error( array( 'code' => 'invalid_event' ), 400 );
 		}
 
-		self::record( $event, $version );
+		if ( ! self::record( $event, $version ) ) {
+			wp_send_json_error( array( 'code' => 'analytics_unavailable' ), 503 );
+		}
 		wp_send_json_success( array( 'accepted' => true ) );
 	}
 
 	public static function record( $event, $version ) {
+		// Privacy kill switch and event validation belong at the write boundary,
+		// not only at the unregistered historical AJAX entry point.
+		$config = Settings::get();
+		if ( empty( $config['analytics_enabled'] ) || ! is_string( $event )
+			|| ! in_array( $event, array( 'shown', 'skipped', 'completed' ), true )
+			|| ! ( is_int( $version ) || ( is_string( $version ) && ctype_digit( $version ) ) )
+			|| absint( $version ) < 1 || absint( $version ) !== absint( $config['config_version'] ?? 0 ) ) {
+			return false;
+		}
 		global $wpdb;
 
 		// Aggregate only: no IP, account, cookie ID, URL history, user-agent, or fingerprint is stored.
@@ -79,13 +91,14 @@ final class Analytics {
 
 			if ( 1 === $updated ) {
 				wp_cache_delete( $key, 'options' );
+				wp_cache_delete( 'alloptions', 'options' ); // Legacy rows may be autoloaded.
 				$recorded = true;
 				break;
 			}
 		}
 		if ( ! $recorded ) {
 			do_action( 'swi_intro_analytics_contention', $event, absint( $version ) );
-			return;
+			return false;
 		}
 
 		$event_name = array(
@@ -94,19 +107,28 @@ final class Analytics {
 			'completed' => 'WelcomeIntroCompleted.v1',
 		)[ $event ];
 		do_action( 'swi_intro_event_published', $event_name, array( 'version' => absint( $version ), 'date' => gmdate( 'Y-m-d' ) ) );
+		return true;
 	}
 
 	public static function cleanup() {
 		global $wpdb;
 		$like = $wpdb->esc_like( self::OPTION_PREFIX ) . '%';
-		$names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s LIMIT 500", $like ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
 		$cutoff = (int) gmdate( 'Ymd', time() - ( 90 * DAY_IN_SECONDS ) );
-		foreach ( (array) $names as $name ) {
-			if ( preg_match( '/^' . preg_quote( self::OPTION_PREFIX, '/' ) . '(\d{8})_v\d+$/', (string) $name, $m )
-				&& absint( $m[1] ) < $cutoff ) {
-				delete_option( $name );
+		$cursor = 0;
+		do {
+			$rows = $wpdb->get_results(
+				$wpdb->prepare( "SELECT option_id, option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_id > %d ORDER BY option_id ASC LIMIT 500", $like, $cursor ),
+				ARRAY_A
+			);
+			if ( ! is_array( $rows ) || ! $rows ) { break; }
+			foreach ( $rows as $row ) {
+				$cursor = max( $cursor, absint( $row['option_id'] ) );
+				$name = (string) $row['option_name'];
+				if ( preg_match( '/^' . preg_quote( self::OPTION_PREFIX, '/' ) . '(\\d{8})_v\\d+$/', $name, $m ) && absint( $m[1] ) < $cutoff ) {
+					delete_option( $name );
+				}
 			}
-		}
+		} while ( count( $rows ) === 500 );
 	}
 
 	private static function same_origin_request() {

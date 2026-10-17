@@ -14,33 +14,58 @@ final class Health {
 
 	public static function status() {
 		$config = Settings::get();
+		$stored = Settings::stored();
+		// Settings::stored() normalizes a scalar/missing row into safe defaults.
+		// Assurance must inspect the raw persisted shape, not certify those defaults.
+		$raw_stored = get_option( Settings::OPTION, false );
+		$stored_status = is_string( $stored['status'] ?? null ) ? $stored['status'] : '';
+		$stored_flags_valid = is_array( $raw_stored )
+			&& is_bool( $raw_stored['enabled'] ?? null )
+			&& is_string( $raw_stored['status'] ?? null )
+			&& is_bool( $raw_stored['analytics_enabled'] ?? null );
 		$file20_class = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
 		$file20_available = class_exists( $file20_class ) && defined( 'SABRI_SHELL_VERSION' );
+		$file20_welcome_contract = self::file20_welcome_contract_status();
+		$project_baseline = self::project_baseline_status();
 		$legacy_renderer = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$legacy_analytics = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
+		$legacy_public_disabled = empty( $config['enabled'] )
+			&& 'disabled' === (string) $config['status']
+			&& empty( $config['analytics_enabled'] )
+			&& ! $legacy_renderer
+			&& ! $legacy_analytics;
 		$visual = Renderer::visual_tokens();
 		$visual_contract = Renderer::visual_contract_status();
 		$foundation = Foundation::status();
+		$preview_route = Renderer::preview_route_status();
 		$issues = array();
 
 		if ( version_compare( PHP_VERSION, '8.1', '<' ) ) { $issues[] = 'php_below_declared_minimum'; }
 		if ( version_compare( get_bloginfo( 'version' ), '6.0', '<' ) ) { $issues[] = 'wordpress_below_declared_minimum'; }
+		if ( SWI_SCHEMA_VERSION !== Settings::schema_version() ) { $issues[] = 'schema_migration_pending'; }
+		if ( ! $stored_flags_valid ) { $issues[] = 'legacy_stored_malformed'; }
 		if ( ! empty( $config['enabled'] ) || 'disabled' !== (string) $config['status'] || ! empty( $config['analytics_enabled'] ) ) { $issues[] = 'legacy_runtime_not_disabled'; }
+		if ( ! empty( $stored['enabled'] ) || 'disabled' !== $stored_status || ! empty( $stored['analytics_enabled'] ) ) { $issues[] = 'legacy_stored_activation_detected'; }
 		if ( $legacy_renderer ) { $issues[] = 'legacy_public_renderer_registered'; }
 		if ( $legacy_analytics ) { $issues[] = 'legacy_public_analytics_registered'; }
 		if ( empty( $foundation['available'] ) ) { $issues[] = 'file01_registry_unavailable'; }
 		elseif ( 'synced' !== (string) ( $foundation['state'] ?? '' ) ) { $issues[] = 'file01_registry_unsynced'; }
 		if ( false !== get_option( 'swi_intro_audit_gap', false ) ) { $issues[] = 'configuration_audit_gap'; }
+		if ( empty( $preview_route['registered'] ) ) { $issues[] = 'preview_rewrite_unregistered'; }
+		if ( empty( $preview_route['persisted'] ) ) { $issues[] = 'preview_rewrite_not_persisted'; }
+		if ( ! empty( $preview_route['persisted'] ) && empty( $preview_route['precedence'] ) ) { $issues[] = 'preview_rewrite_shadowed'; }
 
 		return array(
 			'plugin_version' => SWI_VERSION,
-			'schema_version' => (string) get_option( Settings::SCHEMA_OPTION, '' ),
+			'schema_version' => Settings::schema_version(),
 			'config_version' => absint( $config['config_version'] ),
-			'configured_active' => false,
-			'legacy_public_disabled' => true,
+			'configured_active' => ! empty( $stored['enabled'] ) || 'active' === $stored_status,
+			'legacy_public_disabled' => $legacy_public_disabled,
 			'safe_mode' => Eligibility::safe_mode_active(),
 			'file20_available' => (bool) $file20_available,
+			'file20_welcome_contract' => $file20_welcome_contract,
+			'project_baseline' => $project_baseline,
 			'file20_version' => defined( 'SABRI_SHELL_VERSION' ) ? (string) SABRI_SHELL_VERSION : '',
 			'visual_primary' => $visual['primary'],
 			'file25_visual_contract' => array(
@@ -49,6 +74,7 @@ final class Health {
 				'version' => (string) ( $visual_contract['version'] ?? '' ),
 			),
 			'file01_registry' => $foundation,
+			'preview_route' => $preview_route,
 			'file24_contract_state' => self::file24_contract_state( 'unassessed' ),
 			'ownership' => array( 'invocation_frequency' => 'file-20', 'presentation' => 'file-25', 'file-13' => 'legacy-compatibility-only' ),
 			'status' => empty( $issues ) ? 'healthy' : 'degraded',
@@ -57,15 +83,112 @@ final class Health {
 		);
 	}
 
+	/**
+	 * Non-mutating project-release version diagnostic (F13-NFR-009).
+	 *
+	 * These TARGETS are separate from the lower supported plugin minimums
+	 * WordPress 6.0 / PHP 8.1. Matching runtime versions are a prerequisite,
+	 * never evidence that staging, rollback, a browser test or live deployment
+	 * has actually been verified.
+	 *
+	 * Optional inputs permit a deterministic PHP regression matrix without
+	 * pretending the CI PHP or a mocked WordPress version is installed live.
+	 */
+	public static function project_baseline_status( $wordpress_version = null, $php_version = null ) {
+		$wordpress_version = null === $wordpress_version ? get_bloginfo( 'version' ) : $wordpress_version;
+		$php_version = null === $php_version ? PHP_VERSION : $php_version;
+		$wordpress_valid = is_string( $wordpress_version )
+			&& 1 === preg_match( '/^\\d+\\.\\d+(?:\\.\\d+)?$/', $wordpress_version );
+		$php_valid = is_string( $php_version )
+			&& 1 === preg_match( '/^\\d+\\.\\d+(?:\\.\\d+)?$/', $php_version );
+		$wordpress_meets = $wordpress_valid && version_compare( $wordpress_version, '7.0.1', '>=' );
+		$php_meets = $php_valid && version_compare( $php_version, '8.3.0', '>=' );
+		return array(
+			'wordpress_required' => '7.0.1',
+			'php_required' => '8.3',
+			'wordpress_version' => $wordpress_valid ? $wordpress_version : '',
+			'php_version' => $php_valid ? $php_version : '',
+			'wordpress_meets_target' => (bool) $wordpress_meets,
+			'php_meets_target' => (bool) $php_meets,
+			'meets_version_targets' => (bool) ( $wordpress_meets && $php_meets ),
+			'acceptance_verification' => 'not_assessed',
+		);
+	}
+
+	/**
+	 * Read the actual File20 welcome-frequency handshake, not only its plugin
+	 * header version. File20 main and an unmerged draft may report 1.4.17
+	 * while providing different welcome behavior.
+	 *
+	 * This is a non-mutating, source-contract diagnostic. It never certifies
+	 * installed package parity or staging/live acceptance and does not
+	 * reclassify File13's independent historical-suppression health.
+	 */
+	public static function file20_welcome_contract_status() {
+		$provider = 'Sabri\\UnifiedShell\\FourPlanHarmonization';
+		$installed = class_exists( $provider ) && defined( 'SABRI_SHELL_VERSION' );
+		// A third-party filter can forge a plausible payload. Confirm File20's
+		// actual native owner class AND its exact WordPress filter callback.
+		$native_owner = 'Sabri\\UnifiedShell\\WelcomeFrequency';
+		$provider_registered = $installed
+			&& class_exists( $native_owner, false )
+			&& false !== has_filter( 'sabri_shell_welcome_frequency_contract', array( $native_owner, 'contract' ) );
+		$raw = apply_filters( 'sabri_shell_welcome_frequency_contract', array() );
+		$contract = is_array( $raw ) ? $raw : array();
+		$owner = isset( $contract['owner'] ) && is_string( $contract['owner'] ) ? $contract['owner'] : '';
+		$version = isset( $contract['version'] ) && is_string( $contract['version'] ) ? $contract['version'] : '';
+		$days = isset( $contract['days'] ) && is_int( $contract['days'] ) ? $contract['days'] : 0;
+		$presentation = isset( $contract['presentation_owner'] ) && is_string( $contract['presentation_owner'] )
+			? $contract['presentation_owner'] : '';
+		$valid = $provider_registered && 'file-20' === $owner
+			&& 1 === preg_match( '/^\\d+\\.\\d+\\.\\d+$/', $version )
+			&& version_compare( $version, '1.0.0', '>=' )
+			&& version_compare( $version, '2.0.0', '<' )
+			&& 30 === $days
+			&& 'file-25' === $presentation
+			&& ( $contract['guest_preference'] ?? null ) === 'first-party-cookie-and-local-storage'
+			&& ( $contract['member_preference'] ?? null ) === 'authenticated-user-meta'
+			&& ( $contract['no_file13_public_hook'] ?? null ) === true;
+		return array(
+			'valid' => (bool) $valid,
+			'provider_registered' => (bool) $provider_registered,
+			'owner' => $owner,
+			'version' => $version,
+			'days' => $days,
+			'presentation_owner' => $presentation,
+		);
+	}
+
 	public static function file24_contract_state( $state, $definition = array() ) {
 		unset( $state, $definition );
 		$config = Settings::get();
+		$stored = Settings::stored();
+		// Settings::stored() normalizes a scalar/missing row into safe defaults.
+		// Assurance must inspect the raw persisted shape, not certify those defaults.
+		$raw_stored = get_option( Settings::OPTION, false );
+		$stored_status = is_string( $stored['status'] ?? null ) ? $stored['status'] : '';
+		$stored_flags_valid = is_array( $raw_stored )
+			&& is_bool( $raw_stored['enabled'] ?? null )
+			&& is_string( $raw_stored['status'] ?? null )
+			&& is_bool( $raw_stored['analytics_enabled'] ?? null );
 		$renderer_registered = false !== has_action( 'sabri_shell_welcome_intro_invoke', array( Renderer::class, 'invoke' ) );
 		$analytics_registered = false !== has_action( 'wp_ajax_swi_intro_event', array( Analytics::class, 'ajax_event' ) )
 			|| false !== has_action( 'wp_ajax_nopriv_swi_intro_event', array( Analytics::class, 'ajax_event' ) );
-		return empty( $config['enabled'] )
+		// File 24 assurance must not certify a suppressed legacy runtime while
+		// schema migration, the File 01 registry, or its audit trail is unresolved.
+		$registry = Foundation::status();
+		$preview_route = Renderer::preview_route_status();
+		$assurance_ready = SWI_SCHEMA_VERSION === Settings::schema_version()
+			&& 'synced' === (string) ( $registry['state'] ?? '' )
+			&& false === get_option( 'swi_intro_audit_gap', false )
+			&& ! empty( $preview_route['available'] );
+		return $assurance_ready && empty( $config['enabled'] )
 			&& 'disabled' === (string) $config['status']
 			&& empty( $config['analytics_enabled'] )
+			&& $stored_flags_valid
+			&& empty( $stored['enabled'] )
+			&& 'disabled' === $stored_status
+			&& empty( $stored['analytics_enabled'] )
 			&& ! $renderer_registered
 			&& ! $analytics_registered
 			? 'compatible'
