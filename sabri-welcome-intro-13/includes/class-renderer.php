@@ -239,6 +239,12 @@ final class Renderer {
 	}
 
 	public static function visual_contract_status() {
+		// A plausible filter payload is not evidence that the canonical File 25
+		// provider is installed and registered. This is a diagnostic provenance
+		// check, not an authentication or deployment-parity assertion.
+		$native_owner = 'Sabri\\PublicExperience\\Design_System';
+		$provider_registered = class_exists( $native_owner, false )
+			&& false !== has_filter( 'sabri_shell_file25_visual_contract', array( $native_owner, 'filter_shell_visual_contract' ) );
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
 		$owner_raw = is_array( $contract ) ? ( $contract['owner'] ?? null ) : null;
 		$version_raw = is_array( $contract ) ? ( $contract['version'] ?? null ) : null;
@@ -247,7 +253,7 @@ final class Renderer {
 		$tokens = is_array( $contract ) && isset( $contract['tokens'] ) && is_array( $contract['tokens'] )
 			? $contract['tokens']
 			: array();
-		$valid = 'file-25' === $owner
+		$valid = $provider_registered && 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
 			// Match File20's supported File25 contract range; older 1.x
 			// shapes must not appear compatible in historical preview diagnostics.
@@ -263,6 +269,7 @@ final class Renderer {
 
 		return array(
 			'valid' => $valid,
+			'provider_registered' => (bool) $provider_registered,
 			'owner' => $owner,
 			'version' => $version,
 			'tokens' => $tokens,

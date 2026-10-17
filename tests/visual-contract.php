@@ -2,6 +2,16 @@
 /** Source-only File 25 token contract regression. No staging/live assertion. */
 define( 'ABSPATH', __DIR__ );
 function apply_filters( $name, $fallback ) { return $GLOBALS['visual_contract'] ?? $fallback; }
+// Model the real File25 callback's presence separately from a spoofable payload.
+$GLOBALS['native_file25_registered'] = false;
+function has_filter( $name, $callback = false ) {
+    return 'sabri_shell_file25_visual_contract' === $name
+        && array( 'Sabri\\PublicExperience\\Design_System', 'filter_shell_visual_contract' ) === $callback
+        && ! empty( $GLOBALS['native_file25_registered'] ) ? 20 : false;
+}
+class File25NativeProviderTestDouble {
+    public static function filter_shell_visual_contract( $contract ) { return $contract; }
+}
 function sanitize_key( $value ) { return preg_replace( '/[^a-z0-9_\-]/', '', strtolower( (string) $value ) ); }
 function sanitize_text_field( $value ) { return trim( (string) $value ); }
 function esc_attr( $value ) { return htmlspecialchars( (string) $value, ENT_QUOTES, 'UTF-8' ); }
@@ -26,7 +36,22 @@ foreach ( array( '1.0.0', '1.8.9', '2.0.0', 'v1.9.0', array( '1.9.0' ) ) as $inc
     }
 }
 $GLOBALS['visual_contract']['version'] = '1.9.0';
-if ( ! Renderer::visual_contract_status()['valid'] ) { fwrite( STDERR, "valid File 25 tokens rejected\n" ); exit( 1 ); }
+// A third-party filter may spoof a plausible owner/version/tokens payload.
+// Without the actual native File25 class and registered callback, fail closed.
+if ( Renderer::visual_contract_status()['valid'] || Renderer::visual_contract_status()['provider_registered'] ) {
+    fwrite( STDERR, "Forged File25 payload accepted without native provider class\n" ); exit( 1 );
+}
+if ( '#087a4e' !== Renderer::visual_tokens()['primary'] ) {
+    fwrite( STDERR, "Forged File25 tokens bypassed visual fallback\n" ); exit( 1 );
+}
+class_alias( 'File25NativeProviderTestDouble', 'Sabri\\PublicExperience\\Design_System' );
+if ( Renderer::visual_contract_status()['valid'] ) {
+    fwrite( STDERR, "Forged File25 payload accepted without registered native callback\n" ); exit( 1 );
+}
+$GLOBALS['native_file25_registered'] = true;
+if ( ! Renderer::visual_contract_status()['valid'] || ! Renderer::visual_contract_status()['provider_registered'] ) {
+    fwrite( STDERR, "Valid registered File25 native provider rejected\n" ); exit( 1 );
+}
 $GLOBALS['visual_contract']['version'] = '1.10.0';
 if ( ! Renderer::visual_contract_status()['valid'] ) {
     fwrite( STDERR, "Compatible File25 1.x minor version rejected\n" ); exit( 1 );
