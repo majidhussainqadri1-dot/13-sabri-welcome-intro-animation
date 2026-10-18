@@ -3,6 +3,10 @@ namespace Sabri\WelcomeIntro;
 if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 final class Renderer {
+	/** Request-local proof that the canonical preview rewrite was registered without collision. */
+	private static $preview_route_registered = false;
+	const PREVIEW_REWRITE_PATTERN = '^welcome-intro-preview/?$';
+	const PREVIEW_REWRITE_TARGET = 'index.php?swi_intro_preview=1';
 	public static function register() {
 		add_action( 'init', array( __CLASS__, 'register_rewrite' ) );
 		add_filter( 'query_vars', array( __CLASS__, 'query_vars' ) );
@@ -10,7 +14,78 @@ final class Renderer {
 	}
 
 	public static function register_rewrite() {
-		add_rewrite_rule( '^welcome-intro-preview/?$', 'index.php?swi_intro_preview=1', 'top' );
+		self::$preview_route_registered = false;
+		// Fail closed when another module owns the exact preview route.
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		if ( is_object( $wp_rewrite ) ) {
+			foreach ( array( 'extra_rules_top', 'extra_rules' ) as $bucket ) {
+				$rules = isset( $wp_rewrite->{$bucket} ) ? $wp_rewrite->{$bucket} : array();
+				if ( is_array( $rules ) && array_key_exists( $pattern, $rules ) && $target !== $rules[ $pattern ] ) {
+					do_action( 'swi_intro_preview_rewrite_conflict', $pattern, $bucket );
+					return false;
+				}
+			}
+		}
+		// Persisted rules can predate this request's init registrations.
+		$persisted = get_option( 'rewrite_rules', array() );
+		if ( is_array( $persisted ) && array_key_exists( $pattern, $persisted ) && $target !== $persisted[ $pattern ] ) {
+			do_action( 'swi_intro_preview_rewrite_conflict', $pattern, 'persisted' );
+			return false;
+		}
+		add_rewrite_rule( $pattern, $target, 'top' );
+		self::$preview_route_registered = true;
+		return true;
+	}
+
+	/**
+	 * Verify both this request's registered rule and the persisted WordPress
+	 * rewrite table. add_rewrite_rule() alone cannot prove route availability.
+	 */
+	public static function preview_route_status() {
+		global $wp_rewrite;
+		$pattern = self::PREVIEW_REWRITE_PATTERN;
+		$target = self::PREVIEW_REWRITE_TARGET;
+		$registered = self::$preview_route_registered
+			&& is_object( $wp_rewrite )
+			&& isset( $wp_rewrite->extra_rules_top )
+			&& is_array( $wp_rewrite->extra_rules_top )
+			&& $target === ( $wp_rewrite->extra_rules_top[ $pattern ] ?? null );
+		$rules = get_option( 'rewrite_rules', false );
+		$persisted = is_array( $rules )
+			&& $target === ( $rules[ $pattern ] ?? null );
+		$precedence = $persisted && self::persisted_preview_has_precedence( $rules, $pattern, $target );
+		return array(
+			'registered' => (bool) $registered,
+			'persisted' => (bool) $persisted,
+			'precedence' => (bool) $precedence,
+			'available' => (bool) ( $registered && $persisted && $precedence ),
+		);
+	}
+
+	/**
+	 * WordPress resolves the FIRST matching persisted rewrite rule. An exact
+	 * canonical mapping later in the table does not prove preview reachability.
+	 * Check both canonical slash variants using WordPress's rule-match shape.
+	 * This is read-only; never reorder or flush another owner's rules.
+	 */
+	private static function persisted_preview_has_precedence( array $rules, $pattern, $target ) {
+		foreach ( array( 'welcome-intro-preview', 'welcome-intro-preview/' ) as $request ) {
+			$owned = false;
+			foreach ( $rules as $candidate => $query ) {
+				if ( ! is_string( $candidate ) ) { return false; }
+				// Mirror WP::parse_request()'s anchored rewrite matching.
+				$matched = @preg_match( '#^' . $candidate . '#', $request ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+				if ( false === $matched ) { return false; }
+				if ( 1 !== $matched ) { continue; }
+				if ( $pattern !== $candidate || $target !== $query ) { return false; }
+				$owned = true;
+				break;
+			}
+			if ( ! $owned ) { return false; }
+		}
+		return true;
 	}
 
 	public static function query_vars( $vars ) {
@@ -25,21 +100,97 @@ final class Renderer {
 		do_action( 'swi_intro_legacy_invocation_blocked', SWI_VERSION );
 	}
 
+	/**
+	 * Fail closed unless WordPress actually matched our canonical rewrite.
+	 * A public ?swi_intro_preview=1 query string is not proof of route ownership.
+	 */
+	public static function is_preview_request() {
+		if ( ! self::$preview_route_registered || ! get_query_var( 'swi_intro_preview' ) ) { return false; }
+		// The canonical route must also be persisted and first-match reachable.
+		// A request-local registration or spoofed query variable is insufficient.
+		if ( empty( self::preview_route_status()['available'] ) ) { return false; }
+		global $wp, $wp_rewrite;
+		if ( ! is_object( $wp ) || ! isset( $wp->matched_rule ) || self::PREVIEW_REWRITE_PATTERN !== $wp->matched_rule ) { return false; }
+		if ( ! is_object( $wp_rewrite ) || ! isset( $wp_rewrite->extra_rules_top )
+			|| ! is_array( $wp_rewrite->extra_rules_top )
+			|| self::PREVIEW_REWRITE_TARGET !== ( $wp_rewrite->extra_rules_top[ self::PREVIEW_REWRITE_PATTERN ] ?? null ) ) { return false; }
+		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		if ( ! is_string( $request_uri ) || '' === $request_uri ) { return false; }
+		$requested = wp_parse_url( $request_uri, PHP_URL_PATH );
+		$canonical = wp_parse_url( home_url( '/welcome-intro-preview/' ), PHP_URL_PATH );
+		return is_string( $requested ) && is_string( $canonical )
+			&& untrailingslashit( $requested ) === untrailingslashit( $canonical );
+	}
+
+	/** Malformed query input is not a valid preview state. */
+	public static function normalized_preview_state() {
+		$raw = isset( $_GET['state'] ) ? $_GET['state'] : 'default';
+		if ( ! is_string( $raw ) ) { return 'default'; }
+		$state = sanitize_key( wp_unslash( $raw ) );
+		return in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true )
+			? $state : 'default';
+	}
+
+	/** Strictly allowlisted administrator-only responsive migration previews. */
+	public static function normalized_preview_viewport() {
+		$raw = isset( $_GET['viewport'] ) ? $_GET['viewport'] : 'auto';
+		if ( ! is_string( $raw ) ) { return 'auto'; }
+		$viewport = sanitize_key( wp_unslash( $raw ) );
+		return in_array( $viewport, array( 'auto', 'mobile-small', 'mobile', 'tablet', 'desktop' ), true )
+			? $viewport : 'auto';
+	}
+
+	/** Label choices are translated independently of internal viewport IDs. */
+	public static function preview_viewport_labels() {
+		return array(
+			'auto' => __( 'Automatic', SWI_TEXT_DOMAIN ),
+			'mobile-small' => __( 'Small mobile (320px)', SWI_TEXT_DOMAIN ),
+			'mobile' => __( 'Mobile', SWI_TEXT_DOMAIN ),
+			'tablet' => __( 'Tablet', SWI_TEXT_DOMAIN ),
+			'desktop' => __( 'Desktop', SWI_TEXT_DOMAIN ),
+		);
+	}
+
+	/** A preview iframe must never recursively embed itself. */
+	public static function preview_embed_requested() {
+		return isset( $_GET['embed'] ) && is_string( $_GET['embed'] ) && '1' === $_GET['embed'];
+	}
+
 	public static function maybe_preview() {
-		if ( ! get_query_var( 'swi_intro_preview' ) ) { return; }
+		if ( ! self::is_preview_request() ) { return; }
 		if ( ! is_user_logged_in() ) { auth_redirect(); exit; }
 		Authorization::require_manage( 'preview_intro' );
 		nocache_headers();
 		header( 'X-Robots-Tag: noindex, nofollow, noarchive', true );
 
-		$state = isset( $_GET['state'] ) ? sanitize_key( wp_unslash( $_GET['state'] ) ) : 'default';
-		if ( ! in_array( $state, array( 'default', 'reduced', 'error', 'disabled', 'skipped' ), true ) ) { $state = 'default'; }
+		$state = self::normalized_preview_state();
+		$viewport = self::normalized_preview_viewport();
+		$embedded = self::preview_embed_requested();
 		$config = Settings::get();
 		$tokens = self::visual_tokens();
 
 		echo '<!doctype html><html ' . get_language_attributes() . '><head><meta charset="' . esc_attr( get_bloginfo( 'charset' ) ) . '"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' . esc_html__( 'Welcome Intro Preview', SWI_TEXT_DOMAIN ) . '</title>';
 		echo self::style_block( $tokens ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 		echo '</head><body class="swi-preview-page"><main><h1>' . esc_html__( 'Underlying page remains available', SWI_TEXT_DOMAIN ) . '</h1><p>' . esc_html__( 'This preview does not modify public recurrence or session state.', SWI_TEXT_DOMAIN ) . '</p></main>';
+
+		// These are read-only authenticated previews. The iframe is a genuine
+		// browser viewport so mobile/tablet CSS media queries are exercised.
+		if ( ! $embedded ) {
+			$viewport_labels = self::preview_viewport_labels();
+			echo '<nav class="swi-preview-viewports" aria-label="' . esc_attr__( 'Preview viewport', SWI_TEXT_DOMAIN ) . '">';
+			foreach ( $viewport_labels as $choice => $label ) {
+				$link = add_query_arg( array( 'state' => $state, 'viewport' => $choice ), home_url( '/welcome-intro-preview/' ) );
+				echo '<a href="' . esc_url( $link ) . '"' . ( $choice === $viewport ? ' aria-current="page"' : '' ) . '>' . esc_html( $label ) . '</a>';
+			}
+			echo '</nav>';
+			if ( 'auto' !== $viewport ) {
+				$widths = array( 'mobile-small' => 320, 'mobile' => 360, 'tablet' => 768, 'desktop' => 1280 );
+				$frame_url = add_query_arg( array( 'state' => $state, 'viewport' => $viewport, 'embed' => '1' ), home_url( '/welcome-intro-preview/' ) );
+				echo '<div class="swi-preview-device swi-preview-viewport-' . esc_attr( $viewport ) . '" style="max-width:100%;overflow-x:auto;border:1px solid #d9dde2;padding:1rem;background:#eee"><iframe title="' . esc_attr__( 'Welcome intro responsive preview', SWI_TEXT_DOMAIN ) . '" width="' . esc_attr( $widths[ $viewport ] ) . '" height="720" src="' . esc_url( $frame_url ) . '" sandbox="allow-scripts" referrerpolicy="same-origin"></iframe></div>';
+				echo '</body></html>';
+				exit;
+			}
+		}
 
 		if ( 'error' === $state ) {
 			echo '<div class="swi-preview-note">' . esc_html__( 'Failure preview: the intro is suppressed and content is revealed immediately.', SWI_TEXT_DOMAIN ) . '</div>';
@@ -62,8 +213,10 @@ final class Renderer {
 			$config
 		);
 		$copy = is_array( $copy ) ? $copy : array();
-		$heading = sanitize_text_field( $copy['heading'] ?? $config['heading'] );
-		$claim = sanitize_textarea_field( $copy['claim'] ?? $config['claim'] );
+		$heading_raw = $copy['heading'] ?? null;
+		$claim_raw = $copy['claim'] ?? null;
+		$heading = sanitize_text_field( is_string( $heading_raw ) ? $heading_raw : $config['heading'] );
+		$claim = sanitize_textarea_field( is_string( $claim_raw ) ? $claim_raw : $config['claim'] );
 		$id = $preview ? 'swi-welcome-intro-preview' : 'swi-welcome-intro';
 		$html = '<aside id="' . esc_attr( $id ) . '" class="swi-intro" hidden data-swi-version="' . esc_attr( absint( $config['config_version'] ) ) . '" aria-label="' . esc_attr__( 'Welcome to Sabri Homeopathy', SWI_TEXT_DOMAIN ) . '"><div class="swi-intro__panel">';
 		$html .= '<div class="swi-intro__logo" aria-hidden="true"><svg viewBox="0 0 72 72" width="72" height="72" focusable="false"><circle cx="36" cy="36" r="32"></circle><text x="36" y="42" text-anchor="middle">SH</text></svg></div>';
@@ -78,26 +231,56 @@ final class Renderer {
 			. '.swi-intro[hidden]{display:none!important}.swi-intro{position:fixed;z-index:2147482000;inset-block-start:1rem;inset-inline:1rem;display:flex;justify-content:center;pointer-events:none;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;direction:inherit}'
 			. '.swi-intro__panel{pointer-events:auto;inline-size:min(520px,calc(100vw - 2rem));box-sizing:border-box;padding:1rem 1.1rem;border:1px solid ' . $l . ';border-radius:14px;background:#fff;color:#171a18;box-shadow:0 14px 40px rgba(0,0,0,.16);display:grid;grid-template-columns:auto 1fr auto;gap:.9rem;align-items:center}'
 			. '.swi-intro__logo svg circle{fill:' . $l . ';stroke:' . $p . ';stroke-width:2}.swi-intro__logo svg text{fill:' . $d . ';font-size:18px;font-weight:700}.swi-intro__copy{min-inline-size:0}.swi-intro__heading,.swi-intro__claim{display:block}.swi-intro__heading{font-size:1.08rem;line-height:1.25;color:' . $d . '}.swi-intro__claim{margin-block-start:.22rem;font-size:.9rem;line-height:1.45}.swi-intro__line{display:block;block-size:3px;inline-size:0;margin-block-start:.6rem;border-radius:999px;background:' . $p . ';animation:swi-line var(--swi-duration,3200ms) ease-out forwards}'
-			. '.swi-intro__skip{appearance:none;border:1px solid ' . $p . ';background:#fff;color:' . $d . ';border-radius:999px;padding:.55rem .75rem;font:inherit;cursor:pointer;white-space:nowrap}.swi-intro__skip:focus-visible{outline:3px solid ' . $p . ';outline-offset:3px}.swi-intro.swi-intro--enter .swi-intro__panel{animation:swi-enter 220ms ease-out both}.swi-intro.swi-intro--leave .swi-intro__panel{animation:swi-leave 160ms ease-in both}'
+			. '.swi-intro__skip{appearance:none;min-block-size:44px;min-inline-size:44px;box-sizing:border-box;border:1px solid ' . $p . ';background:#fff;color:' . $d . ';border-radius:999px;padding:.55rem .75rem;font:inherit;cursor:pointer;white-space:nowrap}.swi-intro__skip:focus-visible{outline:3px solid ' . $p . ';outline-offset:3px}.swi-intro.swi-intro--enter .swi-intro__panel{animation:swi-enter 220ms ease-out both}.swi-intro.swi-intro--leave .swi-intro__panel{animation:swi-leave 160ms ease-in both}'
 			. '@keyframes swi-enter{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}@keyframes swi-leave{to{opacity:0;transform:translateY(-6px)}}@keyframes swi-line{to{inline-size:100%}}'
 			. '@media(max-width:560px){.swi-intro{inset-block-start:.5rem;inset-inline:.5rem}.swi-intro__panel{inline-size:100%;grid-template-columns:auto 1fr;gap:.7rem}.swi-intro__skip{grid-column:1/-1;justify-self:end;min-block-size:44px}.swi-intro__logo svg{width:56px;height:56px}}'
-			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
+			. '.swi-intro.swi-intro--reduced *{animation:none!important;transition:none!important;scroll-behavior:auto!important}.swi-intro.swi-intro--reduced .swi-intro__line{inline-size:100%}'
+			. '@media(prefers-reduced-motion:reduce){.swi-intro *{animation:none!important;scroll-behavior:auto!important}.swi-intro__line{inline-size:100%}}.swi-preview-viewports{display:flex;flex-wrap:wrap;gap:.75rem;margin-block:1rem}.swi-preview-viewports a{display:inline-flex;align-items:center;justify-content:center;min-block-size:44px;min-inline-size:44px;box-sizing:border-box;padding:.5rem .75rem;border:1px solid #7a8a83;border-radius:6px;color:#064e3b;background:#fff;text-decoration:underline}.swi-preview-viewports a:focus-visible{outline:3px solid #087a4e;outline-offset:2px}.swi-preview-viewports [aria-current="page"]{font-weight:700;border-color:#087a4e}.swi-preview-page{margin:0;padding:2rem;background:#f7f7f7}.swi-preview-note{margin:1rem;padding:1rem;border:1px solid #d9dde2;background:#fff}[dir="rtl"] .swi-intro{text-align:right}</style>';
 	}
 
 	public static function visual_contract_status() {
+		// A plausible filter payload is not evidence that the canonical File 25
+		// provider is installed and registered. This is a diagnostic provenance
+		// check, not an authentication or deployment-parity assertion.
+		$native_owner = 'Sabri\\PublicExperience\\Design_System';
+		$provider_registered = class_exists( $native_owner, false )
+			&& false !== has_filter( 'sabri_shell_file25_visual_contract', array( $native_owner, 'filter_shell_visual_contract' ) );
 		$contract = apply_filters( 'sabri_shell_file25_visual_contract', array() );
-		$owner = is_array( $contract ) ? sanitize_key( (string) ( $contract['owner'] ?? '' ) ) : '';
-		$version = is_array( $contract ) ? sanitize_text_field( (string) ( $contract['version'] ?? '' ) ) : '';
+		$owner_raw = is_array( $contract ) ? ( $contract['owner'] ?? null ) : null;
+		$version_raw = is_array( $contract ) ? ( $contract['version'] ?? null ) : null;
+		$owner = is_string( $owner_raw ) ? sanitize_key( $owner_raw ) : '';
+		$version = is_string( $version_raw ) ? sanitize_text_field( $version_raw ) : '';
 		$tokens = is_array( $contract ) && isset( $contract['tokens'] ) && is_array( $contract['tokens'] )
 			? $contract['tokens']
 			: array();
-		$valid = 'file-25' === $owner
+		$valid = $provider_registered && 'file-25' === $owner
 			&& 1 === preg_match( '/^\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$/', $version )
-			&& version_compare( $version, '1.0.0', '>=' )
-			&& ! empty( $tokens );
+			// Match File20's supported File25 contract range; older 1.x
+			// shapes must not appear compatible in historical preview diagnostics.
+			&& version_compare( $version, '1.9.0', '>=' )
+			&& version_compare( $version, '2.0.0', '<' )
+			&& isset( $tokens['primary_color'], $tokens['text'], $tokens['surface_strong'] )
+			&& is_string( $tokens['primary_color'] )
+			&& is_string( $tokens['text'] )
+			&& is_string( $tokens['surface_strong'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['primary_color'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['text'] )
+			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['surface_strong'] );
+
+		// Historical preview CSS uses fixed white panel and Skip backgrounds.
+		// A well-formed File25 #RRGGBB payload is not necessarily readable.
+		// Require WCAG AA normal text and UI focus indicator contrast; reject
+		// inaccessible overrides without modifying File25's canonical palette.
+		if ( $valid && (
+			self::contrast_ratio( $tokens['text'], '#ffffff' ) < 4.5
+			|| self::contrast_ratio( $tokens['primary_color'], '#ffffff' ) < 3.0
+		) ) {
+			$valid = false;
+		}
 
 		return array(
 			'valid' => $valid,
+			'provider_registered' => (bool) $provider_registered,
 			'owner' => $owner,
 			'version' => $version,
 			'tokens' => $tokens,
@@ -115,6 +298,26 @@ final class Renderer {
 			'dark' => self::hex( $tokens['text'] ?? '', $fallback['dark'] ),
 			'light' => self::hex( $tokens['surface_strong'] ?? '', $fallback['light'] ),
 		);
+	}
+
+	/** WCAG 2.x sRGB contrast for the fixed white preview surface. */
+	private static function contrast_ratio( $one, $two ) {
+		$a = self::relative_luminance( $one );
+		$b = self::relative_luminance( $two );
+		return ( max( $a, $b ) + 0.05 ) / ( min( $a, $b ) + 0.05 );
+	}
+
+	private static function relative_luminance( $color ) {
+		$weights = array( 0.2126, 0.7152, 0.0722 );
+		$luminance = 0.0;
+		for ( $i = 0; $i < 3; $i++ ) {
+			$channel = hexdec( substr( $color, 1 + 2 * $i, 2 ) ) / 255;
+			$linear = $channel <= 0.04045
+				? $channel / 12.92
+				: pow( ( $channel + 0.055 ) / 1.055, 2.4 );
+			$luminance += $weights[ $i ] * $linear;
+		}
+		return $luminance;
 	}
 
 	private static function hex( $value, $fallback ) {

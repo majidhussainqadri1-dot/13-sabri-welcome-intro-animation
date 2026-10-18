@@ -11,8 +11,20 @@ if ( defined( 'SWI_PURGE_ON_UNINSTALL' ) && SWI_PURGE_ON_UNINSTALL ) {
 	delete_option( 'swi_intro_config' );
 	delete_option( 'swi_intro_audit' );
 	delete_option( 'swi_intro_schema_version' );
+	delete_option( 'swi_intro_audit_gap' );
 	global $wpdb;
 	$like = $wpdb->esc_like( 'swi_intro_agg_' ) . '%';
-	$names = $wpdb->get_col( $wpdb->prepare( "SELECT option_name FROM {$wpdb->options} WHERE option_name LIKE %s LIMIT 1000", $like ) ); // phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery
-	foreach ( (array) $names as $name ) { delete_option( $name ); }
+	$cursor = 0;
+	do {
+		$rows = $wpdb->get_results(
+			$wpdb->prepare( "SELECT option_id, option_name FROM {$wpdb->options} WHERE option_name LIKE %s AND option_id > %d ORDER BY option_id ASC LIMIT 500", $like, $cursor ),
+			ARRAY_A
+		);
+		if ( ! is_array( $rows ) || ! $rows ) { break; }
+		foreach ( $rows as $row ) {
+			$cursor = max( $cursor, absint( $row['option_id'] ) );
+			$name = (string) $row['option_name'];
+			if ( preg_match( '/^swi_intro_agg_\\d{8}_v\\d+$/', $name ) ) { delete_option( $name ); }
+		}
+	} while ( count( $rows ) === 500 );
 }

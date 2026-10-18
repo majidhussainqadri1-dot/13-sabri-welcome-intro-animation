@@ -2,7 +2,7 @@
 
 ## 1.0.1 — cross-contract ownership correction
 
-- Reconciled File 13 with the current File 24 and File 25 contracts: File 13 is historical compatibility only; File 20 owns invocation/frequency and File 25 owns presentation.
+- Reconciled the File 13 source candidate with current File 24 and File 25 contracts: File 13 suppresses its historical runtime, while current source contracts assign invocation/frequency to File 20 and presentation to File 25. Permanent ownership transfer still requires dated Founder-approved change control.
 - Removed registration of the public File 13 renderer, eligibility resolver, analytics endpoints and configuration-write surfaces.
 - Forced all legacy activation and analytics state to disabled during reads, writes, activation and schema upgrade.
 - Added the File 24 `spcrc/file13_contract_state` assurance adapter, which blocks on any legacy public-runtime reactivation.

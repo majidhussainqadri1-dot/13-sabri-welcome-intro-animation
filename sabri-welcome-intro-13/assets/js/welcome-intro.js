@@ -24,6 +24,8 @@
 	}
 
 	try {
+		// Apply the scoped motion override before revealing the historical preview.
+		if (reduced) { root.classList.add('swi-intro--reduced'); }
 		root.style.setProperty('--swi-duration', reduced ? '0ms' : duration + 'ms');
 		root.hidden = false;
 		root.classList.add('swi-intro--enter');

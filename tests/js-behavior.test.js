@@ -70,6 +70,7 @@ function assert(condition, message) {
   assert(c.root.hidden === false, 'legacy preview must become visible');
   assert(c.styles['--swi-duration'] === '3200ms', 'preview duration must be applied');
   assert(typeof c.events['skip:click'] === 'function', 'preview close handler must exist');
+  assert(!c.classes.has('swi-intro--reduced'), 'normal preview must not force reduced-motion CSS');
 }
 
 // Escape closes only the non-persistent preview.
@@ -83,7 +84,20 @@ function assert(condition, message) {
 {
   const c = runCase({ preview: true, reduced: true, duration: 9000 });
   assert(c.styles['--swi-duration'] === '0ms', 'reduced motion must disable motion duration');
+  assert(c.classes.has('swi-intro--reduced'), 'OS reduced-motion preview must enable scoped CSS override');
   assert(c.timeouts.some(t => t.delay <= 800), 'reduced-motion completion must be bounded');
+}
+
+// A preview's forced reduced state must override OS preference, including CSS
+// entrance/exit animations, not only the progress-line duration.
+{
+  const c = runCase({ preview: true, reduced: false, forceReduced: true, duration: 9000 });
+  assert(c.root.hidden === false, 'forced reduced-motion preview must remain inspectable');
+  assert(c.classes.has('swi-intro--reduced'), 'forced reduced-motion must enable scoped CSS override');
+  assert(c.styles['--swi-duration'] === '0ms', 'forced reduced-motion must remove progress animation');
+  assert(c.timeouts.some(t => t.delay <= 800), 'forced reduced-motion must bound preview completion');
+  c.events['document:keydown']({ key: 'Escape' });
+  assert(c.timeouts.some(t => t.delay === 0), 'forced reduced-motion must close without exit delay');
 }
 
 if (!process.exitCode) {
