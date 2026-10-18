@@ -42,6 +42,18 @@ final class Admin {
 				? esc_html__( 'Detected; operational verification remains separate.', SWI_TEXT_DOMAIN )
 				: esc_html__( 'Missing or incompatible; plugin presence is insufficient.', SWI_TEXT_DOMAIN ) )
 			. '</p>';
+		// Keep File25 visual-owner provenance separate from File13's historical
+		// compatibility and File20's canonical frequency diagnostics.
+		$visual = isset( $health['file25_visual_contract'] ) && is_array( $health['file25_visual_contract'] )
+			? $health['file25_visual_contract'] : array();
+		if ( empty( $visual['provider_registered'] ) ) {
+			$visual_message = __( 'Native File 25 provider callback missing; visual readiness not verified.', SWI_TEXT_DOMAIN );
+		} elseif ( empty( $visual['valid'] ) ) {
+			$visual_message = __( 'Native File 25 provider registered but visual contract incompatible; readiness not verified.', SWI_TEXT_DOMAIN );
+		} else {
+			$visual_message = __( 'Native File 25 visual contract detected; operational verification remains separate.', SWI_TEXT_DOMAIN );
+		}
+		echo '<p><strong>' . esc_html__( 'File 25 visual contract:', SWI_TEXT_DOMAIN ) . '</strong> ' . esc_html( $visual_message ) . '</p>';
 		echo '<p><a class="button" href="' . esc_url( $preview ) . '" target="_blank" rel="noopener">' . esc_html__( 'Inspect legacy preview', SWI_TEXT_DOMAIN ) . '</a></p>';
 		echo '<form style="display:inline-block;margin-bottom:12px" method="post" action="' . esc_url( admin_url( 'admin-post.php' ) ) . '"><input type="hidden" name="action" value="' . esc_attr( Foundation::SYNC_ACTION ) . '">';
 		wp_nonce_field( Foundation::SYNC_ACTION, '_swi_nonce' );
