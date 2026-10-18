@@ -65,7 +65,7 @@ namespace Sabri\WelcomeIntro {
         public static function visual_contract_status() { return array( 'valid' => $GLOBALS['swi_visual_valid'] ?? true, 'provider_registered' => $GLOBALS['swi_visual_native_registered'] ?? true, 'owner' => 'file-25', 'version' => '1.9.0' ); }
     }
     final class Analytics { public static function ajax_event() {} }
-    final class Authorization { public static function require_manage( $capability ) { if ( 'manage_intro' !== $capability ) { throw new \\LogicException( 'Wrong admin capability' ); } } }
+    final class Authorization { public static function require_manage( $capability ) { if ( 'manage_intro' !== $capability ) { throw new \LogicException( 'Wrong admin capability' ); } } }
     final class Eligibility { public static function safe_mode_active() { return false; } }
     final class Foundation { public static function status() { return array( 'available' => true, 'state' => $GLOBALS['swi_test_registry_state'] ?? 'synced' ); } }
     require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-health.php';
