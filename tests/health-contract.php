@@ -21,6 +21,15 @@ function has_filter( $hook, $callback = false ) {
     return $native === $callback && ! empty( $GLOBALS['swi_native_welcome_callback_registered'] ) ? 10 : false;
 }
 function get_bloginfo( $field ) { return 'version' === $field ? '6.8' : ''; }
+function __( $text, $domain = '' ) { return $text; }
+function esc_html__( $text, $domain = '' ) { return htmlspecialchars( $text, ENT_QUOTES, 'UTF-8' ); }
+function esc_html( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
+function esc_attr( $text ) { return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ); }
+function esc_url( $text ) { return (string) $text; }
+function home_url( $path = '/' ) { return 'https://sabri.example' . $path; }
+function admin_url( $path = '' ) { return 'https://sabri.example/wp-admin/' . $path; }
+function wp_nonce_field( $action, $name ) { echo '<input type="hidden" name="nonce" value="test">'; }
+function submit_button( $label, $type = '', $name = '', $wrap = '' ) { echo '<button>' . esc_html( $label ) . '</button>'; }
 function get_option( $key, $default = false ) {
     if ( 'swi_intro_schema_version' === $key ) { return $GLOBALS['swi_schema_version']; }
     if ( 'swi_intro_config' === $key ) { return array_key_exists( 'swi_stored_override', $GLOBALS ) ? $GLOBALS['swi_stored_override'] : array( 'enabled' => false, 'status' => 'disabled', 'analytics_enabled' => false ); }
@@ -56,9 +65,11 @@ namespace Sabri\WelcomeIntro {
         public static function visual_contract_status() { return array( 'valid' => $GLOBALS['swi_visual_valid'] ?? true, 'provider_registered' => $GLOBALS['swi_visual_native_registered'] ?? true, 'owner' => 'file-25', 'version' => '1.9.0' ); }
     }
     final class Analytics { public static function ajax_event() {} }
+    final class Authorization { public static function require_manage( $capability ) { if ( 'manage_intro' !== $capability ) { throw new \\LogicException( 'Wrong admin capability' ); } } }
     final class Eligibility { public static function safe_mode_active() { return false; } }
     final class Foundation { public static function status() { return array( 'available' => true, 'state' => $GLOBALS['swi_test_registry_state'] ?? 'synced' ); } }
     require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-health.php';
+    require dirname( __DIR__ ) . '/sabri-welcome-intro-13/includes/class-admin.php';
     $GLOBALS['swi_test_hooks'] = array();
     // Project RELEASE versions are distinct from supported plugin minimums.
     // Pure version fixtures are not an installed WordPress/staging acceptance test.
@@ -247,5 +258,26 @@ namespace Sabri\WelcomeIntro {
     finally { restore_error_handler(); }
     if ( 'degraded' !== $scalar['status'] || ! in_array( 'legacy_stored_malformed', $scalar['issues'], true )
         || 'blocked' !== $scalar_contract ) { fwrite( STDERR, "Scalar persisted config falsely certified\n" ); exit( 1 ); }
+    // Exercise the actual privileged Admin::render() output in all three
+    // File25 readiness scenarios; source-only PHP fixtures, NOT staging.
+    unset( $GLOBALS['swi_stored_override'] );
+    foreach ( array(
+        array( false, true, 'Native File 25 provider callback missing;' ),
+        array( true, false, 'Native File 25 provider registered but visual contract incompatible;' ),
+        array( true, true, 'Native File 25 visual contract detected;' ),
+    ) as $case ) {
+        $GLOBALS['swi_visual_native_registered'] = $case[0];
+        $GLOBALS['swi_visual_valid'] = $case[1];
+        ob_start();
+        Admin::render();
+        $output = ob_get_clean();
+        if ( false === strpos( $output, 'File 25 visual contract:' )
+            || false === strpos( $output, $case[2] )
+            || false === strpos( $output, 'operational verification remains separate' )
+                && false === strpos( $output, 'readiness not verified' ) ) {
+            fwrite( STDERR, "Admin incorrectly reports File25 provenance/compatibility\n" ); exit( 1 );
+        }
+    }
+    unset( $GLOBALS['swi_visual_native_registered'], $GLOBALS['swi_visual_valid'] );
     echo "File 13 legacy effective-public-disable health regression: PASS\n";
 }
