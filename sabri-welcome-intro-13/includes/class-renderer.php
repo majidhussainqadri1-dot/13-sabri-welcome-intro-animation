@@ -267,6 +267,17 @@ final class Renderer {
 			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['text'] )
 			&& preg_match( '/^#[0-9a-fA-F]{6}$/', $tokens['surface_strong'] );
 
+		// Historical preview CSS uses fixed white panel and Skip backgrounds.
+		// A well-formed File25 #RRGGBB payload is not necessarily readable.
+		// Require WCAG AA normal text and UI focus indicator contrast; reject
+		// inaccessible overrides without modifying File25's canonical palette.
+		if ( $valid && (
+			self::contrast_ratio( $tokens['text'], '#ffffff' ) < 4.5
+			|| self::contrast_ratio( $tokens['primary_color'], '#ffffff' ) < 3.0
+		) ) {
+			$valid = false;
+		}
+
 		return array(
 			'valid' => $valid,
 			'provider_registered' => (bool) $provider_registered,
@@ -287,6 +298,26 @@ final class Renderer {
 			'dark' => self::hex( $tokens['text'] ?? '', $fallback['dark'] ),
 			'light' => self::hex( $tokens['surface_strong'] ?? '', $fallback['light'] ),
 		);
+	}
+
+	/** WCAG 2.x sRGB contrast for the fixed white preview surface. */
+	private static function contrast_ratio( $one, $two ) {
+		$a = self::relative_luminance( $one );
+		$b = self::relative_luminance( $two );
+		return ( max( $a, $b ) + 0.05 ) / ( min( $a, $b ) + 0.05 );
+	}
+
+	private static function relative_luminance( $color ) {
+		$weights = array( 0.2126, 0.7152, 0.0722 );
+		$luminance = 0.0;
+		for ( $i = 0; $i < 3; $i++ ) {
+			$channel = hexdec( substr( $color, 1 + 2 * $i, 2 ) ) / 255;
+			$linear = $channel <= 0.04045
+				? $channel / 12.92
+				: pow( ( $channel + 0.055 ) / 1.055, 2.4 );
+			$luminance += $weights[ $i ] * $linear;
+		}
+		return $luminance;
 	}
 
 	private static function hex( $value, $fallback ) {
