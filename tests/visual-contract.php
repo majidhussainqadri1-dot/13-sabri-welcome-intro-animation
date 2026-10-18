@@ -61,6 +61,33 @@ $colors = Renderer::visual_tokens();
 if ( '#123456' !== $colors['primary'] || '#123abc' !== $colors['dark'] || '#abcdef' !== $colors['light'] ) {
     fwrite( STDERR, "valid token mapping incorrect\n" ); exit( 1 );
 }
+// Contrast is a property of the actual rendered historical preview:
+// its text and focus ring sit on white, regardless of token HEX validity.
+$original_tokens = $GLOBALS['visual_contract']['tokens'];
+foreach ( array(
+    array( 'text', '#ffffff', false, 'white-on-white text' ),
+    array( 'text', '#AAAAAA', false, '2.32-to-1 body text' ),
+    array( 'text', '#777777', false, 'below-4.5 contrast body text' ),
+    array( 'text', '#767676', true, 'above-4.5 body contrast boundary' ),
+    array( 'primary_color', '#ffffff', false, 'white-on-white keyboard focus' ),
+    array( 'primary_color', '#AAAAAA', false, 'below-3 keyboard focus' ),
+    array( 'primary_color', '#959595', false, 'below-3 focus boundary' ),
+    array( 'primary_color', '#949494', true, 'above-3 focus boundary' ),
+) as $sample ) {
+    $GLOBALS['visual_contract']['tokens'] = $original_tokens;
+    $GLOBALS['visual_contract']['tokens'][ $sample[0] ] = $sample[1];
+    $contrast_status = Renderer::visual_contract_status();
+    if ( (bool) $contrast_status['valid'] !== $sample[2] ) {
+        fwrite( STDERR, 'Unexpected visual preview contrast acceptance: ' . $sample[3] . "\n" ); exit( 1 );
+    }
+    if ( ! $sample[2] && '#087a4e' !== Renderer::visual_tokens()['primary'] ) {
+        fwrite( STDERR, "Unsafe contrast did not fail closed to preview safe colors\n" ); exit( 1 );
+    }
+}
+$GLOBALS['visual_contract']['tokens'] = $original_tokens;
+if ( ! Renderer::visual_contract_status()['valid'] ) {
+    fwrite( STDERR, "Known acceptable File25 colors were rejected\n" ); exit( 1 );
+}
 $GLOBALS['visual_contract']['owner'] = array( 'file-25' );
 $GLOBALS['visual_contract']['version'] = array( '1.0.0' );
 set_error_handler( static function ( $severity, $message ) { throw new ErrorException( $message, 0, $severity ); } );
