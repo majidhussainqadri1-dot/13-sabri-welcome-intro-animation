@@ -53,7 +53,7 @@ namespace Sabri\WelcomeIntro {
             $precedence = $GLOBALS['swi_preview_precedence'] ?? true;
             return array( 'registered' => $registered, 'persisted' => $persisted, 'precedence' => $precedence, 'available' => $registered && $persisted && $precedence );
         }
-        public static function visual_contract_status() { return array( 'valid' => true, 'owner' => 'file-25', 'version' => '1.0.0' ); }
+        public static function visual_contract_status() { return array( 'valid' => $GLOBALS['swi_visual_valid'] ?? true, 'provider_registered' => $GLOBALS['swi_visual_native_registered'] ?? true, 'owner' => 'file-25', 'version' => '1.9.0' ); }
     }
     final class Analytics { public static function ajax_event() {} }
     final class Eligibility { public static function safe_mode_active() { return false; } }
@@ -88,6 +88,28 @@ namespace Sabri\WelcomeIntro {
         }
     }
     $clean = Health::status();
+    // File25 provider provenance is NOT interchangeable with a syntactically
+    // valid contract, and is separate from historical File13 compatibility.
+    if ( ! $clean['file25_visual_contract']['provider_registered']
+        || ! $clean['file25_visual_contract']['valid'] ) {
+        fwrite( STDERR, "Known canonical File25 provider was lost from health diagnostics\n" ); exit( 1 );
+    }
+    $GLOBALS['swi_visual_native_registered'] = false;
+    $missing_visual_provider = Health::status();
+    if ( $missing_visual_provider['file25_visual_contract']['provider_registered']
+        || ! $missing_visual_provider['file25_visual_contract']['valid']
+        || 'healthy' !== $missing_visual_provider['status'] ) {
+        fwrite( STDERR, "Missing native File25 callback provenance was falsely reported\n" ); exit( 1 );
+    }
+    $GLOBALS['swi_visual_native_registered'] = true;
+    $GLOBALS['swi_visual_valid'] = false;
+    $incompatible_visual = Health::status();
+    if ( ! $incompatible_visual['file25_visual_contract']['provider_registered']
+        || $incompatible_visual['file25_visual_contract']['valid']
+        || 'healthy' !== $incompatible_visual['status'] ) {
+        fwrite( STDERR, "Registered but incompatible File25 callback provenance was not distinguished\n" ); exit( 1 );
+    }
+    unset( $GLOBALS['swi_visual_valid'], $GLOBALS['swi_visual_native_registered'] );
     if ( ! isset( $clean['project_baseline'] )
         || $clean['project_baseline']['wordpress_version'] !== '6.8'
         || $clean['project_baseline']['wordpress_meets_target']
