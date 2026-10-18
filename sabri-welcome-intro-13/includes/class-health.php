@@ -70,6 +70,9 @@ final class Health {
 			'visual_primary' => $visual['primary'],
 			'file25_visual_contract' => array(
 				'valid' => ! empty( $visual_contract['valid'] ),
+				// Preserve native callback provenance separately from contract shape.
+				// Never infer deployed parity from an in-request registration check.
+				'provider_registered' => ! empty( $visual_contract['provider_registered'] ),
 				'owner' => (string) ( $visual_contract['owner'] ?? '' ),
 				'version' => (string) ( $visual_contract['version'] ?? '' ),
 			),
